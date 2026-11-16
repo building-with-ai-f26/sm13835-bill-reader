@@ -5,9 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bill Reader · Building with AI (Fall 2026)</title>
 
-  <!-- Week 1: create your PostHog account only.
-       Build 2: paste your project's current PostHog web snippet here,
-       then install analytics in the local app and verify events. -->
+  <!-- PostHog: pageviews, clicks and session replay for this public page. The phc_ key is public by design. -->
+  <script>
+      !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="Eh Rh Ph Oh Lh qh init yd bd dd fd Sd wc md xd ad Ed Ad Rd Pd Od Fd capture getExtension gr pd gd calculateEventProperties Ld register register_once register_for_session unregister unregister_for_session zd hd jd getFeatureFlag getFeatureFlagPayload getFeatureFlagResult getAllFeatureFlags isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys onActiveMatchingSurveysChanged renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Hd identify setPersonProperties unsetPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset Ud shutdown setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException addExceptionStep captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty qd Td createPersonProfile setInternalOrTestUser Bd Uh zh opt_in_capturing opt_out_capturing Hh has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $d debug kc Ls getPageViewId captureTraceFeedback captureTraceMetric rd".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+      posthog.init('phc_AfENvDXFJdcz83QuvfdukK4CyvKNAvscekkYS8KQpDNQ', {
+          api_host: 'https://us.i.posthog.com',
+          session_recording: { maskAllInputs: true }, // replay on; anything typed is masked
+          defaults: '2026-05-30',
+          person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+      })
+  </script>
 
   <style>
     :root {
@@ -133,6 +140,9 @@
       padding-top: 0;
       margin-top: 0;
     }
+    .demo-step { margin: 20px 0 28px; }
+    .demo-step img { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .demo-step figcaption { margin-top: 8px; font-size: 0.95rem; }
     .meta {
       font-size: 13px;
       color: var(--muted);
@@ -157,13 +167,30 @@
     <section id="live-demo">
       <h2>Product Showcase (Prototype / Live App / 2-Min Video)</h2>
       <p>
-        <strong>Current Status:</strong> Build 1 local prototype, using H.R. 1 (119th Congress) and public data for NJ-5. An independent student project, not affiliated with or endorsed by Rep. Gottheimer or his office.<br />
-        <strong>Demo:</strong> Screenshot of the local prototype below. A live cloud app comes in Build 5.
+        <strong>Current Status:</strong> Build 2 local app covering all 12 New Jersey House members of the 119th Congress, H.R. 1 and any bill a user uploads. An independent student project, not affiliated with or endorsed by any member of Congress or their office.<br />
+        <strong>Demo:</strong> One full user action on my laptop, with a real AI call: analyzing a newly uploaded bill for Rep. Tom Kean Jr. (NJ-7). The bill is H.R. 9626, a public bill introduced July 9, 2026 that doubles the SALT deduction cap for married couples. Screenshots taken November 16, 2026. A live cloud app comes in Build 5.
       </p>
-      <img src="prototype.png" alt="Bill Reader prototype showing a personalized H.R. 1 brief for NJ-5: an incomplete-coverage warning, a plain-English summary, and a direct conflict alert quoting the member's commitment beside the bill text." style="max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px;" />
-      <p class="meta">
-        Build 1 local prototype. The warning at the top is real: 98 of the 158 sections flagged as relevant were not analyzed in depth in this run.
-      </p>
+
+      <figure class="demo-step">
+        <img src="build2/1-choose-bill.png" alt="The Choose a bill screen for Rep. Tom Kean Jr., NJ-7, listing H.R. 1 with a brief ready and the uploaded H.R. 9626 not analyzed yet, above a drag-and-drop upload box." />
+        <figcaption><strong>1. Choose a bill.</strong> After signing in and choosing a member, the user picks H.R. 1 or a bill they uploaded. Uploads are read in the browser and saved only on this computer.</figcaption>
+      </figure>
+      <figure class="demo-step">
+        <img src="build2/2-estimate-and-consent.png" alt="The Analyze panel showing an estimated cost of about $0.07, a hard cap of $0.25, the OpenRouter balance, a notice that the text is sent to OpenRouter and Anthropic, and a checked consent box." />
+        <figcaption><strong>2. See the cost and agree.</strong> Before any AI call, the app shows an estimate and a hard cap, and says where the text will be sent. The Analyze button stays disabled until the user ticks the box.</figcaption>
+      </figure>
+      <figure class="demo-step">
+        <img src="build2/3-progress.png" alt="The Analyze panel showing live progress: estimated cost, screening one section, analyzing one relevant section in depth." />
+        <figcaption><strong>3. The real AI run.</strong> The server calls Claude models through OpenRouter: a cheap model screens each section, a stronger one analyzes the relevant ones, and each commitment is checked against the whole bill.</figcaption>
+      </figure>
+      <figure class="demo-step">
+        <img src="build2/4-brief-summary.png" alt="The finished brief: three plain-English bullets about what H.R. 9626 does, each linking to section 1 on page 1 of the uploaded PDF, and a paragraph on what it means for NJ-7." />
+        <figcaption><strong>4. The brief.</strong> Every summary bullet links to the page of the uploaded PDF it came from. This run cost <strong>$0.0446</strong>, under its $0.07 estimate.</figcaption>
+      </figure>
+      <figure class="demo-step">
+        <img src="build2/5-brief-findings.png" alt="The findings: one helps finding on doubling the SALT cap for married couples, with a verified quote from the bill and NJ-7 evidence such as property taxes and income, and no promise alerts among 8 commitments reviewed." />
+        <figcaption><strong>5. Findings and promise checks.</strong> The finding quotes the bill, and code confirmed that quote is in the bill text before showing it. None of Rep. Kean's 8 commitments was flagged, and the brief says so without claiming no conflict exists.</figcaption>
+      </figure>
     </section>
 
     <!-- LIVING PRD (Updated every week!) -->
@@ -172,13 +199,14 @@
       <p class="meta">Updated every week as we test with real users and learn what works.</p>
 
       <h3>1. Target User & The Job to Be Done</h3>
-      <p><strong>Who is this for?</strong> Members of the U.S. House and their legislative staff. The prototype is built around one real district, NJ-5. No congressional office has tested it yet.</p>
+      <p class="meta"><strong>PRD v2</strong>, November 16, 2026. Changed since v1: all 12 New Jersey districts instead of one, uploads of new bills, a cost estimate and consent step before every AI run, and the evidence below on the riskiest assumption.</p>
+      <p><strong>Who is this for?</strong> Members of the U.S. House and their legislative staff. The app now covers all 12 New Jersey House districts of the 119th Congress. No congressional office has tested it yet.</p>
       <p><strong>The painful "Before" workflow:</strong> Bills can run to thousands of pages and often reach the floor with little time to read them. Members rely on staff memos and party summaries, and someone has to work out by hand how each provision lands in the district and whether it matches what the member has said publicly.</p>
       <p><strong>The "After" workflow with this product:</strong> The member opens one brief that explains the bill without jargon, ranks the provisions most helpful and most harmful to their district with evidence, and flags any conflict with a public commitment, quoting both the commitment and the bill text.</p>
 
       <h3>2. Scope & Explicit Non-Goals</h3>
       <ul>
-        <li><strong>In Scope (Core Workflow):</strong> Take one House bill and produce a personalized, cited brief for one member's district and public commitments.</li>
+        <li><strong>In Scope (Core Workflow):</strong> Take one House bill, either H.R. 1 or a new bill uploaded as a PDF or Word file, and produce a personalized, cited brief for one member's district and public commitments.</li>
         <li><strong>Out of Scope #1:</strong> Telling members how to vote. The product shows who is affected and the evidence.</li>
         <li><strong>Out of Scope #2:</strong> The Senate. House members only.</li>
         <li><strong>Out of Scope #3:</strong> Exhaustive monitoring of all social media and TV. Platform access is restricted, so sources are added selectively and every commitment must have a citation.</li>
@@ -186,21 +214,40 @@
 
       <h3>3. How It Works Under the Hood & Riskiest Assumption (Week 2+)</h3>
       <p><strong>Riskiest Assumption:</strong> That promise alerts can be accurate enough to trust. A false alarm costs the member's confidence, and a missed conflict is worse, so the brief never claims there are no conflicts, only that none were found among the commitments reviewed.</p>
-      <p><strong>Simple Architecture:</strong> Bill text, district data and cited commitments → a cheap model screens every section → a stronger model analyzes flagged sections → code verifies every quote and citation → plain-English brief</p>
+      <p><strong>How Build 2 tests it:</strong> Build 1 had one member, and all 8 of his commitments raised an alert, so there was no way to tell a real conflict from an oversensitive model. Build 2 runs the same pipeline on more cases where the right answer is clear:</p>
+      <ul>
+        <li><strong>A member from the other party on the same bill.</strong> Rep. Kean (R) voted for H.R. 1. His brief raised 4 "possible" alerts, all on Medicaid and costs, and none on his SALT pledges. That is plausible, because the final bill raised the SALT cap.</li>
+        <li><strong>A member on his own bill.</strong> Rep. Gottheimer sponsored H.R. 9626, which raises the SALT cap for couples, yet it raised 2 "possible" alerts against his SALT pledges, because it does not fully restore the deduction. Those are false alarms: <strong>the alerts are still too sensitive.</strong></li>
+        <li><strong>A neutral case.</strong> Rep. Kean on the same bill raised no alerts, which is the expected result.</li>
+        <li><strong>Rules in code, not in the prompt.</strong> Only an explicit vote pledge can be a "direct" conflict. A pledge made about H.R. 1 can only be "possible" on any other bill. Every quote must appear in the bill text, or the finding is dropped. 37 automated tests check these rules.</li>
+      </ul>
+      <p><strong>What this means:</strong> The safeguards hold, but one wrong alert on a member's own bill is the kind of mistake that loses a staffer's trust. Build 4 (Track A) will score alerts against 10 hand-checked cases before the model's judgment is trusted.</p>
+      <p><strong>How the app works:</strong></p>
+      <ol>
+        <li><strong>Sign in and set up.</strong> A prototype sign-in, then the user chooses one of the 12 New Jersey members and the district they represent.</li>
+        <li><strong>Choose or upload a bill.</strong> H.R. 1 is preloaded. A new bill can be dropped in as a PDF or Word file. The browser reads its text and splits it into sections, and the file is saved only on this computer.</li>
+        <li><strong>Estimate and consent.</strong> The server estimates the cost from the bill's length, sets a hard cap and checks the OpenRouter balance. The user agrees to the cap and to sending the text to OpenRouter and Anthropic.</li>
+        <li><strong>Screen.</strong> Claude Haiku reads every section and flags the ones that matter for this district.</li>
+        <li><strong>Analyze.</strong> Claude Sonnet explains each flagged section, using 25 district facts from the Census and election results.</li>
+        <li><strong>Check commitments.</strong> Each of the member's cited public commitments is checked once against the whole bill.</li>
+        <li><strong>Verify in code.</strong> Quotes, section numbers and district facts are checked against the real data. Anything that fails is dropped and counted on the page.</li>
+        <li><strong>Brief.</strong> A plain-English summary, findings sorted by issue, promise alerts, and links to the exact page of the bill.</li>
+      </ol>
+      <p><strong>Simple Architecture:</strong> Browser (plain HTML) → local Node server (<code>app/server.js</code>) → OpenRouter API (Claude Haiku, then Claude Sonnet) → code checks every quote and citation → brief saved as a JSON file → shown in the browser. The OpenRouter key stays on the server in a Git-ignored <code>.env</code> file.</p>
 
       <h3>4. Unit Economics & Analytics Snapshot (Updated Weekly)</h3>
       <div class="grid-2">
         <div class="stat-box">
           <div class="stat-label">Cumulative Build Spend</div>
-          <div class="stat-value">$3.17 OpenRouter, excluding coding agent</div>
+          <div class="stat-value">$3.20 OpenRouter, excluding coding agent</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Est. Cost Per User Run</div>
-          <div class="stat-value">$1.12 for one H.R. 1 brief</div>
+          <div class="stat-label">Cost Per User Run</div>
+          <div class="stat-value">$1.23–$1.27 for an H.R. 1 brief (310 sections) · $0.04 for a one-section bill</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">User Evidence (Analytics from Build 2)</div>
-          <div class="stat-value">[Not yet measured]</div>
+          <div class="stat-value">PostHog live on this page and the local app since Nov 15. Only my own test visits so far.</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Sponsor Call (Week 6)</div>
@@ -220,16 +267,17 @@
           <li><strong>What shipped:</strong> A local prototype for H.R. 1 and NJ-5: the bill split into 309 sections, ACS 2024 district data, ten House elections from 2006 to 2024, the member's two roll call votes, eight sourced commitments, a screening and analysis pipeline, a generated brief with 60 citation-checked findings, and automated tests of the citation and alert rules.</li>
           <li><strong>Things learned with AI:</strong> I learned the difference between my code on GitHub, the public Product Page that GitHub Pages builds from it, and the app running only on my own computer at localhost. I learned that API keys go in a local <code>.env</code> file that Git ignores, and never in the chat or the code. My first real run taught me that a confident-looking AI output can hide a big gap: it hit a rate limit and left out Medicaid, the most important issue for this member, and the summary didn't mention it. So I had the AI's quotes checked by plain code, and the brief now states what it didn't cover. I also learned to set hard spending limits before running paid models. I really enjoyed the fun interface of the Terminus game - I am a Sci Fi person so this was an enjoyable way for me to get through what is an otherwise difficult subject for me to learn (coding in general).</li>
           <li><strong>What broke / changed in PRD:</strong> The first run hit a rate limit on new accounts and left out Medicaid entirely, so requests are now paced and the brief states what it did not cover. Alerts repeated the same promises across sections, so each commitment is now judged once against the whole bill, and code limits "direct conflict" to explicit pledges. Still open: all 8 commitments triggered an alert, which is too sensitive, and 98 flagged sections were not analyzed in depth.</li>
-          <li><strong>Cost & time this week:</strong> $3.17 OpenRouter, excluding coding agent · 3 hours</li>
+          <li><strong>Cost & time this week:</strong> $1.48 OpenRouter, excluding coding agent · 3 hours</li>
         </ul>
       </div>
 
       <div class="log-entry">
         <h3>Build 2 · Smallest Local Version & PostHog (Due Nov 16)</h3>
         <ul>
-          <li><strong>What shipped:</strong> [Local working slice, PostHog verified on this page and the local app, PRD v2, and local setup in AGENTS.md]</li>
-          <li><strong>What broke / changed in PRD:</strong> [Fill in]</li>
-          <li><strong>Cost & time this week:</strong> $[0.00] · [0] hours</li>
+          <li><strong>What shipped:</strong> The app now covers all 12 New Jersey House members, each with their district's Census facts, House election results from 2006 to 2024, H.R. 1 votes and cited commitments, and a second full H.R. 1 brief for Rep. Kean. A prototype sign-in and setup screen let the user choose a member and their district. Users can drag in a new bill as a PDF or Word file, name it, preview its sections and analyze it after a cost estimate, a hard cap and a consent notice; one full run is shown above. Findings and promise alerts can be filtered by issue, and veteran population was added to the district facts. PostHog is live on this page and the local app, with pageviews, clicks and session replay. Replay hides anything from an uploaded bill and masks typed text. AGENTS.md now explains the project structure and setup.</li>
+          <li><strong>Things learned with AI:</strong> I never knew PostHog even existed, so going through this week's exercise was pretty insightful and helped me understand why it's needed. Claude in my Terminal was helpful in explaining it and setting it up.</li>
+          <li><strong>What broke / changed in PRD:</strong> On a short bill the model wrote "Section 1" where the code expected "1", so the issue filters came back empty. The first fix missed it, so I captured the model's actual reply, fixed it, and added a test. PDF text breaks words across lines with hyphens, so quote checks now ignore hyphens and quote marks. On H.R. 9626, Rep. Gottheimer's own bill raised 2 "possible" alerts against his SALT pledges, so alerts are still too sensitive. The PRD now says this, and pledges made about H.R. 1 can only be "possible" on other bills. PostHog's Wizard could not set up this app because it has no framework or <code>package.json</code>, so I installed the snippet by hand. Still open: one brief's district summary wrongly said no district data was provided, even though its finding cited NJ-7 data, and 109 of Rep. Kean's flagged H.R. 1 sections were not analyzed in depth. The PRD now covers 12 districts and uploads, and the riskiest assumption has its first evidence.</li>
+          <li><strong>Cost & time this week:</strong> $1.72 OpenRouter, excluding coding agent ($3.20 total) · 2 hours</li>
         </ul>
       </div>
 

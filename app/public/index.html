@@ -122,7 +122,9 @@
       !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="Eh Rh Ph Oh Lh qh init yd bd dd fd Sd wc md xd ad Ed Ad Rd Pd Od Fd capture getExtension gr pd gd calculateEventProperties Ld register register_once register_for_session unregister unregister_for_session zd hd jd getFeatureFlag getFeatureFlagPayload getFeatureFlagResult getAllFeatureFlags isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys onActiveMatchingSurveysChanged renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Hd identify setPersonProperties unsetPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset Ud shutdown setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException addExceptionStep captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty qd Td createPersonProfile setInternalOrTestUser Bd Uh zh opt_in_capturing opt_out_capturing Hh has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $d debug kc Ls getPageViewId captureTraceFeedback captureTraceMetric rd".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
       posthog.init('phc_AfENvDXFJdcz83QuvfdukK4CyvKNAvscekkYS8KQpDNQ', {
           api_host: 'https://us.i.posthog.com',
-          disable_session_recording: true, // never record the screen: uploads and briefs stay private
+          // Session replay records the screen, but anything marked ph-no-capture (uploaded bills,
+          // their previews and briefs) is blanked out, and typed text is always masked.
+          session_recording: { maskAllInputs: true },
           mask_all_text: true, // click tracking sends which element was clicked, not its text
           defaults: '2026-05-30',
           person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
@@ -547,7 +549,7 @@
       app.innerHTML = `<div class="bills">
         <div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
         <h1>Choose a bill</h1>
-        <div class="bill-list">${bills.map((b) => `<a class="card bill-card" href="${base}/${esc(b.id)}">
+        <div class="bill-list">${bills.map((b) => `<a class="card bill-card${b.kind === 'upload' ? ' ph-no-capture' : ''}" href="${base}/${esc(b.id)}">
           <strong>${esc(b.title)}</strong>
           <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
           <span class="meta">${b.has_brief ? `Brief ready for ${esc(member.name)}` : `Not analyzed for ${esc(member.name)} yet`}</span></a>`).join('')}</div>
@@ -558,7 +560,7 @@
           <button type="button" class="secondary" id="choose">Choose a file</button>
           <input type="file" id="file" accept=".pdf,.docx" hidden />
         </div>
-        <div id="preview" aria-live="polite"></div>
+        <div id="preview" class="ph-no-capture" aria-live="polite"></div>
       </div>`;
 
       const drop = document.getElementById('drop');
@@ -638,6 +640,8 @@
         return;
       }
       currentBill = data.bill;
+      // Hide the whole page from session replay when it shows an uploaded (possibly unreleased) bill.
+      app.classList.toggle('ph-no-capture', data.bill.kind === 'upload');
       const { summary, details } = briefHtml(data);
       const source = data.bill.kind === 'official' ? 'enrolled bill text' : `uploaded ${data.bill.file_type === 'pdf' ? 'PDF' : 'Word document'}, not yet voted on`;
       app.innerHTML = `
@@ -716,6 +720,7 @@
 
     function route() {
       const [, view, a, b, c] = location.hash.split('/').map((part) => decodeURIComponent(part || ''));
+      app.classList.remove('ph-no-capture');
       const shown = view === 'setup' ? setupView()
         : view === 'bills' ? billsView(a, b)
         : view === 'brief' ? briefView(a, b, c)
