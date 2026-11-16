@@ -254,6 +254,17 @@
           <div class="stat-value">TBD</div>
         </div>
       </div>
+
+      <h3>PostHog Evidence (Build 2)</h3>
+      <p>PostHog is installed on this Product Page and on the local app. These screenshots from November 16, 2026 show my own test visits; no outside users yet.</p>
+      <figure class="demo-step">
+        <img src="build2/posthog-sessions.png" alt="PostHog Sessions list showing two sessions in the last hour: one entering at http://localhost:3000/ lasting 1 minute 24 seconds, and one entering at the GitHub Pages Product Page lasting 23 seconds, each with a pageview." />
+        <figcaption><strong>Sessions and pageviews from both places:</strong> one session on the local app (<code>localhost:3000</code>) and one on this Product Page (<code>github.io</code>). Session replay is on for both.</figcaption>
+      </figure>
+      <figure class="demo-step">
+        <img src="build2/posthog-activity.png" alt="PostHog Activity list of clicks in the local app: clicked button, clicked link, clicked span, changed select and submitted form on the sign-in, setup, bill list and H.R. 1 brief pages." />
+        <figcaption><strong>Clicks in the local app:</strong> sign-in, choosing a member and district on setup, opening a bill, and using issue filters on Rep. Kean's H.R. 1 brief. Click text and typed text are masked, and uploaded bills are hidden from replay.</figcaption>
+      </figure>
     </section>
 
     <!-- WEEKLY BUILD LOG (Updated at least twice a week via Git commits) -->
