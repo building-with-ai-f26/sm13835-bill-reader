@@ -69,7 +69,7 @@
     .page-head { margin-bottom: 24px; }
     .back { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; text-decoration: none; margin-bottom: 8px; }
     .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .tile { display: grid; gap: 4px; align-content: start; padding: 20px; min-height: 172px; border: 1px solid var(--border); border-radius: 14px;
+    .tile { display: flex; flex-direction: column; gap: 4px; padding: 20px; min-height: 172px; border: 1px solid var(--border); border-radius: 14px;
       background: var(--card); color: var(--text); text-decoration: none; box-shadow: var(--shadow);
       transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
     a.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: #c7d2e3; }
@@ -82,7 +82,7 @@
     .tile-stat { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
     .tile.locked .tile-stat { font-size: 15px; font-weight: 500; }
     .tile-desc { font-size: 13px; color: var(--muted); }
-    .tile-go { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--accent); }
+    .tile-go { margin-top: auto; padding-top: 8px; /* pinned to the bottom, so "Open" lines up across boxes */ font-size: 13px; font-weight: 600; color: var(--accent); }
     .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 4px; margin-bottom: 8px; background: #f2f4f7; border-radius: 12px; width: fit-content; max-width: 100%; }
     .tab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; font-size: 14px; font-weight: 500;
       color: var(--muted); text-decoration: none; white-space: nowrap; }
@@ -120,6 +120,15 @@
     .primary:hover:not(:disabled) { background: #183049; }
     .primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .bills { max-width: 860px; margin: 32px auto; }
+    .map-backdrop { position: fixed; top: 40%; left: 70%; transform: translate(-50%, -50%); height: 46vh; width: auto;
+      opacity: 0.6; pointer-events: none; z-index: -1; }
+    /* Cards on this page let the map show through faintly. */
+    .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; }
+    @media (max-width: 760px) { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
+    /* Home boxes: icon, title and headline centered; the description stays left-aligned. */
+    .home-tiles .tile-icon { align-self: center; }
+    .home-tiles .tile-title, .home-tiles .tile-stat { text-align: center; }
+    .bills .tile, .bills .card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
     /* The signed-in member's name, in their party's color. */
     .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere; }
     .member-name.rep { color: #9b1c1c; }
@@ -127,7 +136,7 @@
     .member-name.ind { color: #111827; }
     .name-word { display: inline-block; animation: fly-in var(--dur) cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay) both; }
     @keyframes fly-in { from { transform: translateX(100vw); opacity: 0; } to { transform: none; opacity: 1; } }
-    .name-district { display: inline-block; margin-left: 0.15em; font-size: 0.6em; font-weight: 700; color: #111827;
+    .name-district { display: inline-block; font-size: 0.6em; font-weight: 700; color: #111827;
       animation: fade-in 1.2s ease-out var(--delay) both; }
     @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .name-word, .name-district { animation: none; } }
@@ -656,24 +665,78 @@
         + ` <span class="name-district" aria-hidden="true" style="--delay:${(words.length * each + 0.5).toFixed(3)}s">${esc(district)}</span>`; // half-second pause first
     }
 
+    // A large, faint map of New Jersey fixed behind the bill list, with this member's district
+    // filled in their party color. Decorative only: screen readers skip it and it can't be clicked.
+    function mapBackdrop(map, member) {
+      const current = map && map.districts.find((d) => d.id === member.district);
+      if (!current) return '';
+      const party = { D: 'dem', R: 'rep' }[member.party] || 'ind';
+      return `<svg class="map-backdrop" viewBox="${esc(map.viewBox)}" aria-hidden="true" focusable="false">
+        <path class="state" d="${esc(map.state_path)}" />
+        ${map.districts.filter((d) => d !== current).map((d) => `<path class="district" d="${esc(d.path)}" />`).join('')}
+        <path class="district current ${party}" d="${esc(current.path)}" />
+      </svg>`;
+    }
+
     // ---- Choose a bill: H.R. 1, earlier uploads, or drop in a new one.
-    async function billsView(memberId, districtId) {
-      const [{ members }, { bills }] = await Promise.all([
+    const HOME_ICONS = {
+      upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <polyline points="17 8 12 3 7 8" /> <line x1="12" x2="12" y1="3" y2="15" />', // upload
+      list: '<path d="M3 12h.01" /> <path d="M3 18h.01" /> <path d="M3 6h.01" /> <path d="M8 12h13" /> <path d="M8 18h13" /> <path d="M8 6h13" />', // list
+      district: TAB_ICONS.district, // map-pin
+    };
+
+    // ---- The member's home: three boxes (upload a bill, review bills, district info), each
+    // opening its own page at #/bills/<member>/<district>/upload, /list or /district.
+    async function billsView(memberId, districtId, page) {
+      const [{ members }, { bills }, map] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
         fetch(`/api/bills?member=${encodeURIComponent(memberId)}`).then((r) => r.json()),
+        fetch('/api/map').then((r) => (r.ok ? r.json() : null)).catch(() => null),
       ]);
       const member = members.find((m) => m.id === memberId && m.district === districtId);
       if (!member) { go('#/setup'); return; }
       const base = `#/brief/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}`;
-      app.innerHTML = `<div class="bills">
-        <div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
-        <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
-        <h2 class="subhead">Choose a bill</h2>
-        <div class="bill-list">${bills.map((b) => `<a class="card bill-card${b.kind === 'upload' ? ' ph-no-capture' : ''}" href="${base}/${esc(b.id)}">
-          <strong>${esc(b.title)}</strong>
-          <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
-          <span class="meta">${b.has_brief ? `Brief ready for ${esc(member.name)}` : `Not analyzed for ${esc(member.name)} yet`}</span></a>`).join('')}</div>
-        <h2>Upload a new bill</h2>
+      const home = `#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}`;
+      const kicker = `<div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>`;
+      const head = (title) => `${kicker}<a class="back" href="${home}">← Home</a><h1>${esc(title)}</h1>`;
+
+      if (!page) {
+        const ready = bills.filter((b) => b.has_brief).length;
+        const tile = (href, icon, title, stat, desc) => `<a class="tile" href="${href}">
+          <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span>
+          <span class="tile-title">${esc(title)}</span><span class="tile-stat">${esc(stat)}</span>
+          <span class="tile-desc">${esc(desc)}</span><span class="tile-go">Open →</span></a>`;
+        app.innerHTML = `${mapBackdrop(map, member)}<div class="bills">${kicker}
+          <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
+          <div class="tiles home-tiles">
+            ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
+            ${tile(`${home}/list`, HOME_ICONS.list, 'Review Uploaded Bills', `${plural(bills.length, 'bill')} · ${ready} ready`, `H.R. 1 and your uploads, and whether each brief is ready for ${member.name.replace(/\.$/, '')}.`)}
+            ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.')}
+          </div></div>`;
+        return;
+      }
+
+      if (page === 'list') {
+        app.innerHTML = `<div class="bills">${head('Review Uploaded Bills')}
+          <div class="bill-list">${bills.map((b) => `<a class="card bill-card${b.kind === 'upload' ? ' ph-no-capture' : ''}" href="${base}/${esc(b.id)}">
+            <strong>${esc(b.title)}</strong>
+            <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
+            <span class="meta">${b.has_brief ? `Brief ready for ${esc(member.name)}` : `Not analyzed for ${esc(member.name)} yet`}</span></a>`).join('')}</div>
+          <p class="meta">New bill? <a href="${home}/upload">Upload it</a>.</p></div>`;
+        return;
+      }
+
+      if (page === 'district') {
+        // District data comes with any brief request; H.R. 1 always exists, so it is used here.
+        const response = await fetch(`/api/brief?member=${encodeURIComponent(memberId)}&district=${encodeURIComponent(districtId)}&bill=hr1`);
+        const data = await response.json();
+        if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(data.error)}</div></div>`; return; }
+        app.innerHTML = `<header class="page-head">${head('District Info')}</header>${districtProfileHtml(data)}`;
+        return;
+      }
+
+      if (page !== 'upload') { go(home); return; }
+      app.innerHTML = `<div class="bills">${head('Upload New Bill')}
         <div class="card dropzone" id="drop">
           <strong>Drag and drop a bill here</strong>
           <span class="meta">PDF or Word (.docx), up to 15 MB. Saved only on this computer.</span>
@@ -776,7 +839,7 @@
       app.innerHTML = `
         <header class="page-head">
           <div class="kicker">Prototype · viewing as ${esc(memberLabel(data.member))}, ${esc(data.district.id)} ·
-            <a href="#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}">Switch bill</a> ·
+            <a href="#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}/list">Switch bill</a> ·
             <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
           ${current ? `<a class="back" href="${base}">← ${esc(data.bill.title)}</a>` : ''}
           <h1>${current ? esc(current.title) : esc(data.bill.title)}</h1>
@@ -850,7 +913,7 @@
       const [, view, a, b, c, d] = location.hash.split('/').map((part) => decodeURIComponent(part || ''));
       app.classList.remove('ph-no-capture');
       const shown = view === 'setup' ? setupView()
-        : view === 'bills' ? billsView(a, b)
+        : view === 'bills' ? billsView(a, b, c)
         : view === 'brief' ? briefView(a, b, c, d)
         : loginView();
       Promise.resolve(shown).catch((error) => { app.textContent = 'Could not load: ' + error.message; });

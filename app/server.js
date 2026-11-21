@@ -82,6 +82,11 @@ async function handle(req, res) {
     return send(res, 200, { members: list });
   }
 
+  // District boundaries for the background map on the bill picker (public Census data).
+  if (req.method === 'GET' && url.pathname === '/api/map') {
+    return send(res, 200, readJson(path.join(DATA, 'nj-map.json')));
+  }
+
   // The bill picker: H.R. 1 and every uploaded bill, with whether this member has a brief.
   if (req.method === 'GET' && url.pathname === '/api/bills') {
     const member = members().find((m) => m.id === url.searchParams.get('member'));
