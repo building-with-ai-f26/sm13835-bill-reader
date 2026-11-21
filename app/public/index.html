@@ -4,106 +4,144 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bill Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <style>
-    /* The page itself is soft navy, so text sitting directly on it is light. */
     :root {
-      --bg: #2f4468; --card: #ffffff; --text: #f3f6fb; --muted: #c5cfdd; --border: #dfddd5;
-      --accent: #e3ebf7; --bad: #a12a22; --bad-bg: #fbeeec; --warn: #8a5a00; --warn-bg: #fdf4e0;
-      --good: #1e6b45; --good-bg: #e9f5ee;
-    }
-    /* White surfaces (cards, tables, buttons) switch back to dark text and a navy accent. */
-    .card, .fact, table, .filter-btn, .secondary, .notice {
-      --text: #1a1d21; --muted: #5a6068; --accent: #1f3a5f; --bg: #f6f5f1;
-      color: var(--text);
+      --bg: #ffffff; --dot: #e2e5ea; --card: #ffffff; --text: #111827; --muted: #5b6472; --border: #e5e7eb;
+      --accent: #1f3a5f; --accent-soft: #eef2f8; --bad: #b42318; --bad-bg: #fef3f2; --warn: #8a5a00; --warn-bg: #fffaeb;
+      --good: #067647; --good-bg: #ecfdf3;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+      --shadow-hover: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.05);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    /* A large, faint flag fixed in the middle of the screen, behind everything. */
-    .backdrop-flag { position: fixed; top: 50%; left: 50%; width: min(110vw, 1400px); height: auto;
-      transform: translate(-50%, -50%) rotate(-24deg); opacity: 0.07; pointer-events: none; z-index: 0; }
-    main { position: relative; z-index: 1; max-width: 1520px; margin: 0 auto; padding: 32px 32px 80px; }
-    header { margin-bottom: 20px; }
-    .hero { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 32px; align-items: start;
-      border-bottom: 2px solid var(--accent); padding-bottom: 20px; }
-    .hero h2:first-child { margin-top: 0; }
-    .columns, .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
-    @media (max-width: 860px) {
-      main { padding: 24px 16px 64px; }
-      .hero, .columns, .card-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-    }
+    /* White page with a faint grid of small gray dots. */
+    body { margin: 0; overflow-x: clip; /* words flying in from off-screen never add a sideways scrollbar */ color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased;
+      background-color: var(--bg); background-image: radial-gradient(var(--dot) 1px, transparent 1.2px); background-size: 22px 22px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; }
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 32px 80px; }
+    @media (max-width: 860px) { main { padding: 20px 16px 64px; } }
     .kicker { font-size: 13px; color: var(--muted); }
-    h1 { font-size: 30px; line-height: 1.2; margin: 4px 0; letter-spacing: -0.01em; }
-    h2 { font-size: 20px; margin: 32px 0 12px; color: var(--accent); }
-    h3 { font-size: 16px; margin: 0 0 6px; }
+    .kicker a { color: var(--muted); }
+    h1 { font-size: 30px; line-height: 1.2; margin: 4px 0 6px; letter-spacing: -0.02em; font-weight: 700; }
+    h2 { font-size: 19px; margin: 32px 0 12px; color: var(--text); font-weight: 600; letter-spacing: -0.01em; }
+    h3 { font-size: 16px; margin: 0 0 6px; font-weight: 600; }
     p { margin: 0 0 8px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
-    .alert.direct { background: var(--bad-bg); border-color: var(--bad); }
-    .alert.possible { background: var(--warn-bg); border-color: var(--warn); }
-    .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
-    .tag.direct, .tag.hurts { background: var(--bad); color: #fff; }
-    .tag.possible, .tag.mixed { background: var(--warn); color: #fff; }
-    .tag.helps { background: var(--good); color: #fff; }
-    blockquote { margin: 8px 0; padding-left: 12px; border-left: 3px solid var(--border); font-size: 15px; }
-    .meta { font-size: 13px; color: var(--muted); }
-    .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
-    .fact { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-    .fact strong { display: block; font-size: 17px; }
-    .chips { margin-top: 8px; font-size: 13px; color: var(--muted); }
-    .scroll { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
-    th, td { border-bottom: 1px solid var(--border); padding: 7px 10px; text-align: left; white-space: nowrap; }
-    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    tr.new-lines td { border-top: 2px solid var(--accent); }
     a { color: var(--accent); }
     li { margin-bottom: 8px; }
+    .meta { font-size: 13px; color: var(--muted); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .alert.direct { background: var(--bad-bg); border-color: #fecdca; }
+    .alert.possible { background: var(--warn-bg); border-color: #fedf89; }
+    .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px; text-transform: capitalize; }
+    .tag.direct, .tag.hurts { background: var(--bad-bg); color: var(--bad); box-shadow: inset 0 0 0 1px #fecdca; }
+    .tag.possible, .tag.mixed { background: var(--warn-bg); color: var(--warn); box-shadow: inset 0 0 0 1px #fedf89; }
+    .tag.helps { background: var(--good-bg); color: var(--good); box-shadow: inset 0 0 0 1px #abefc6; }
+    blockquote { margin: 10px 0; padding-left: 12px; border-left: 3px solid var(--border); font-size: 14px; color: #374151; }
+    .columns, .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
+    @media (max-width: 860px) { .columns, .card-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
+    .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+    .fact { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
+    .fact strong { display: block; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .chips { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); background: var(--card); }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; background: #f9fafb; }
+    th, td { border-bottom: 1px solid var(--border); padding: 9px 12px; text-align: left; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.new-lines td { border-top: 2px solid var(--accent); }
     .map-card { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
     .map-card svg { height: 220px; width: auto; flex: none; display: block; }
-    .map-text { flex: 1 1 130px; }
+    .map-text { flex: 1 1 160px; }
     .map-text strong { display: block; font-size: 24px; line-height: 1.2; }
-    .state { fill: #edece6; stroke: #a9a79c; stroke-width: 2; }
-    .district { fill: transparent; stroke: #cfcdc3; stroke-width: 1.5; }
-    .district.current { stroke: #5a6068; stroke-width: 2.5; }
+    .state { fill: #f3f4f6; stroke: #a8adb7; stroke-width: 2; }
+    .district { fill: transparent; stroke: #d0d5dd; stroke-width: 1.5; }
+    .district.current { stroke: #475467; stroke-width: 2.5; }
     .district.dem { fill: #c5daf3; }
     .district.rep { fill: #f4c7c2; }
     .district.ind { fill: #dedede; }
     .map-label { font-size: 44px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: middle; }
     .sources a { font-size: 12px; white-space: nowrap; margin-right: 6px; }
-    .filter { margin-top: 24px; }
-    .filter-label { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+
+    /* Brief header, the five option cards and the section tabs. */
+    .page-head { margin-bottom: 24px; }
+    .back { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; text-decoration: none; margin-bottom: 8px; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .tile { display: grid; gap: 4px; align-content: start; padding: 20px; min-height: 172px; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--card); color: var(--text); text-decoration: none; box-shadow: var(--shadow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+    a.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: #c7d2e3; }
+    a.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .tile.locked { color: var(--muted); background: #fbfbfc; box-shadow: none; }
+    .tile-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); margin-bottom: 10px; }
+    .tile.locked .tile-icon { background: #f2f4f7; color: #98a2b3; }
+    .tile-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .tile-title { font-size: 16px; font-weight: 600; }
+    .tile-stat { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+    .tile.locked .tile-stat { font-size: 15px; font-weight: 500; }
+    .tile-desc { font-size: 13px; color: var(--muted); }
+    .tile-go { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--accent); }
+    .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 4px; margin-bottom: 8px; background: #f2f4f7; border-radius: 12px; width: fit-content; max-width: 100%; }
+    .tab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; font-size: 14px; font-weight: 500;
+      color: var(--muted); text-decoration: none; white-space: nowrap; }
+    .tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    a.tab:hover { color: var(--text); }
+    .tab[aria-current="page"] { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+    .tab.locked { color: #98a2b3; }
+    .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .filter { margin-top: 8px; }
+    .filter-label { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
     .filter-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .filter-btn { display: inline-flex; align-items: center; gap: 6px;
-      font: inherit; font-size: 13px; min-height: 32px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+      font: inherit; font-size: 13px; font-weight: 500; min-height: 32px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
       background: var(--card); color: var(--text); border: 1px solid var(--border); }
     .filter-btn:hover { border-color: var(--accent); }
     .filter-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .filter-btn.no-findings { color: var(--muted); border-style: dashed; }
     .filter-icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2;
       stroke-linecap: round; stroke-linejoin: round; }
-    .filter-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border: 1px solid #fff; }
+    .filter-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
     .filter-note { margin-top: 12px; }
     .filter-note ul { margin: 8px 0 0; padding-left: 20px; }
     .filter-note li { margin-bottom: 4px; }
+
     .auth { max-width: 520px; margin: 48px auto; }
-    .form { display: grid; gap: 6px; padding: 20px; }
-    .form label { font-weight: 700; font-size: 14px; margin-top: 8px; }
-    .form input, .form select { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--border);
-      border-radius: 6px; background: var(--card); color: var(--text); width: 100%; }
+    .form { display: grid; gap: 6px; padding: 24px; }
+    .form label { font-weight: 600; font-size: 14px; margin-top: 8px; }
+    .form input, .form select { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid #d0d5dd;
+      border-radius: 8px; background: var(--card); color: var(--text); width: 100%; }
     .form input:focus-visible, .form select:focus-visible, .primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .form select:disabled { color: var(--muted); background: var(--bg); }
-    .primary { font: inherit; font-weight: 700; margin-top: 16px; padding: 12px 16px; min-height: 44px; border: 0; border-radius: 6px;
+    .form select:disabled { color: var(--muted); background: #f9fafb; }
+    .primary { font: inherit; font-weight: 600; margin-top: 16px; padding: 12px 16px; min-height: 44px; border: 0; border-radius: 8px;
       background: var(--accent); color: #fff; cursor: pointer; }
+    .primary:hover:not(:disabled) { background: #183049; }
     .primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .bills { max-width: 860px; margin: 32px auto; }
+    /* The signed-in member's name, in their party's color. */
+    .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere; }
+    .member-name.rep { color: #9b1c1c; }
+    .member-name.dem { color: #1f4fd8; } /* royal blue */
+    .member-name.ind { color: #111827; }
+    .name-word { display: inline-block; animation: fly-in var(--dur) cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay) both; }
+    @keyframes fly-in { from { transform: translateX(100vw); opacity: 0; } to { transform: none; opacity: 1; } }
+    .name-district { display: inline-block; margin-left: 0.15em; font-size: 0.6em; font-weight: 700; color: #111827;
+      animation: fade-in 1.2s ease-out var(--delay) both; }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .name-word, .name-district { animation: none; } }
+    .subhead { margin: 20px 0 12px; }
     .bill-list { display: grid; gap: 12px; }
-    .bill-card { display: grid; gap: 4px; text-decoration: none; color: var(--text); margin: 0; }
-    .bill-card:hover { border-color: var(--accent); }
+    .bill-card { display: grid; gap: 4px; text-decoration: none; color: var(--text); margin: 0;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+    .bill-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); border-color: #c7d2e3; }
     .bill-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .dropzone { display: grid; justify-items: center; gap: 8px; padding: 32px 20px; text-align: center;
-      border: 2px dashed var(--border); }
-    .dropzone.over { border-color: var(--accent); background: #eef3fa; }
-    .secondary { font: inherit; padding: 8px 14px; min-height: 40px; border-radius: 6px; cursor: pointer;
-      background: var(--card); color: var(--accent); border: 1px solid var(--accent); }
+      border: 2px dashed #d0d5dd; box-shadow: none; }
+    .dropzone.over { border-color: var(--accent); background: var(--accent-soft); }
+    .secondary { font: inherit; font-weight: 500; padding: 8px 14px; min-height: 40px; border-radius: 8px; cursor: pointer;
+      background: var(--card); color: var(--accent); border: 1px solid #d0d5dd; box-shadow: var(--shadow); }
     .secondary:focus-visible, .linklike:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .section-preview { margin: 0 0 8px; padding-left: 20px; font-size: 14px; }
     .section-preview li { margin-bottom: 2px; }
@@ -111,9 +149,9 @@
       color: var(--accent); text-decoration: underline; cursor: pointer; }
     .bill-text { white-space: pre-wrap; font: inherit; font-size: 14px; margin: 8px 0 12px; }
     details summary { cursor: pointer; }
-    .notice { background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 6px; padding: 10px 12px; margin: 8px 0 12px; font-size: 15px; }
+    .notice { background: var(--warn-bg); border: 1px solid #fedf89; border-radius: 8px; padding: 10px 12px; margin: 8px 0 12px; font-size: 14px; }
     .check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
-    .check input { margin-top: 5px; width: 18px; height: 18px; flex: none; }
+    .check input { margin-top: 4px; width: 18px; height: 18px; flex: none; }
     .error { color: var(--bad); }
     .progress { margin: 8px 0 0; padding-left: 20px; }
   </style>
@@ -132,23 +170,6 @@
   </script>
 </head>
 <body>
-  <!-- Decorative flag (official 1.9:1 proportions), drawn faintly behind the page. -->
-  <svg class="backdrop-flag" viewBox="0 0 7410 3900" aria-hidden="true" focusable="false">
-    <defs>
-      <polygon id="star" fill="#fff" points="0,-120 27,-37 114,-37 44,14 71,97 0,46 -71,97 -44,14 -114,-37 -27,-37" />
-      <pattern id="stars-6" width="494" height="420" patternUnits="userSpaceOnUse"><use href="#star" x="247" y="210" /></pattern>
-      <pattern id="stars-5" x="247" y="210" width="494" height="420" patternUnits="userSpaceOnUse"><use href="#star" x="247" y="210" /></pattern>
-    </defs>
-    <rect width="7410" height="3900" fill="#fff" />
-    <g fill="#b22234">
-      <rect y="0" width="7410" height="300" /><rect y="600" width="7410" height="300" /><rect y="1200" width="7410" height="300" />
-      <rect y="1800" width="7410" height="300" /><rect y="2400" width="7410" height="300" /><rect y="3000" width="7410" height="300" />
-      <rect y="3600" width="7410" height="300" />
-    </g>
-    <rect width="2964" height="2100" fill="#3c3b6e" />
-    <rect width="2964" height="2100" fill="url(#stars-6)" />
-    <rect x="247" y="210" width="2470" height="1680" fill="url(#stars-5)" />
-  </svg>
   <main id="app"><p>Loading…</p></main>
   <script src="/bill-text.js"></script>
   <script>
@@ -301,7 +322,7 @@
         <p class="meta">${c.promises_checked} of ${c.promises_reviewed} commitments checked against the whole bill. A commitment that is not in this set cannot trigger an alert.</p>`;
     }
 
-    // Filtering redraws only the findings and alerts; the rest of the page stays where it is.
+    // Filtering redraws only the findings or alerts on this page; the rest stays where it is.
     function wireFilter(data) {
       const row = document.querySelector('.filter-row');
       if (!row) return;
@@ -309,45 +330,144 @@
         const chosen = event.target.closest('.filter-btn');
         if (!chosen) return;
         row.querySelectorAll('.filter-btn').forEach((b) => b.setAttribute('aria-pressed', String(b === chosen)));
-        document.getElementById('findings').innerHTML = findingsHtml(data, chosen.dataset.issue);
-        document.getElementById('alerts').innerHTML = alertsHtml(data, chosen.dataset.issue);
+        const findings = document.getElementById('findings');
+        const alerts = document.getElementById('alerts');
+        if (findings) findings.innerHTML = findingsHtml(data, chosen.dataset.issue);
+        if (alerts) alerts.innerHTML = alertsHtml(data, chosen.dataset.issue);
       });
     }
 
-    function briefHtml(data) {
-      const { brief, member, district, bill } = data;
-      if (!brief) {
-        const what = bill.kind === 'upload'
-          ? `<p>This bill is saved, with ${bill.section_count} section${bill.section_count === 1 ? '' : 's'} found. It has not been analyzed for ${esc(member.name)} and ${esc(district.id)} yet. Its text is at the bottom of this page.</p>`
-          : `<p>The district profile, election history and votes below are ready. The bill analysis for ${esc(member.name)} and ${esc(district.id)} has not been run.</p>`;
-        return { details: '', summary: `<h2>What this bill does</h2>
-          <div class="card alert possible"><h3>This brief has not been generated yet</h3>${what}</div>
-          <div class="card" id="analyze-panel" aria-live="polite"><p class="meta">Checking what an analysis would cost…</p></div>` };
+    // ---- The brief is split into five sections. The bill's landing page shows one card per
+    // section with a headline number; each card opens that section on its own page, with tabs.
+    const TAB_ICONS = {
+      overview: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /> <path d="M14 2v4a2 2 0 0 0 2 2h4" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" />', // file-text
+      impact: '<path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" />', // chart-column
+      promises: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" />', // triangle-alert
+      district: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" />', // map-pin
+      votes: ISSUE_ICONS['Campaign Finance'], // vote
+    };
+    const tabIcon = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[id]}</svg>`;
+
+    const TABS = [
+      { id: 'overview', title: 'Bill overview', needsBrief: true, desc: () => 'What the bill does, in plain English, with links to the exact page of the bill.' },
+      { id: 'impact', title: 'District impact', needsBrief: true, desc: () => 'The provisions that most help or hurt this district, with evidence. Filter by issue.' },
+      { id: 'promises', title: 'Promise alerts', needsBrief: true, desc: () => "Where a yes vote may conflict with the member's public commitments." },
+      { id: 'district', title: 'District profile', desc: () => 'Census facts, a district map and House election results since 2006.' },
+      { id: 'votes', title: 'Votes & bill text', desc: (bill) => (bill.kind === 'official'
+        ? "The member's recorded votes on this bill, with links to the official text."
+        : 'Not yet voted on. Read the uploaded bill section by section.') },
+    ];
+
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+    const yesNo = (vote) => (/^(yea|aye|yes)$/i.test(vote) ? 'Yes' : /^(nay|no)$/i.test(vote) ? 'No' : vote);
+
+    // The headline number on each card.
+    function tabStat(id, { brief, member, district, bill }) {
+      if (id === 'district') return `${plural(district.facts.length, 'fact')} · ${plural(district.elections.length, 'election')}`;
+      if (id === 'votes') {
+        if (bill.kind !== 'official') return 'Not yet voted on';
+        const votes = (member.votes_on_bill || []).map((v) => yesNo(v.vote));
+        if (!votes.length) return 'No recorded vote';
+        return new Set(votes).size === 1 ? `Voted ${votes[0]} · ${plural(votes.length, 'roll call')}` : votes.join(', then ');
       }
+      if (!brief) return 'Not analyzed yet';
+      if (id === 'overview') return plural(brief.overview.what_it_does.length, 'key point');
+      if (id === 'impact') {
+        const findings = findingsFor(brief);
+        const n = (effect) => findings.filter((i) => i.effect === effect).length;
+        return `${n('hurts')} hurt · ${n('helps')} help${n('mixed') ? ` · ${n('mixed')} mixed` : ''}`;
+      }
+      if (!brief.coverage.promises_reviewed) return 'No commitments collected';
+      const alerts = brief.promise_alerts || [];
+      if (!alerts.length) return `None among ${plural(brief.coverage.promises_checked, 'commitment')}`;
+      const direct = alerts.filter((a) => a.severity === 'direct').length;
+      return [direct && `${direct} direct`, alerts.length - direct && `${alerts.length - direct} possible`].filter(Boolean).join(' · ');
+    }
+
+    // Shown wherever findings appear, so a partial brief is never mistaken for a complete one.
+    function incompleteHtml(brief) {
+      const notCovered = (brief && brief.coverage.not_covered_headers) || [];
+      if (!notCovered.length) return '';
+      return `<div class="card alert possible"><strong>This brief is not complete.</strong>
+        ${notCovered.length} sections flagged as relevant to this district were not analyzed in depth, so findings may leave out important effects.
+        <details><summary>See the sections not covered</summary><ul>${notCovered.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></details></div>`;
+    }
+
+    function hubHtml(data, base) {
+      const { brief, member, district, bill } = data;
+      const tiles = TABS.map((t) => {
+        const locked = t.needsBrief && !brief;
+        const inner = `<span class="tile-icon">${tabIcon(t.id)}</span>
+          <span class="tile-title">${esc(t.title)}</span>
+          <span class="tile-stat">${esc(tabStat(t.id, data))}</span>
+          <span class="tile-desc">${esc(t.desc(bill))}</span>
+          ${locked ? '' : '<span class="tile-go">Open →</span>'}`;
+        return locked ? `<div class="tile locked" aria-disabled="true">${inner}</div>` : `<a class="tile" href="${base}/${t.id}">${inner}</a>`;
+      }).join('');
+      if (brief) return `${incompleteHtml(brief)}<div class="tiles">${tiles}</div>`;
+      const what = bill.kind === 'upload'
+        ? `This bill is saved, with ${plural(bill.section_count, 'section')} found. Analyze it to unlock the overview, district impact and promise alerts for ${esc(member.name)} and ${esc(district.id)}.`
+        : `Analyze it to unlock the overview, district impact and promise alerts for ${esc(member.name)} and ${esc(district.id)}. The district profile and votes are ready now.`;
+      return `<div class="card alert possible"><h3>This bill has not been analyzed yet</h3><p>${what}</p></div>
+        <div class="card" id="analyze-panel" aria-live="polite"><p class="meta">Checking what an analysis would cost…</p></div>
+        <h2>Brief sections</h2><div class="tiles">${tiles}</div>`;
+    }
+
+    function overviewHtml({ brief, district, bill }) {
       const c = brief.coverage;
-      const notCovered = c.not_covered_headers || [];
       const incomplete = c.screen_failures.length + c.deep_failures.length + c.not_analyzed_due_to_cap;
-      const summary = `
+      return `${incompleteHtml(brief)}
         <h2>What this bill does</h2>
-        ${notCovered.length ? `<div class="card alert possible"><strong>This brief is not complete.</strong>
-          ${notCovered.length} sections flagged as relevant to this district were not analyzed in depth, so the findings below may leave out important effects.
-          <details><summary>See the sections not covered</summary><ul>${notCovered.map((h) => `<li>${esc(h)}</li>`).join('')}</ul></details></div>` : ''}
         <div class="card"><ul>${brief.overview.what_it_does.map((b) => `<li>${esc(b.text)}
           <span class="sources">${b.sources.map((s) => sectionRef(s.section_id, s.page)).join(' ')}</span></li>`).join('')}</ul>
           <p class="meta">${bill.kind === 'official' ? 'Links open the official bill text on GovInfo at the page where each section begins.'
-            : bill.pdf_url ? 'Links open your uploaded PDF at the page where each section begins.' : 'Links open each section\'s text at the bottom of this page.'}</p>
-          <p><strong>For ${esc(district.id)}:</strong> ${esc(brief.overview.district_bottom_line)}</p></div>`;
-      const details = `
-        ${filterHtml(brief, '')}
-        <div id="findings">${findingsHtml(data, '')}</div>
-        <div id="alerts">${alertsHtml(data, '')}</div>
-
+            : bill.pdf_url ? 'Links open your uploaded PDF at the page where each section begins.' : 'Links open each section\'s text under Votes & bill text.'}</p></div>
+        <h2>What it means for ${esc(district.id)}</h2>
+        <div class="card"><p>${esc(brief.overview.district_bottom_line)}</p></div>
         <h2>What was reviewed</h2>
         <div class="card"><p>${c.sections_screened} of ${c.sections_total} sections screened; ${c.flagged} flagged; ${c.analyzed} analyzed in depth.
           ${c.dropped_by_verification.length} findings removed because their citations failed verification.</p>
           ${incomplete ? `<p><strong>Incomplete:</strong> ${c.screen_failures.length} sections failed screening, ${c.deep_failures.length} failed analysis, and ${c.not_analyzed_due_to_cap} flagged sections exceeded the analysis cap.</p>` : ''}
           <p class="meta">Models: ${esc(brief.models.screen)}, ${esc(brief.models.deep)} · Run cost: $${esc(brief.cost_usd)} · Generated ${esc(brief.generated_at)}</p></div>`;
-      return { summary, details };
+    }
+
+    function districtProfileHtml({ map, member, district }) {
+      const rows = district.elections.map((e, i, all) => {
+        const prev = all[i - 1];
+        const change = prev ? (e.margin_pts - prev.margin_pts).toFixed(1) : '';
+        const sign = (n) => (n > 0 ? '+' : '') + n;
+        return `<tr class="${e.new_lines ? 'new-lines' : ''}">
+          <td>${e.year}${e.new_lines ? ' (new lines)' : ''}</td><td>${esc(e.dem || 'No candidate')}</td><td class="num">${e.dem ? e.dem_pct + '%' : '—'}</td>
+          <td>${esc(e.rep || 'No candidate')}</td><td class="num">${e.rep ? e.rep_pct + '%' : '—'}</td><td class="num">${e.total_votes.toLocaleString()}</td>
+          <td class="num">D ${sign(e.margin_pts)}</td><td class="num">${change === '' ? '' : (e.new_lines ? 'n/a' : sign(Number(change)))}</td></tr>`;
+      }).join('');
+      return `${mapHtml(map, member, district)}
+        <h2>District profile: ${esc(district.id)}</h2>
+        <div class="facts">${district.facts.map((f) => `<div class="fact"><strong>${esc(f.display)}</strong><span class="meta">${esc(f.label)}</span></div>`).join('')}</div>
+        <h2>House elections, 2006–2024</h2>
+        <div class="scroll"><table><thead><tr><th>Year</th><th>Democrat</th><th class="num">%</th><th>Republican</th><th class="num">%</th>
+          <th class="num">Total votes</th><th class="num">Margin</th><th class="num">Change</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="meta">District lines were redrawn for 2012 and 2022, so changes across those years are not like-for-like and are not calculated.</p>
+        <p class="meta">Sources: ${district.sources.map((s) => link(s.url, s.name)).join(' · ')}</p>`;
+    }
+
+    function votesHtml({ member, bill }) {
+      const votes = bill.kind === 'official'
+        ? (member.votes_on_bill || []).map((v) => `<p>${esc(v.date)} · ${esc(v.question)}: <strong>${esc(v.vote)}</strong> (${link(v.url, 'Roll Call ' + v.roll)})</p>`).join('') || '<p>No recorded vote.</p>'
+        : '<p>Not yet voted on.</p>';
+      return `<h2>${esc(member.name)}'s votes on this bill</h2>
+        <div class="card">${votes}</div>
+        ${bill.kind === 'official' && bill.pdf_url ? `<h2>Bill text</h2><div class="card"><p>${link(bill.pdf_url, 'Read the official text on GovInfo (PDF)')}</p></div>` : ''}
+        ${billTextHtml(bill)}
+        <p class="meta">Sources: ${member.sources.map((s) => link(s.url, s.name)).join(' · ')}</p>`;
+    }
+
+    function sectionHtml(tab, data) {
+      if (tab === 'overview') return overviewHtml(data);
+      if (tab === 'impact') return `${incompleteHtml(data.brief)}${filterHtml(data.brief, '')}<div id="findings">${findingsHtml(data, '')}</div>`;
+      if (tab === 'promises') return `${filterHtml(data.brief, '')}<div id="alerts">${alertsHtml(data, '')}</div>`;
+      if (tab === 'district') return districtProfileHtml(data);
+      return votesHtml(data);
     }
 
     const memberLabel = (m) => `${m.title} ${m.name} (${m.party})`;
@@ -373,30 +493,6 @@
       </div>`;
     }
 
-    function districtHtml(member, district) {
-      const rows = district.elections.map((e, i, all) => {
-        const prev = all[i - 1];
-        const change = prev ? (e.margin_pts - prev.margin_pts).toFixed(1) : '';
-        const sign = (n) => (n > 0 ? '+' : '') + n;
-        return `<tr class="${e.new_lines ? 'new-lines' : ''}">
-          <td>${e.year}${e.new_lines ? ' (new lines)' : ''}</td><td>${esc(e.dem || 'No candidate')}</td><td class="num">${e.dem ? e.dem_pct + '%' : '—'}</td>
-          <td>${esc(e.rep || 'No candidate')}</td><td class="num">${e.rep ? e.rep_pct + '%' : '—'}</td><td class="num">${e.total_votes.toLocaleString()}</td>
-          <td class="num">D ${sign(e.margin_pts)}</td><td class="num">${change === '' ? '' : (e.new_lines ? 'n/a' : sign(Number(change)))}</td></tr>`;
-      }).join('');
-      return `
-        <h2>District profile: ${esc(district.id)}</h2>
-        <div class="facts">${district.facts.map((f) => `<div class="fact"><strong>${esc(f.display)}</strong><span class="meta">${esc(f.label)}</span></div>`).join('')}</div>
-        <h2>House elections, 2006–2024</h2>
-        <div class="scroll"><table><thead><tr><th>Year</th><th>Democrat</th><th class="num">%</th><th>Republican</th><th class="num">%</th>
-          <th class="num">Total votes</th><th class="num">Margin</th><th class="num">Change</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="meta">District lines were redrawn for 2012 and 2022, so changes across those years are not like-for-like and are not calculated.</p>
-        <h2>This member's votes on this bill</h2>
-        <div class="card">${currentBill.kind === 'official'
-          ? member.votes_on_bill.map((v) => `<p>${esc(v.date)} · ${esc(v.question)}: <strong>${esc(v.vote)}</strong> (${link(v.url, 'Roll Call ' + v.roll)})</p>`).join('')
-          : '<p>Not yet voted on.</p>'}</div>
-        <p class="meta">Sources: ${[...district.sources, ...member.sources].map((s) => link(s.url, s.name)).join(' · ')}</p>`;
-    }
-
     // ---- Bill references. H.R. 1 links to GovInfo, an uploaded PDF to its saved copy,
     // and a Word upload (no pages) to the section's text at the bottom of the page.
     let currentBill = null;
@@ -413,11 +509,23 @@
           <pre class="bill-text">${esc(s.text)}</pre></details>`).join('')}</div>`;
     }
 
+    // A section link on a Word upload opens that section's text, which lives on the Votes & bill text page.
+    let currentBase = null;
+    let pendingSection = null;
+    function openSection(id) {
+      const target = document.getElementById(`sec-${id}`);
+      if (!target) return false;
+      target.open = true;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    }
     document.addEventListener('click', (event) => {
       const button = event.target.closest('[data-section]');
       if (!button) return;
-      const target = document.getElementById(`sec-${button.dataset.section}`);
-      if (target) { target.open = true; target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      if (!openSection(button.dataset.section) && currentBase) {
+        pendingSection = button.dataset.section;
+        go(`${currentBase}/votes`);
+      }
     });
 
     // ---- Reading an uploaded file, in the browser. Libraries load only when needed, from
@@ -513,7 +621,7 @@
           <label for="district">2. District</label>
           <select id="district" disabled><option value="">Choose a member first</option></select>
           <p id="member-status" class="meta" aria-live="polite"></p>
-          <button type="submit" class="primary" id="continue" disabled>Continue to H.R. 1 brief</button>
+          <button type="submit" class="primary" id="continue" disabled>Continue to bills</button>
         </form>
         <p class="meta"><a href="#/login">Sign out</a></p>
       </div>`;
@@ -527,7 +635,8 @@
         districtSelect.innerHTML = m
           ? `<option value="">Choose a district…</option><option value="${esc(m.district)}">${esc(m.district)}</option>`
           : '<option value="">Choose a member first</option>';
-        status.textContent = m ? `${m.note ? m.note + ' ' : ''}${m.has_brief ? 'H.R. 1 brief ready.' : 'District data ready; the H.R. 1 brief has not been generated yet.'}` : '';
+        // Which bills have briefs is shown on the next page, per bill.
+        status.textContent = m ? `${m.note ? m.note + ' ' : ''}Next, choose a bill or upload a new one.` : '';
         button.disabled = true;
       });
       districtSelect.addEventListener('change', () => { button.disabled = !districtSelect.value; });
@@ -535,6 +644,16 @@
         event.preventDefault();
         go(`#/bills/${encodeURIComponent(memberSelect.value)}/${encodeURIComponent(districtSelect.value)}`);
       });
+    }
+
+    // The member's name flies in from the right one word at a time. Each word finishes before the
+    // next starts, and the whole name lands in under a second (0.3s a word, shorter for long names).
+    // Then the district fades in beside it, in black, once the last word has landed.
+    function nameWords(name, district) {
+      const words = name.split(/\s+/);
+      const each = Math.min(0.3, 0.9 / words.length);
+      return words.map((w, i) => `<span class="name-word" aria-hidden="true" style="--delay:${(i * each).toFixed(3)}s;--dur:${each.toFixed(3)}s">${esc(w)}</span>`).join(' ')
+        + ` <span class="name-district" aria-hidden="true" style="--delay:${(words.length * each + 0.5).toFixed(3)}s">${esc(district)}</span>`; // half-second pause first
     }
 
     // ---- Choose a bill: H.R. 1, earlier uploads, or drop in a new one.
@@ -548,7 +667,8 @@
       const base = `#/brief/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}`;
       app.innerHTML = `<div class="bills">
         <div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
-        <h1>Choose a bill</h1>
+        <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
+        <h2 class="subhead">Choose a bill</h2>
         <div class="bill-list">${bills.map((b) => `<a class="card bill-card${b.kind === 'upload' ? ' ph-no-capture' : ''}" href="${base}/${esc(b.id)}">
           <strong>${esc(b.title)}</strong>
           <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
@@ -631,7 +751,7 @@
       }
     }
 
-    async function briefView(memberId, districtId, billId) {
+    async function briefView(memberId, districtId, billId, tab) {
       app.innerHTML = '<p>Loading…</p>';
       const response = await fetch(`/api/brief?member=${encodeURIComponent(memberId)}&district=${encodeURIComponent(districtId)}&bill=${encodeURIComponent(billId || 'hr1')}`);
       const data = await response.json();
@@ -642,22 +762,30 @@
       currentBill = data.bill;
       // Hide the whole page from session replay when it shows an uploaded (possibly unreleased) bill.
       app.classList.toggle('ph-no-capture', data.bill.kind === 'upload');
-      const { summary, details } = briefHtml(data);
+      const base = `#/brief/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}/${encodeURIComponent(data.bill.id)}`;
+      currentBase = base;
+      const current = TABS.find((t) => t.id === tab);
+      // A section that needs the analysis is not reachable before it exists; show the bill's page instead.
+      if (tab && (!current || (current.needsBrief && !data.brief))) { go(base); return; }
       const source = data.bill.kind === 'official' ? 'enrolled bill text' : `uploaded ${data.bill.file_type === 'pdf' ? 'PDF' : 'Word document'}, not yet voted on`;
+      const tabs = `<nav class="tabs" aria-label="Brief sections">${TABS.map((t) => {
+        const label = `${tabIcon(t.id)}<span>${esc(t.title)}</span>`;
+        if (t.needsBrief && !data.brief) return `<span class="tab locked" title="Analyze this bill first">${label}</span>`;
+        return `<a class="tab" href="${base}/${t.id}"${t.id === tab ? ' aria-current="page"' : ''}>${label}</a>`;
+      }).join('')}</nav>`;
       app.innerHTML = `
-        <div class="hero"><div>
-        <header>
+        <header class="page-head">
           <div class="kicker">Prototype · viewing as ${esc(memberLabel(data.member))}, ${esc(data.district.id)} ·
             <a href="#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}">Switch bill</a> ·
             <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
-          <h1>${esc(data.bill.title)}</h1>
-          <div class="kicker">Personalized brief for ${esc(data.district.id)}, ${esc(source)}</div>
+          ${current ? `<a class="back" href="${base}">← ${esc(data.bill.title)}</a>` : ''}
+          <h1>${current ? esc(current.title) : esc(data.bill.title)}</h1>
+          <div class="kicker">Personalized brief for ${esc(data.district.id)} · ${esc(source)}</div>
         </header>
-        ${mapHtml(data.map, data.member, data.district)}
-        </div><div>${summary}</div></div>
-        ${details}${districtHtml(data.member, data.district)}${billTextHtml(data.bill)}`;
-      if (data.brief) wireFilter(data);
-      else wireAnalyze(data);
+        ${current ? `${tabs}${sectionHtml(tab, data)}` : hubHtml(data, base)}`;
+      if (!current && !data.brief) wireAnalyze(data);
+      if (tab === 'impact' || tab === 'promises') wireFilter(data);
+      if (pendingSection) { const id = pendingSection; pendingSection = null; openSection(id); }
     }
 
     // ---- The paid Analyze step. Shows the estimate and a hard cap, says where the text goes,
@@ -719,11 +847,11 @@
     }
 
     function route() {
-      const [, view, a, b, c] = location.hash.split('/').map((part) => decodeURIComponent(part || ''));
+      const [, view, a, b, c, d] = location.hash.split('/').map((part) => decodeURIComponent(part || ''));
       app.classList.remove('ph-no-capture');
       const shown = view === 'setup' ? setupView()
         : view === 'bills' ? billsView(a, b)
-        : view === 'brief' ? briefView(a, b, c)
+        : view === 'brief' ? briefView(a, b, c, d)
         : loginView();
       Promise.resolve(shown).catch((error) => { app.textContent = 'Could not load: ' + error.message; });
       window.scrollTo(0, 0);
