@@ -239,7 +239,7 @@
       <div class="grid-2">
         <div class="stat-box">
           <div class="stat-label">Cumulative Build Spend</div>
-          <div class="stat-value">$3.20 OpenRouter, excluding coding agent</div>
+          <div class="stat-value">$6.13 OpenRouter, excluding coding agent</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Cost Per User Run</div>
@@ -299,9 +299,9 @@
       <div class="log-entry">
         <h3>Build 3 · Build.exe: The Core Workflow (Due Nov 23)</h3>
         <ul>
-          <li><strong>What shipped:</strong> [End-to-end workflow working with real inputs + PostHog funnel events]</li>
-          <li><strong>What broke / changed in PRD:</strong> [Fill in]</li>
-          <li><strong>Cost & time this week:</strong> $[0.00] · [0] hours</li>
+          <li><strong>What shipped:</strong> A new source of commitments: what a member says on TV. For Rep. Gottheimer I found 58 TV appearances since November 2021 on NBC, CNBC, MSNBC, Fox News, Fox Business, CBS, ABC and the local CBS and ABC stations in New York; 43 are on the networks' YouTube channels. Gemini watched each YouTube link through OpenRouter (nothing was downloaded) and wrote a speaker-labeled transcript: 35,136 of his words. Claude Sonnet then pulled out 93 statements, 46 promises and 47 claims about his record, each with a link to the moment in the video. Code keeps a statement only if its quote matches his own lines word for word, and checks it against the official transcript where the network publishes one. A person approves each statement before it counts. A temporary Data Model page shows each promise next to where it was said, how H.R. 1 tested it and how he voted, plus every TV appearance and the review list. The setup screen now has a U.S. map that zooms to the chosen state and outlines the chosen district, built from Census boundary files, and each member's home page welcomes them as Congressman or Congresswoman.</li>
+          <li><strong>What broke / changed in PRD:</strong> Meet the Press alone gave only 2 interviews and no transcripts, and the free TV caption archive only returns short snippets, so I switched to Gemini watching YouTube copies. Checking one transcript against CBS's official Face the Nation transcript found 94% of his words matched, but one 60-word answer by Rep. Fitzpatrick was labeled as Gottheimer's. The code now flags joint interviews and any quote the official transcript credits to someone else, and it caught that error on its own. A laptop shutdown interrupted one batch, and one transcript had an empty line that broke the word count; both were fixed without paying twice. Many of his strongest promises were made as a candidate for governor, so those are flagged as being about a state office. Still open: approved TV promises reach the H.R. 1 alerts only after his brief is re-analyzed, and 15 appearances are not on YouTube.</li>
+          <li><strong>Cost & time this week:</strong> $2.93 OpenRouter, excluding coding agent ($6.13 total): $2.25 TV transcripts, $0.59 statement extraction · [your hours] hours</li>
         </ul>
       </div>
 

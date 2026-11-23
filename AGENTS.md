@@ -5,27 +5,37 @@
 ## 1. Project Overview
 - **What this repo builds:** Bill Reader turns a long House bill into a plain-English brief personalized to one member's district and public commitments, with alerts when a yes vote would conflict with a commitment.
 - **Primary user & core workflow:** Members of Congress and their legislative staff. See the living PRD in `docs/index.html`.
-- **Tech stack:** Node 24 (built-in modules only) / plain HTML / JSON files in `data/` / OpenRouter API (Claude Haiku and Sonnet) / PostHog analytics
+- **Tech stack:** Node 24 (built-in modules only) / plain HTML / JSON files in `data/` / OpenRouter API (Claude Haiku and Sonnet; Gemini for TV transcripts) / PostHog analytics
 
 ## 2. Project Structure
 ```
 app/
   server.js          Local web server: serves the page, the JSON API, uploads and paid runs (localhost only)
   analyze.js         The AI pipeline: estimate, screen (Haiku), analyze (Sonnet), check commitments, verify, save
+  media.js           TV transcripts → candidate promises and record claims (Sonnet), each quote checked word for word
   bills.js           Finds H.R. 1 and uploaded bills; validates and saves uploads
   public/
-    index.html       The whole app UI (sign-in, setup, bill list, upload, brief, Analyze panel) and PostHog
+    index.html       The whole app UI (sign-in, setup with U.S. map, member home, bill list, upload, brief,
+                     Analyze panel, temporary Data Model page with the TV review list) and PostHog
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
+scripts/
+  build-us-map.js    Builds data/us-map.json from Census boundary files (read in memory; nothing else saved)
 data/
-  members/<id>.json      One file per NJ member: party, district, H.R. 1 votes, cited commitments
+  members/<id>.json      One file per NJ member: party, honorific, district, H.R. 1 votes, cited commitments
+                         (promises), and approved TV record claims
   districts/nj-NN.json   Census facts and 2006-2024 House results for each district
   briefs/hr1-<id>.json   Generated H.R. 1 briefs (committed)
   hr1-issues.json        Issue tags for H.R. 1 sections, shared by every member's brief
+  nj-map.json            New Jersey district map used on briefs and the member home page
+  us-map.json            U.S. states (Alaska and Hawaii inset) and district lines for DISTRICT_STATES (NJ)
+  media/<id>.json        A member's TV appearances: date, network, show, YouTube link, notes
+  media/<id>-candidates.json  Statements pulled from those appearances, each pending/approved/rejected
+  media/transcripts/     Full TV transcripts (network content). Git-ignored: stays on this computer
   uploads/               Uploaded bills and their briefs. Git-ignored: drafts never leave this computer
 docs/
   index.html         Public Product Page (GitHub Pages): demo, living PRD, build log
   build2/            Demo screenshots used on the Product Page
-tests/               Deterministic tests: citation checks, alert rules, data files, bill splitting
+tests/               Deterministic tests: citation checks, alert rules, data files, bill splitting, TV quote checks
 journal/             Optional weekly working notes
 .env.example         Names of the settings .env needs (never real values)
 ```
@@ -37,11 +47,14 @@ journal/             Optional weekly working notes
 4. Start the server: `node app/server.js`, then open http://localhost:3000. Sign in with anything, choose a member, then a bill.
 5. Run the tests: `node --test` (no network, no cost).
 6. PostHog analytics: the snippet is in `app/public/index.html` and `docs/index.html`. Its `phc_` project key is public by design. Session replay is on, but anything marked `ph-no-capture` (uploaded bill text, upload previews and upload briefs) is hidden, and typed text is masked. Keep that class on any new element that shows uploaded content.
+7. TV appearances (optional, paid): transcripts are made by Gemini watching each appearance's YouTube link through OpenRouter, so no video or audio is ever downloaded. Only the member's own quoted words and links are committed; full transcripts stay in the Git-ignored `data/media/transcripts/`.
 
 ## 4. Commands
 - **Install dependencies:** None. Requires Node 24. For model runs: `cp .env.example .env`, then add your key.
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
 - **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.8.0, loaded from public CDNs with integrity hashes.
+- **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Data Model page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
+- **Rebuild the U.S. map:** `node scripts/build-us-map.js` (free). Add state codes to `DISTRICT_STATES` to draw more states' districts.
 - **Run locally:** `node app/server.js`, then open http://localhost:3000 (prototype sign-in accepts anything)
 - **Run deterministic tests:** `node --test`
 - **Run model evals:** Not built yet (planned for Build 4, Track A).
