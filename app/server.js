@@ -5,14 +5,19 @@ const path = require('path');
 const { getBill, listBills, saveUpload, MAX_FILE_BYTES } = require('./bills.js');
 const { estimateFor, runAnalysis, loadKey, checkAvailableCredits } = require('./analyze.js');
 
-const hasKey = loadKey(); // Reads OPENROUTER_API_KEY from the Git-ignored .env file.
+// Public demo mode. On a public host (Render sets RENDER automatically) or with READ_ONLY=1, the app
+// is read-only: no paid runs, no uploads, no approvals, even if a key were added there by mistake.
+// Saved files on a host like Render are wiped on every restart, so nothing should be written there.
+const READ_ONLY = process.env.READ_ONLY === '1' || Boolean(process.env.RENDER);
+const READ_ONLY_MESSAGE = 'This public demo is read-only. Uploading, analyzing and approving work in the local app.';
+const hasKey = !READ_ONLY && loadKey(); // Reads OPENROUTER_API_KEY from the Git-ignored .env file.
 
 // One paid run at a time, kept in memory. Restarting the server forgets it.
 let job = null;
 
 const ROOT = path.join(__dirname, '..');
 const DATA = path.join(ROOT, 'data');
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000; // the host chooses the port in production
 const MAX_BODY_BYTES = Math.ceil(MAX_FILE_BYTES * 1.4) + 5 * 1024 * 1024; // base64 file + extracted text
 const ALLOWED_HOSTS = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
 const ALLOWED_ORIGINS = new Set([`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]);
@@ -62,9 +67,10 @@ function billSummary(bill, memberId) {
 const PUBLIC_FILES = { '/': 'index.html', '/bill-text.js': 'bill-text.js' };
 
 async function handle(req, res) {
-  // Only pages served from this computer may talk to this server. This blocks other
-  // websites from reading drafts or uploading through your browser.
-  if (!ALLOWED_HOSTS.has(req.headers.host)) return send(res, 403, { error: 'Forbidden host' });
+  // Locally, only pages served from this computer may talk to this server. This blocks other
+  // websites from reading drafts or uploading through your browser. The public demo has no
+  // drafts and accepts no changes, so it answers on its public address.
+  if (!READ_ONLY && !ALLOWED_HOSTS.has(req.headers.host)) return send(res, 403, { error: 'Forbidden host' });
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
   if (req.method === 'GET' && PUBLIC_FILES[url.pathname]) {
@@ -72,6 +78,11 @@ async function handle(req, res) {
     res.writeHead(200, { 'Content-Type': file.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8' });
     res.end(fs.readFileSync(path.join(__dirname, 'public', file)));
     return;
+  }
+
+  // What the page should offer: the public demo hides uploading, analyzing and approving.
+  if (req.method === 'GET' && url.pathname === '/api/config') {
+    return send(res, 200, { read_only: READ_ONLY, message: READ_ONLY ? READ_ONLY_MESSAGE : null });
   }
 
   // The setup screen: every member and the district each one represents.
@@ -102,8 +113,11 @@ async function handle(req, res) {
     const hr1 = getBill('hr1');
     const brief = hr1 ? readJson(hr1.briefFile(member.id)) : null;
     const dir = path.join(DATA, 'media', 'transcripts', member.id);
-    const transcripts = fs.existsSync(dir)
-      ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => {
+    // Full transcripts exist only on the computer that made them; elsewhere (the public demo) a
+    // committed summary with counts and no transcript text stands in (scripts/summarize-transcripts.js).
+    const transcripts = !fs.existsSync(dir)
+      ? (readJson(path.join(DATA, 'media', `${member.id}-transcripts.json`)) || { transcripts: [] }).transcripts
+      : fs.readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => {
           const t = readJson(path.join(dir, f));
           const own = t.turns.filter((turn) => turn.speaker !== 'HOST' && turn.speaker !== 'OTHER');
           return {
@@ -115,8 +129,7 @@ async function handle(req, res) {
             model: t.source?.model,
             cost_usd: t.source?.cost_usd,
           };
-        })
-      : [];
+        });
     return send(res, 200, {
       member: { id: member.id, name: member.name, promises: member.promises || [], record_claims: member.record_claims || [], votes_on_bill: member.votes_on_bill || [], sources: member.sources || [] },
       alerts: brief ? brief.promise_alerts || [] : [],
@@ -135,6 +148,7 @@ async function handle(req, res) {
   // Changes (uploads, paid runs) must come from this app's own page, as JSON. A JSON request
   // from another site needs the browser's permission first, which this server never gives.
   if (req.method === 'POST') {
+    if (READ_ONLY) return send(res, 403, { error: READ_ONLY_MESSAGE });
     const origin = req.headers.origin;
     if (origin && !ALLOWED_ORIGINS.has(origin)) return send(res, 403, { error: 'Forbidden origin' });
     if (!String(req.headers['content-type']).startsWith('application/json')) return send(res, 415, { error: 'Expected JSON' });
@@ -154,7 +168,7 @@ async function handle(req, res) {
         available = null;
       }
     }
-    return send(res, 200, { estimate, cap, has_key: hasKey, available, busy: Boolean(job && job.status === 'running') });
+    return send(res, 200, { estimate, cap, has_key: hasKey, read_only: READ_ONLY, available, busy: Boolean(job && job.status === 'running') });
   }
 
   // Starts a paid run. The page must send back the cap it showed, so a person agreed to it.
@@ -270,7 +284,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// Bound to this computer only: the prototype has no real login.
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Bill Reader running at http://localhost:${PORT}`);
+// Locally, bound to this computer only: the prototype has no real login. The read-only public
+// demo listens on all interfaces so the host (Render) can reach it.
+server.listen(PORT, READ_ONLY ? '0.0.0.0' : '127.0.0.1', () => {
+  console.log(READ_ONLY ? `Bill Reader public demo (read-only) on port ${PORT}` : `Bill Reader running at http://localhost:${PORT}`);
 });

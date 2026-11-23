@@ -20,6 +20,8 @@ app/
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
 scripts/
   build-us-map.js    Builds data/us-map.json from Census boundary files (read in memory; nothing else saved)
+  summarize-transcripts.js  Writes data/media/<id>-transcripts.json (counts only, no text) for the public demo
+package.json         Tells hosts to use Node 24 and how to start (npm start); no dependencies
 data/
   members/<id>.json      One file per NJ member: party, honorific, district, H.R. 1 votes, cited commitments
                          (promises), and approved TV record claims
@@ -49,7 +51,32 @@ journal/             Optional weekly working notes
 6. PostHog analytics: the snippet is in `app/public/index.html` and `docs/index.html`. Its `phc_` project key is public by design. Session replay is on, but anything marked `ph-no-capture` (uploaded bill text, upload previews and upload briefs) is hidden, and typed text is masked. Keep that class on any new element that shows uploaded content.
 7. TV appearances (optional, paid): transcripts are made by Gemini watching each appearance's YouTube link through OpenRouter, so no video or audio is ever downloaded. Only the member's own quoted words and links are committed; full transcripts stay in the Git-ignored `data/media/transcripts/`.
 
-## 4. Commands
+## 4. Deploy (public read-only demo on Render)
+The public app is a **read-only demo**: visitors sign in with anything, choose New Jersey, a member and their district, and read that member's saved H.R. 1 brief, district info and promises. It never spends money and never saves anything:
+- **No OpenRouter key on Render, ever.** The server also refuses paid runs, uploads and approvals whenever it detects Render (`RENDER` is set automatically) or `READ_ONLY=1`, and it ignores any key it finds there.
+- **No database is needed:** the demo stores nothing. Uploads and approvals stay in the local app, because Render wipes saved files on every restart and uploads may be unreleased drafts.
+- **Full TV transcripts are not deployed** (Git-ignored); the Data Model page uses the committed counts in `data/media/<id>-transcripts.json`.
+
+Steps (first time):
+1. Push the latest code to GitHub (`main`). Run `node --test` first; all tests must pass.
+2. Sign in at https://render.com with GitHub (free account, no card needed for the free plan).
+3. **New + → Web Service →** pick the `sm13835-bill-reader` repository.
+4. Fill in:
+   - **Name:** `bill-reader` (this becomes the address `https://bill-reader.onrender.com`, or similar if taken)
+   - **Branch:** `main` · **Runtime/Language:** Node · **Region:** any US region
+   - **Build command:** `npm install` (installs nothing; there are no dependencies)
+   - **Start command:** `npm start` (runs `node app/server.js`)
+   - **Instance type:** Free
+   - **Environment variables:** add `READ_ONLY` = `1`. **Do not add `OPENROUTER_API_KEY`.**
+   - **Health check path** (under Advanced, if shown): `/api/config`
+5. **Create Web Service.** Wait for the log to say `Bill Reader public demo (read-only) on port …`, then open the URL Render shows.
+6. Check it on a phone: sign in → New Jersey → a member → their district → Continue → Review Uploaded Bills → H.R. 1 → each tab. The Analyze panel and Upload page should say the demo is read-only.
+
+After that, every push to `main` redeploys automatically. Free instances sleep after about 15 minutes without visitors, so the first visit after a break takes up to a minute to load.
+
+To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 node app/server.js`, then open http://localhost:3100.
+
+## 5. Commands
 - **Install dependencies:** None. Requires Node 24. For model runs: `cp .env.example .env`, then add your key.
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
 - **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.8.0, loaded from public CDNs with integrity hashes.
@@ -59,7 +86,7 @@ journal/             Optional weekly working notes
 - **Run deterministic tests:** `node --test`
 - **Run model evals:** Not built yet (planned for Build 4, Track A).
 
-## 5. Non-Negotiable Engineering Rules
+## 6. Non-Negotiable Engineering Rules
 1. **Plan before coding:** Before touching multiple files, propose a brief plan and wait for approval.
 2. **Small batches:** Make small, focused changes that can be reviewed and explained by a human in a single Pull Request.
 3. **Explainability:** Avoid unnecessary abstractions or dependencies. Help the human builder understand the main components, what changed, why it matters, what could break, and how it was checked.

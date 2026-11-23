@@ -1,0 +1,393 @@
+{
+  "member": "gottheimer",
+  "note": "Counts only; transcript text is not included.",
+  "transcripts": [
+    {
+      "id": "abc7-2022-11-10",
+      "duration": "05:23",
+      "turns": 9,
+      "member_turns": 4,
+      "member_words": 711,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0402366
+    },
+    {
+      "id": "abc7-2024-08-12",
+      "duration": "02:14",
+      "turns": 9,
+      "member_turns": 2,
+      "member_words": 86,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0167619
+    },
+    {
+      "id": "abc7-2024-11-15",
+      "duration": "01:16",
+      "turns": 3,
+      "member_turns": 1,
+      "member_words": 56,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0095617
+    },
+    {
+      "id": "abc7-2024-11-19",
+      "duration": "01:04",
+      "turns": 3,
+      "member_turns": 1,
+      "member_words": 53,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0081584
+    },
+    {
+      "id": "abc7-2024-11-24",
+      "duration": "25:24",
+      "turns": 58,
+      "member_turns": 12,
+      "member_words": 1314,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.1920943
+    },
+    {
+      "id": "abc7-2024-12-10",
+      "duration": "01:05",
+      "turns": 3,
+      "member_turns": 1,
+      "member_words": 32,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0082388
+    },
+    {
+      "id": "abc7-2025-06-04",
+      "duration": "02:30",
+      "turns": 16,
+      "member_turns": 5,
+      "member_words": 153,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0199996
+    },
+    {
+      "id": "cbs-2023-01-26",
+      "duration": "05:22",
+      "turns": 14,
+      "member_turns": 2,
+      "member_words": 117,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0409171
+    },
+    {
+      "id": "cbsny-2022-02-11",
+      "duration": "00:47",
+      "turns": 3,
+      "member_turns": 1,
+      "member_words": 58,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0060136
+    },
+    {
+      "id": "cbsny-2022-12-09",
+      "duration": "00:37",
+      "turns": 4,
+      "member_turns": 2,
+      "member_words": 62,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0050236
+    },
+    {
+      "id": "cbsny-2023-06-09",
+      "duration": "00:56",
+      "turns": 4,
+      "member_turns": 1,
+      "member_words": 25,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0071578
+    },
+    {
+      "id": "cbsny-2023-07-02-salt",
+      "duration": "10:31",
+      "turns": 73,
+      "member_turns": 36,
+      "member_words": 1800,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0829856
+    },
+    {
+      "id": "cbsny-2023-07-02",
+      "duration": "18:45",
+      "turns": 67,
+      "member_turns": 29,
+      "member_words": 2772,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.1447897
+    },
+    {
+      "id": "cbsny-2023-07-27",
+      "duration": "00:59",
+      "turns": 3,
+      "member_turns": 0,
+      "member_words": 0,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0075684
+    },
+    {
+      "id": "cbsny-2024-01-22",
+      "duration": "02:16",
+      "turns": 13,
+      "member_turns": 2,
+      "member_words": 58,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0181187
+    },
+    {
+      "id": "cbsny-2024-05-05",
+      "duration": "10:59",
+      "turns": 38,
+      "member_turns": 18,
+      "member_words": 1543,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0828779
+    },
+    {
+      "id": "cbsny-2024-11-15",
+      "duration": "02:37",
+      "turns": 14,
+      "member_turns": 2,
+      "member_words": 78,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0204256
+    },
+    {
+      "id": "cbsny-2024-11-19",
+      "duration": "02:22",
+      "turns": 12,
+      "member_turns": 3,
+      "member_words": 82,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0178804
+    },
+    {
+      "id": "cbsny-2024-12-11",
+      "duration": "02:32",
+      "turns": 7,
+      "member_turns": 1,
+      "member_words": 98,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0189283
+    },
+    {
+      "id": "cbsny-2025-01-20",
+      "duration": "05:01",
+      "turns": 21,
+      "member_turns": 14,
+      "member_words": 806,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0393492
+    },
+    {
+      "id": "cbsny-2025-03-30",
+      "duration": "27:12",
+      "turns": 94,
+      "member_turns": 46,
+      "member_words": 4017,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.2077619
+    },
+    {
+      "id": "cbsny-2026-02-09",
+      "duration": "02:08",
+      "turns": 12,
+      "member_turns": 2,
+      "member_words": 36,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0168111
+    },
+    {
+      "id": "cbsny-2026-04-05",
+      "duration": "17:42",
+      "turns": 75,
+      "member_turns": 37,
+      "member_words": 2620,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.1368581
+    },
+    {
+      "id": "cbsny-2026-09-20",
+      "duration": "17:06",
+      "turns": 61,
+      "member_turns": 32,
+      "member_words": 3210,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.1337897
+    },
+    {
+      "id": "cnbc-2022-01-13",
+      "duration": "02:30",
+      "turns": 8,
+      "member_turns": 3,
+      "member_words": 325,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0193408
+    },
+    {
+      "id": "cnbc-2025-03-05",
+      "duration": "03:51",
+      "turns": 6,
+      "member_turns": 3,
+      "member_words": 675,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0298841
+    },
+    {
+      "id": "cnbc-2025-04-02",
+      "duration": "03:15",
+      "turns": 10,
+      "member_turns": 8,
+      "member_words": 613,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0252859
+    },
+    {
+      "id": "cnbc-2025-05-20",
+      "duration": "04:05",
+      "turns": 10,
+      "member_turns": 5,
+      "member_words": 668,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0311
+    },
+    {
+      "id": "cnbc-2025-11-25",
+      "duration": "07:07",
+      "turns": 16,
+      "member_turns": 8,
+      "member_words": 1591,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0553736
+    },
+    {
+      "id": "cnbc-2025-12-10",
+      "duration": "03:51",
+      "turns": 20,
+      "member_turns": 9,
+      "member_words": 390,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0297123
+    },
+    {
+      "id": "cnbc-2026-09-16",
+      "duration": "05:31",
+      "turns": 26,
+      "member_turns": 12,
+      "member_words": 841,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0463303
+    },
+    {
+      "id": "cnbc-2026-11-13",
+      "duration": "04:41",
+      "turns": 10,
+      "member_turns": 5,
+      "member_words": 735,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0386597
+    },
+    {
+      "id": "fbn-2026-06-05",
+      "duration": "04:52",
+      "turns": 10,
+      "member_turns": 4,
+      "member_words": 557,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0363811
+    },
+    {
+      "id": "fox-2025-10-25",
+      "duration": "07:44",
+      "turns": 17,
+      "member_turns": 7,
+      "member_words": 1022,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0588661
+    },
+    {
+      "id": "fox-2026-05-22",
+      "duration": "07:18",
+      "turns": 11,
+      "member_turns": 3,
+      "member_words": 593,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0548455
+    },
+    {
+      "id": "fox-2026-08-03",
+      "duration": "11:57",
+      "turns": 30,
+      "member_turns": 9,
+      "member_words": 1232,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.091354
+    },
+    {
+      "id": "fox-2026-08-25",
+      "duration": "06:12",
+      "turns": 16,
+      "member_turns": 5,
+      "member_words": 657,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0482636
+    },
+    {
+      "id": "fox-2026-08-28",
+      "duration": "07:07",
+      "turns": 14,
+      "member_turns": 5,
+      "member_words": 968,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0549147
+    },
+    {
+      "id": "ftn-2023-05-21",
+      "duration": "10:05",
+      "turns": 16,
+      "member_turns": 4,
+      "member_words": 651,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0758243
+    },
+    {
+      "id": "ftn-2023-10-01",
+      "duration": "07:54",
+      "turns": 44,
+      "member_turns": 12,
+      "member_words": 737,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0632026
+    },
+    {
+      "id": "ftn-2026-05-24",
+      "duration": "10:06",
+      "turns": 18,
+      "member_turns": 3,
+      "member_words": 587,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0751411
+    },
+    {
+      "id": "mtp-now-2023-04-28",
+      "duration": "10:14",
+      "turns": 35,
+      "member_turns": 25,
+      "member_words": 1575,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0795148
+    },
+    {
+      "id": "mtp-now-2025-06-06",
+      "duration": "06:40",
+      "turns": 13,
+      "member_turns": 6,
+      "member_words": 932,
+      "model": "google/gemini-2.5-flash",
+      "cost_usd": 0.0502657
+    }
+  ]
+}

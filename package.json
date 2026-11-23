@@ -1,0 +1,10 @@
+{
+  "name": "bill-reader",
+  "private": true,
+  "description": "Plain-English House bill briefs personalized to a member's district and public commitments.",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "start": "node app/server.js",
+    "test": "node --test"
+  }
+}

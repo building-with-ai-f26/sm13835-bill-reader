@@ -120,8 +120,8 @@
     .primary:hover:not(:disabled) { background: #183049; }
     .primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .bills { max-width: 860px; margin: 32px auto; }
-    .map-backdrop { position: fixed; top: 40%; left: 70%; transform: translate(-50%, -50%); height: 46vh; width: auto;
-      opacity: 0.6; pointer-events: none; z-index: -1; }
+    .map-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
+    .map-backdrop { position: absolute; top: 40%; left: 70%; transform: translate(-50%, -50%); height: 46vh; width: auto; opacity: 0.6; }
     /* Cards on this page let the map show through faintly. */
     .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; }
     @media (max-width: 760px) { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
@@ -183,7 +183,8 @@
     }
 
     /* The signed-in member's name, in their party's color. */
-    .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere; }
+    .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere;
+      overflow-x: clip; /* phones size the page to include the words' off-screen starting point; clipping here prevents that */ }
     .member-name.rep { color: #9b1c1c; }
     .member-name.dem { color: #1f4fd8; } /* royal blue */
     .member-name.ind { color: #111827; }
@@ -649,13 +650,18 @@
     // e.g. #/brief/kean/NJ-7, so a refresh stays put.
     const app = document.getElementById('app');
     const go = (hash) => { location.hash = hash; };
+    // Read-only public demo or the full local app; asked once, used by any screen that writes.
+    const config = fetch('/api/config').then((r) => r.json()).catch(() => ({ read_only: false }));
     const lastName = (m) => m.name.replace(/ Jr\.$/, '').split(' ').slice(-1)[0];
 
-    function loginView() {
+    async function loginView() {
+      const { read_only: readOnly } = await config;
       app.innerHTML = `<div class="auth">
         <div class="kicker">Bill Reader</div>
         <h1>Sign in</h1>
         <p class="meta">Plain-English briefs on House bills, personalized to your district and public commitments.</p>
+        ${readOnly ? `<div class="card notice"><strong>Public demo.</strong> Sign in with anything, choose New Jersey and a member, then open H.R. 1
+          to read their brief. This demo is read-only: uploading bills and running new AI analyses work only in the local app.</div>` : ''}
         <div class="card alert possible"><strong>Prototype only.</strong> There is no real sign-in yet. Anything you type is accepted,
           and it is not checked, saved or sent anywhere.</div>
         <form id="login" class="card form" novalidate>
@@ -800,11 +806,12 @@
       const current = map && map.districts.find((d) => d.id === member.district);
       if (!current) return '';
       const party = { D: 'dem', R: 'rep' }[member.party] || 'ind';
-      return `<svg class="map-backdrop" viewBox="${esc(map.viewBox)}" aria-hidden="true" focusable="false">
+      // The screen-sized layer clips the map, so it can never make the page scroll sideways on a phone.
+      return `<div class="map-layer" aria-hidden="true"><svg class="map-backdrop" viewBox="${esc(map.viewBox)}" focusable="false">
         <path class="state" d="${esc(map.state_path)}" />
         ${map.districts.filter((d) => d !== current).map((d) => `<path class="district" d="${esc(d.path)}" />`).join('')}
         <path class="district current ${party}" d="${esc(current.path)}" />
-      </svg>`;
+      </svg></div>`;
     }
 
     // ---- Choose a bill: H.R. 1, earlier uploads, or drop in a new one.
@@ -825,9 +832,10 @@
 
     // The review list of TV statements: filters, then one card per statement with Approve / Reject.
     // Decisions are saved by the server (POST /api/candidates/review) and the list redraws in place.
-    function wireReview(dm, memberId) {
+    function wireReview(dm, memberId, readOnly) {
       const panel = document.getElementById('review-panel');
       if (!panel || !dm.candidates) return;
+      if (readOnly) panel.insertAdjacentHTML('beforebegin', '<div class="card notice"><strong>Read-only demo:</strong> you can browse every statement, but approving and rejecting work only in the local app.</div>');
       const all = dm.candidates.candidates;
       const view = { status: 'pending', kind: 'all', flagged: false };
       const btn = (group, value, label) => `<button type="button" class="filter-btn" data-${group}="${value}" aria-pressed="${view[group] === value}">${esc(label)}</button>`;
@@ -841,7 +849,7 @@
           <div class="meta">${esc(shortDate(c.date))} · ${esc(c.network)}${c.show && !['news', 'unknown'].includes(c.show) ? ` · ${esc(c.show)}` : ''}
             ${c.youtube ? ` · ${link(c.youtube, `Watch at ${c.timestamp} ↗`)}` : ''}${c.official_check === 'confirmed' ? ' · ✓ Matches the official transcript' : ''}${c.also_in.length ? ` · Also in ${esc(c.also_in.join(', '))}` : ''}</div>
           ${c.flags.map((f) => `<div class="dm-flag">⚠ ${esc(f)}</div>`).join('')}
-          <div class="dm-actions">${c.status === 'pending'
+          <div class="dm-actions">${readOnly ? '' : c.status === 'pending'
             ? `<button type="button" class="filter-btn" data-review="approved" data-id="${esc(c.id)}">Approve</button><button type="button" class="filter-btn" data-review="rejected" data-id="${esc(c.id)}">Reject</button>`
             : `<button type="button" class="filter-btn" data-review="pending" data-id="${esc(c.id)}">Undo</button>`}</div>
         </div>`;
@@ -983,10 +991,11 @@
     // ---- The member's home: three boxes (upload a bill, review bills, district info), each
     // opening its own page at #/bills/<member>/<district>/upload, /list or /district.
     async function billsView(memberId, districtId, page) {
-      const [{ members }, { bills }, map] = await Promise.all([
+      const [{ members }, { bills }, map, { read_only: readOnly }] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
         fetch(`/api/bills?member=${encodeURIComponent(memberId)}`).then((r) => r.json()),
         fetch('/api/map').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        config,
       ]);
       const member = members.find((m) => m.id === memberId && m.district === districtId);
       if (!member) { go('#/setup'); return; }
@@ -1005,7 +1014,7 @@
           <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
           ${member.honorific ? `<p class="member-welcome" style="--delay:${(nameTiming(member.name).after + 1.2).toFixed(3)}s">Welcome, ${esc(member.honorific)}</p>` : ''}
           <div class="tiles home-tiles">
-            ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
+            ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', readOnly ? 'Local app only' : 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
             ${tile(`${home}/list`, HOME_ICONS.list, 'Review Uploaded Bills', `${plural(bills.length, 'bill')} · ${ready} ready`, `H.R. 1 and your uploads, and whether each brief is ready for ${member.name.replace(/\.$/, '')}.`)}
             ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.')}
             ${tile(`${home}/model`, HOME_ICONS.model, 'Data Model', 'Temporary', 'Every promise, where it came from, and how it was tested.', 'dm-tile')}
@@ -1037,11 +1046,18 @@
         const dm = await response.json();
         if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(dm.error)}</div></div>`; return; }
         app.innerHTML = `<div class="bills dm">${head('Data Model')}${dataModelHtml(dm)}</div>`;
-        wireReview(dm, memberId);
+        wireReview(dm, memberId, readOnly);
         return;
       }
 
       if (page !== 'upload') { go(home); return; }
+      if (readOnly) {
+        app.innerHTML = `<div class="bills">${head('Upload New Bill')}
+          <div class="card notice"><strong>Uploads are off in this public demo.</strong> Bills can be unreleased drafts, so uploads are saved
+            only on the computer running the local app, and analyzing one costs money. To see a finished brief, open
+            <a href="${home}/list">H.R. 1</a>.</div></div>`;
+        return;
+      }
       app.innerHTML = `<div class="bills">${head('Upload New Bill')}
         <div class="card dropzone" id="drop">
           <strong>Drag and drop a bill here</strong>
@@ -1166,7 +1182,8 @@
       const status = await (await fetch(`/api/analyze/status?${query}`)).json();
       if (status.job && status.job.status === 'running') return watch();
       const est = await (await fetch(`/api/estimate?${query}`)).json();
-      const blocked = !est.has_key ? 'There is no OpenRouter key in .env. Add one and restart the server.'
+      const blocked = est.read_only ? 'This public demo is read-only, so it cannot run new AI analyses. Saved briefs are shown; analyzing works in the local app.'
+        : !est.has_key ? 'There is no OpenRouter key in .env. Add one and restart the server.'
         : est.busy ? 'Another analysis is running. Wait for it to finish, then reload this page.'
         : est.available !== null && est.available < est.cap
           ? `Not enough credits: your balance is ${money(est.available)}, and this run is allowed to spend up to ${money(est.cap)}. Add credits on OpenRouter or analyze a shorter bill.`
