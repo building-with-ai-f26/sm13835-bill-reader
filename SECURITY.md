@@ -32,7 +32,7 @@ The public demo turns read-only automatically when it detects Render (the `RENDE
 | **File storage** | Reviewed where files are written | **Not applicable.** No storage buckets. Uploads are saved only on my laptop (`data/uploads/`, Git-ignored) and are refused on the public demo. TV transcripts (network content) stay in Git-ignored `data/media/transcripts/`. |
 | **Protect production from the agent** | Added an **"Ask me first" list** to `AGENTS.md` (rule 7) | **Done.** Force-pushes and history rewrites, deleting data, touching `.env`, changing the Render service or its variables, paid runs, raising caps, and dependency changes all need my explicit yes. No database, so no database backup is needed; the repo is on GitHub. |
 | **Spending cap** | OpenRouter settings | **Done.** Prepaid credits with **Auto Top-Up off** (the balance is the absolute ceiling), plus a **$5 monthly credit limit** on the API key. Every paid run also shows an estimate and has its own hard cap (H.R. 1 brief ≤ $3; TV extraction ≤ $1) and a $1 balance floor. |
-| **Rate limits** | Added `app/rate-limit.js` | **Fixed.** Per-visitor limits on every request: AI routes 10 per 10 minutes, write routes 60 a minute, everything 300 a minute; over the limit returns 429. Memory is capped so a flood of fake visitors can't grow it. |
+| **Rate limits** | Added `app/rate-limit.js` | **Fixed.** Per-visitor limits on every request: AI routes 10 per 10 minutes, write routes 60 a minute, everything 300 a minute; over the limit returns 429. Memory is capped so a flood of fake visitors can't grow it. One forged-header bypass remains on Render (finding 6 and section 3). |
 | **Dependency audit: server** | `npm audit` | **Pass.** 0 vulnerabilities (the server has no npm dependencies; `package-lock.json` added so the audit can run). |
 | **Dependency audit: browser libraries** | `npm audit` on the two libraries the page loads from CDNs | **Found and fixed.** **pdf.js 3.11.174 — high:** a malicious PDF could run JavaScript ([GHSA-wgrm-67xf-hhpq](https://github.com/advisories/GHSA-wgrm-67xf-hhpq)); fixed with `isEvalSupported: false`, the advisory's documented fix. **mammoth 1.8.0 — moderate:** directory traversal ([GHSA-rmjr-87wv-gf87](https://github.com/advisories/GHSA-rmjr-87wv-gf87)); upgraded to 1.13.0 with a new integrity hash. (The audit also listed `tar`, which only comes with pdf.js's Node add-on that the browser never loads.) Re-tested: PDF and Word uploads still preview correctly. |
 | **Agent security review** | Claude read the server and page code looking for holes, then attacked the live site | See below. |
@@ -48,14 +48,25 @@ The public demo turns read-only automatically when it detects Render (the `RENDE
 4. **Error leaks: none.** Unexpected errors return a generic "Server error".
 5. **Missing browser security headers → fixed.** Every response now sends `X-Content-Type-Options: nosniff`,
    `X-Frame-Options: DENY` (no embedding in other sites) and `Referrer-Policy: strict-origin-when-cross-origin`.
-6. **Rate limit could be bypassed with forged address headers → fixed (in two steps).** On Render, a
-   visitor can send their own `X-Forwarded-For`. Live test: five made-up addresses each got a fresh
-   allowance. Fix 1 used the proxy-added (last) entry and the edge headers; a second live test showed
-   Render also passes a forged `CF-Connecting-IP` through untouched, so fix 2 trusts only
-   `True-Client-IP` (Render overrides it) or the last `X-Forwarded-For` entry. Final live result:
-   RESULT_PENDING.
+6. **Rate limit could be bypassed with forged address headers → mostly fixed; one gap remains.** On
+   Render, a visitor can send their own address headers. First live test: five made-up
+   `X-Forwarded-For` addresses each got a fresh allowance. Fix 1 used the proxy-added (last)
+   `X-Forwarded-For` entry and the edge-network headers; a second live test showed a forged
+   `CF-Connecting-IP` still got through, so fix 2 stopped reading that header and trusts only
+   `True-Client-IP` or the last `X-Forwarded-For` entry. **Final live test (after fix 2):** forged
+   `X-Forwarded-For` (three variants), `True-Client-IP` and `X-Real-IP` were all limited (429), but a
+   forged `CF-Connecting-IP` still received a fresh allowance, even though the app no longer reads it,
+   so Render's edge appears to copy it into the headers it sets. Following the project rule to stop
+   after repeated failed fixes, I recorded this as a remaining issue instead of guessing a third
+   approach (see below).
 
 ## 3. Remaining issues and limits
+
+- **The per-visitor rate limit can still be dodged on Render with a forged `CF-Connecting-IP` header.**
+  Impact is low: every public route is free and read-only, and the AI routes are refused outright (403),
+  so this cannot spend money or change data; it only lets a scripted client get around the flood limit
+  (300 requests a minute). Proper fix: confirm with Render which client-address header its edge sets
+  and visitors cannot override, or put the app behind a proxy I control, then re-run the forged-header test.
 
 - **No real sign-in.** The sign-in screen is a labeled prototype. That is acceptable because the public demo
   holds only public information (bills, Census data, public votes and statements) and saves nothing; real
