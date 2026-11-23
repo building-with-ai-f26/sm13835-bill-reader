@@ -104,6 +104,17 @@ async function handle(req, res) {
     return;
   }
 
+  // Official House portraits (public domain), named by Bioguide ID, e.g. /photos/G000583.jpg.
+  // The pattern allows only that exact shape, so no other file can be reached through this route.
+  const photo = url.pathname.match(/^\/photos\/([A-Z]\d{6})\.jpg$/);
+  if (req.method === 'GET' && photo) {
+    const file = path.join(__dirname, 'public', 'photos', `${photo[1]}.jpg`);
+    if (!fs.existsSync(file)) return send(res, 404, { error: 'No photo for that member' });
+    res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=86400' });
+    res.end(fs.readFileSync(file));
+    return;
+  }
+
   // What the page should offer: the public demo hides uploading, analyzing and approving.
   if (req.method === 'GET' && url.pathname === '/api/config') {
     return send(res, 200, { read_only: READ_ONLY, message: READ_ONLY ? READ_ONLY_MESSAGE : null });
@@ -112,9 +123,15 @@ async function handle(req, res) {
   // The setup screen: every member and the district each one represents.
   if (req.method === 'GET' && url.pathname === '/api/members') {
     const list = members()
-      .map((m) => ({ id: m.id, name: m.name, title: m.title, honorific: m.honorific, party: m.party, district: m.district, note: m.note }))
+      .map((m) => ({ id: m.id, name: m.name, title: m.title, honorific: m.honorific, party: m.party, district: m.district, note: m.note, bioguide_id: m.bioguide_id }))
       .sort((a, b) => Number(a.district.split('-')[1]) - Number(b.district.split('-')[1]));
     return send(res, 200, { members: list });
+  }
+
+  // Every current House member (name, party, district, Bioguide ID) for the setup page's member
+  // boxes in states Bill Reader doesn't cover yet. Built by scripts/build-house-roster.js.
+  if (req.method === 'GET' && url.pathname === '/api/house') {
+    return send(res, 200, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'house-119.json'), 'utf8')));
   }
 
   // District boundaries for the background map on the bill picker (public Census data).

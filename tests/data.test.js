@@ -49,3 +49,21 @@ test('every saved brief belongs to a known member and cites only that district\'
     for (const item of brief.items) for (const k of item.district_facts) assert.ok(keys.has(k), `${file}: ${k}`);
   }
 });
+
+test('every member has a Bioguide ID and an official portrait for the setup page', () => {
+  for (const m of members) {
+    assert.match(m.bioguide_id, /^[A-Z]\d{6}$/, m.id);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'app', 'public', 'photos', `${m.bioguide_id}.jpg`)), `${m.id} has no photo`);
+  }
+});
+
+test('the House roster lists every current member once, each with a portrait', () => {
+  const { members: house } = JSON.parse(fs.readFileSync(path.join(DATA, 'house-119.json'), 'utf8'));
+  assert.ok(house.length >= 430, `only ${house.length} members`);
+  assert.strictEqual(new Set(house.map((m) => m.bioguide_id)).size, house.length, 'a member is listed twice');
+  for (const m of house) {
+    assert.match(m.district, /^[A-Z]{2}-(\d+|AL|Del)$/, m.name);
+    assert.ok(['D', 'R', 'I'].includes(m.party), `${m.name}: party ${m.party}`);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'app', 'public', 'photos', `${m.bioguide_id}.jpg`)), `${m.name} has no photo`);
+  }
+});

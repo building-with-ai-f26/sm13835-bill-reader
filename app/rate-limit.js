@@ -5,6 +5,9 @@ const LIMITS = {
   ai: { max: 10, windowMs: 10 * 60 * 1000 }, // routes that call or prepare a paid AI run
   write: { max: 60, windowMs: 60 * 1000 }, // uploads and review decisions
   all: { max: 300, windowMs: 60 * 1000 }, // every request, so no one visitor can flood the server
+  // Member portraits: small static files, and one big state shows dozens at once (California has 52),
+  // so they get their own, larger allowance instead of using up the overall one.
+  photos: { max: 1200, windowMs: 60 * 1000 },
 };
 
 // Most visitors the limiter remembers at once. A forged address header could otherwise make every
@@ -40,6 +43,7 @@ function createLimiter(limits = LIMITS, now = () => Date.now(), maxTracked = MAX
 
 // Which buckets a request counts against. Every request counts against "all".
 function bucketsFor(method, pathname) {
+  if (method === 'GET' && pathname.startsWith('/photos/')) return ['photos'];
   const buckets = ['all'];
   if ((method === 'POST' && pathname === '/api/analyze') || (method === 'GET' && pathname === '/api/estimate')) buckets.push('ai');
   if (method === 'POST' && (pathname === '/api/bills' || pathname === '/api/candidates/review')) buckets.push('write');

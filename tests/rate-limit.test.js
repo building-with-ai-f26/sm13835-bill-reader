@@ -56,6 +56,12 @@ test('paid and write routes get their own limits on top of the overall one', () 
   assert.deepStrictEqual(bucketsFor('GET', '/api/members'), ['all']);
 });
 
+test('member portraits use their own larger limit, not the overall one', () => {
+  assert.deepStrictEqual(bucketsFor('GET', '/photos/G000583.jpg'), ['photos']);
+  assert.ok(LIMITS.photos.max > LIMITS.all.max);
+  assert.deepStrictEqual(bucketsFor('POST', '/photos/G000583.jpg'), ['all']); // only reads get the photo allowance
+});
+
 test('memory is capped: once full, new visitors are refused instead of remembered', () => {
   const limiter = createLimiter({ all: { max: 5, windowMs: 1000 } }, () => 0, 3);
   ['a', 'b', 'c'].forEach((v) => limiter.check('all', v));

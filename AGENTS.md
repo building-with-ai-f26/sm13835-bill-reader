@@ -15,10 +15,14 @@ app/
   media.js           TV transcripts → candidate promises and record claims (Sonnet), each quote checked word for word
   bills.js           Finds H.R. 1 and uploaded bills; validates and saves uploads
   public/
-    index.html       The whole app UI (sign-in, setup with U.S. map, member home, bill list, upload, brief,
+    index.html       The whole app UI (sign-in, setup with state picker, member boxes and U.S. map, member home, bill list, upload, brief,
                      Analyze panel, temporary Media Panel page with the TV review list) and PostHog
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
+    photos/          Official House portraits (public domain) for every current House member, named by Bioguide ID
+                     (e.g. G000583.jpg), 160px squares served at /photos/<id>.jpg for the setup page's member boxes
 scripts/
+  build-house-roster.js  Builds data/house-119.json (every current House member) from the public-domain
+                     congress-legislators project
   build-us-map.js    Builds data/us-map.json from Census boundary files (read in memory; nothing else saved)
   summarize-transcripts.js  Writes data/media/<id>-transcripts.json (counts only, no text) for the public demo
 package.json         Tells hosts to use Node 24 and how to start (npm start); no dependencies
@@ -28,6 +32,8 @@ data/
   districts/nj-NN.json   Census facts and 2006-2024 House results for each district
   briefs/hr1-<id>.json   Generated H.R. 1 briefs (committed)
   hr1-issues.json        Issue tags for H.R. 1 sections, shared by every member's brief
+  house-119.json         Every current House member: name, party, state, district, Bioguide ID (setup page boxes;
+                         only states with files in members/ open briefs)
   nj-map.json            New Jersey district map used on briefs and the member home page
   us-map.json            U.S. states (Alaska and Hawaii inset) and district lines for DISTRICT_STATES (NJ)
   media/<id>.json        A member's TV appearances: date, network, show, YouTube link, notes
@@ -86,6 +92,7 @@ To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 nod
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
 - **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.13.0, loaded from public CDNs with integrity hashes.
 - **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Media Panel page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
+- **Refresh the House roster:** `node scripts/build-house-roster.js` (free). Members who are new since the last run need a portrait in `app/public/photos/<bioguide_id>.jpg`: the official photo from https://unitedstates.github.io/images/congress/450x550/<id>.jpg (or bioguide.congress.gov), cropped to a 160px head-and-shoulders square. `node --test` fails until every member has one.
 - **Rebuild the U.S. map:** `node scripts/build-us-map.js` (free). Add state codes to `DISTRICT_STATES` to draw more states' districts.
 - **Run locally:** `node app/server.js`, then open http://localhost:3000 (prototype sign-in accepts anything)
 - **Run deterministic tests:** `node --test`

@@ -138,6 +138,31 @@
     .setup { max-width: 1120px; margin: 48px auto; display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 40px; align-items: start; }
     @media (max-width: 860px) { .setup { grid-template-columns: minmax(0, 1fr); gap: 16px; margin: 24px auto; } }
     .us-map-card { margin: 0; padding: 16px; }
+    /* Setup: a state picker, then one square box per member (district, round portrait, name), tinted
+       by party. Light party tints: the name text stays dark, so contrast is the same as on white. */
+    .setup-state { max-width: 320px; padding: 0; margin-top: 20px; }
+    .member-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+    @media (max-width: 480px) { .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .member-grid .member-box img, .member-grid .member-box-photo { width: 84px; height: 84px; } .member-grid .member-box-name { font-size: 14px; } }
+    .member-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; aspect-ratio: 1;
+      padding: 10px; border: 1px solid var(--border); border-radius: 14px; color: var(--text); text-decoration: none; text-align: center;
+      transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s ease, box-shadow 0.15s ease; }
+    .member-box.dem { background: #eef3fd; border-color: #d3e0f7; }
+    .member-box.rep { background: #fdf0ee; border-color: #f2d4cf; }
+    .member-box.ind { background: #f3f4f6; }
+    @media (hover: hover) and (pointer: fine) {
+      a.member-box:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+      a.member-box.dem:hover { border-color: #9fb9ea; }
+      a.member-box.rep:hover { border-color: #e3a79e; }
+    }
+    a.member-box:active { transform: scale(0.985); transition-duration: 0.09s; }
+    .member-box:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .member-box-district { font-size: 13px; line-height: 1.2; font-weight: 700; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+    .member-box img, .member-box-photo { width: 60px; height: 60px; flex: none; border-radius: 50%; object-fit: cover; background: #e4e7ec; box-shadow: 0 0 0 2px #fff; }
+    .member-box-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+    .member-box-note { font-weight: 500; color: var(--muted); }
+    .member-grid .member-box-name.long { font-size: 12px; } /* e.g. Debbie Wasserman Schultz: stays on two lines */
+    .member-key { grid-column: 1 / -1; margin: 4px 0 0; }
+    @media (prefers-reduced-motion: reduce) { .member-box { transition: none; } }
     .us-map { display: block; width: 100%; height: auto; aspect-ratio: 5 / 3; }
     .us-map-card figcaption { margin-top: 8px; }
     .us-state { fill: #ffffff; stroke: #c4cad3; stroke-width: 0.8; vector-effect: non-scaling-stroke; stroke-linejoin: round; transition: fill 0.3s ease; }
@@ -690,7 +715,6 @@
     const go = (hash) => { location.hash = hash; };
     // Read-only public demo or the full local app; asked once, used by any screen that writes.
     const config = fetch('/api/config').then((r) => r.json()).catch(() => ({ read_only: false }));
-    const lastName = (m) => m.name.replace(/ Jr\.$/, '').split(' ').slice(-1)[0];
 
     async function loginView() {
       const { read_only: readOnly } = await config;
@@ -818,29 +842,30 @@
     };
 
     async function setupView() {
-      const [{ members }, usmap] = await Promise.all([
+      const [{ members }, usmap, { members: house }] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
         getUsMap(),
+        fetch('/api/house').then((r) => (r.ok ? r.json() : { members: [] })).catch(() => ({ members: [] })),
       ]);
       const stateOf = (m) => m.district.split('-')[0];
-      const perState = members.reduce((n, m) => ({ ...n, [stateOf(m)]: (n[stateOf(m)] || 0) + 1 }), {});
+      // States Bill Reader covers use its own member files (their boxes open briefs); every other
+      // state shows its current House members from the roster, for viewing only.
+      const covered = new Set(members.map(stateOf));
+      const perState = [...members, ...house.filter((m) => !covered.has(m.state))]
+        .reduce((n, m) => ({ ...n, [stateOf(m)]: (n[stateOf(m)] || 0) + 1 }), {});
       const states = usmap ? usmap.states : [{ abbr: 'NJ', name: 'New Jersey' }];
       app.innerHTML = `<div class="setup">
         <div>
           <div class="kicker">Bill Reader · 119th Congress</div>
           <h1>Set up your office</h1>
-          <p class="meta">Choose your state, the member you work for, then their district. Member data (votes and public commitments) and district data (Census and elections) come from separate sources.</p>
-          <form id="setup" class="card form">
-            <label for="state">1. State</label>
+          <p class="meta">Choose your state, then the member you work for.</p>
+          <div class="form setup-state">
+            <label for="state">State</label>
             <select id="state"><option value="">Choose a state…</option>
               ${states.map((s) => `<option value="${esc(s.abbr)}">${esc(s.name)}${perState[s.abbr] ? ` (${plural(perState[s.abbr], 'member')})` : ''}</option>`).join('')}</select>
-            <label for="member">2. Member</label>
-            <select id="member" disabled><option value="">Choose a state first</option></select>
-            <label for="district">3. District</label>
-            <select id="district" disabled><option value="">Choose a member first</option></select>
-            <p id="member-status" class="meta" aria-live="polite"></p>
-            <button type="submit" class="primary" id="continue" disabled>Continue to bills</button>
-          </form>
+          </div>
+          <p id="member-status" class="meta" aria-live="polite"></p>
+          <div id="member-grid" class="member-grid"></div>
           <p class="meta"><a href="#/login">Sign out</a></p>
         </div>
         ${usmap ? `<figure class="card us-map-card">
@@ -852,54 +877,63 @@
         </figure>` : ''}
       </div>`;
       const stateSelect = document.getElementById('state');
-      const memberSelect = document.getElementById('member');
-      const districtSelect = document.getElementById('district');
+      const grid = document.getElementById('member-grid');
       const status = document.getElementById('member-status');
-      const button = document.getElementById('continue');
       const svg = document.getElementById('us-map');
       const mark = (selector, cls, test) => svg && svg.querySelectorAll(selector).forEach((el) => el.classList.toggle(cls, test(el)));
-      const resetDistrict = (text) => {
-        districtSelect.disabled = true;
-        districtSelect.innerHTML = `<option value="">${esc(text)}</option>`;
-        mark('.us-district', 'selected', () => false);
-        button.disabled = true;
+      const PARTY = { D: ['dem', 'Democrat'], R: ['rep', 'Republican'] };
+      // Outline one district on the map (drawn counterclockwise), or clear the outline with null.
+      const outlineDistrict = (id) => {
+        const current = svg && svg.querySelector('.us-district.selected');
+        if (current && current.dataset.district === id) return;
+        mark('.us-district', 'selected', (el) => el.dataset.district === id);
+        const outline = svg && svg.querySelector('.us-district.selected');
+        if (outline) { outline.parentNode.appendChild(outline); drawOutline(outline); } // drawn last, so its black line sits on top
       };
 
+      // One square box per member, in district order: district, round official portrait, name, tinted
+      // by party. In a covered state choosing a box opens that member's home page; elsewhere the boxes
+      // only show who represents the state, for now.
+      const seatOf = (m) => { const n = Number(m.district.split('-')[1]); return Number.isNaN(n) ? 0 : n; };
+      const districtText = (d) => d.replace(/-AL$/, ' · At large').replace(/-Del$/, ' · Delegate');
       stateSelect.addEventListener('change', () => {
         const abbr = stateSelect.value;
-        const here = members.filter((m) => stateOf(m) === abbr).sort((a, b) => lastName(a).localeCompare(lastName(b)));
-        memberSelect.disabled = !here.length;
-        memberSelect.innerHTML = !abbr ? '<option value="">Choose a state first</option>'
-          : here.length ? `<option value="">Choose a member…</option>${here.map((m) => `<option value="${esc(m.id)}">${esc(memberLabel(m))}</option>`).join('')}`
-          : '<option value="">No members set up for this state yet</option>';
-        resetDistrict('Choose a member first');
-        status.textContent = abbr && !here.length ? 'Bill Reader covers New Jersey for now; more states are coming.' : '';
+        const linked = covered.has(abbr);
+        const here = (linked ? members.filter((m) => stateOf(m) === abbr) : house.filter((m) => m.state === abbr)).sort((a, b) => seatOf(a) - seatOf(b));
+        const parties = new Set(here.map((m) => m.party));
+        grid.innerHTML = here.map((m) => {
+          const [cls, word] = PARTY[m.party] || ['ind', 'Independent'];
+          const label = `${districtText(m.district)}: ${m.title} ${m.name}, ${word}${m.note ? ', former member' : ''}`;
+          const inner = `<span class="member-box-district">${esc(districtText(m.district))}${m.note ? ' <span class="member-box-note">· Former</span>' : ''}</span>
+            ${m.bioguide_id ? `<img src="/photos/${encodeURIComponent(m.bioguide_id)}.jpg" alt="" width="60" height="60" loading="lazy">` : '<span class="member-box-photo" aria-hidden="true"></span>'}
+            <span class="member-box-name${m.name.length > 19 ? ' long' : ''}">${esc(m.name)}</span>`;
+          return linked
+            ? `<a class="member-box ${cls}" href="#/bills/${encodeURIComponent(m.id)}/${encodeURIComponent(m.district)}" data-district="${esc(m.district)}" aria-label="${esc(label)}"${m.note ? ` title="${esc(m.note)}"` : ''}>${inner}</a>`
+            : `<div class="member-box static ${cls}" role="group" aria-label="${esc(label)}">${inner}</div>`;
+        }).join('') + (here.length ? `<p class="meta member-key">${[['D', 'Blue: Democrat'], ['R', 'Red: Republican'], ['I', 'Gray: Independent']].filter(([p]) => parties.has(p)).map(([, t]) => t).join(' · ')}</p>` : '');
+        status.textContent = !abbr ? ''
+          : !here.length ? 'No House members listed for this state.'
+          : linked ? `${plural(here.length, 'member')}. Choose one to open their briefs; pointing at one outlines their district on the map.`
+          : `${plural(here.length, 'member')} of the 119th Congress. Briefs cover New Jersey for now, so these boxes don't open yet.`;
         if (!svg) return;
+        mark('.us-district', 'selected', () => false);
         mark('.us-state', 'selected', (el) => el.dataset.state === abbr);
         mark('.us-district', 'visible', (el) => el.dataset.state === abbr);
         const state = usmap.states.find((s) => s.abbr === abbr);
         zoomMap(svg, state ? boxAround(state.bbox) : usmap.viewBox);
       });
-      memberSelect.addEventListener('change', () => {
-        const m = members.find((x) => x.id === memberSelect.value);
-        resetDistrict('Choose a member first');
-        if (m) {
-          districtSelect.disabled = false;
-          districtSelect.innerHTML = `<option value="">Choose a district…</option><option value="${esc(m.district)}">${esc(m.district)}</option>`;
-        }
-        // Which bills have briefs is shown on the next page, per bill.
-        status.textContent = m ? `${m.note ? m.note + ' ' : ''}Next, choose a bill or upload a new one.` : '';
-      });
-      districtSelect.addEventListener('change', () => {
-        button.disabled = !districtSelect.value;
-        mark('.us-district', 'selected', (el) => el.dataset.district === districtSelect.value);
-        const outline = svg && svg.querySelector('.us-district.selected');
-        if (outline) { outline.parentNode.appendChild(outline); drawOutline(outline); } // drawn last, so its black line sits on top
-      });
-      document.getElementById('setup').addEventListener('submit', (event) => {
+      // Pointing at or tabbing to a box outlines that district; leaving the boxes clears it.
+      grid.addEventListener('pointerover', (event) => { const box = event.target.closest('a.member-box'); if (box) outlineDistrict(box.dataset.district); });
+      grid.addEventListener('focusin', (event) => { const box = event.target.closest('a.member-box'); if (box) outlineDistrict(box.dataset.district); });
+      grid.addEventListener('pointerleave', () => { if (!grid.contains(document.activeElement)) outlineDistrict(null); });
+      grid.addEventListener('focusout', (event) => { if (!grid.contains(event.relatedTarget)) outlineDistrict(null); });
+      grid.addEventListener('click', (event) => {
+        const box = event.target.closest('a.member-box');
+        if (!box || event.metaKey || event.ctrlKey || event.shiftKey) return; // let new-tab clicks work as links
         event.preventDefault();
+        outlineDistrict(box.dataset.district);
         takeOffMap(svg, stateSelect.value);
-        go(`#/bills/${encodeURIComponent(memberSelect.value)}/${encodeURIComponent(districtSelect.value)}`);
+        go(box.getAttribute('href'));
       });
     }
 
