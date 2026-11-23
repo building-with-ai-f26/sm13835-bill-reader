@@ -21,6 +21,8 @@ app/
     photos/          Official House portraits (public domain) for every current House member, named by Bioguide ID
                      (e.g. G000583.jpg), 160px squares served at /photos/<id>.jpg for the setup page's member boxes
 scripts/
+  add-district-facts.js  Adds immigration, entitlement, health, education, jobs and housing facts to
+                     data/districts/ from Census Reporter (ACS 2024 1-year); re-runnable
   build-house-roster.js  Builds data/house-119.json (every current House member) from the public-domain
                      congress-legislators project
   build-us-map.js    Builds data/us-map.json from Census boundary files (read in memory; nothing else saved)
@@ -92,6 +94,7 @@ To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 nod
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
 - **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.13.0, loaded from public CDNs with integrity hashes.
 - **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Media Panel page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
+- **District facts (free):** `node scripts/add-district-facts.js` adds or refreshes 11 Census facts per NJ district (foreign-born, non-citizens, other language at home, limited English, Social Security, Medicare, uninsured, bachelor's degree, unemployment, median home value, median rent) from Census Reporter (no key; the Census Bureau's own API now requires one). Back up `data/districts/` first. The District Info page groups every fact by topic (`FACT_GROUPS` in `index.html`); a new fact key appears under "Other" until it is added to a group. AI briefs see all district facts, so new facts reach the next paid run, not existing briefs.
 - **Refresh the House roster:** `node scripts/build-house-roster.js` (free). Members who are new since the last run need a portrait in `app/public/photos/<bioguide_id>.jpg`: the official photo from https://unitedstates.github.io/images/congress/450x550/<id>.jpg (or bioguide.congress.gov), cropped to a 160px head-and-shoulders square. `node --test` fails until every member has one.
 - **Rebuild the U.S. map:** `node scripts/build-us-map.js` (free). Add state codes to `DISTRICT_STATES` to draw more states' districts.
 - **Run locally:** `node app/server.js`, then open http://localhost:3000 (prototype sign-in accepts anything)

@@ -41,9 +41,30 @@
     blockquote { margin: 10px 0; padding-left: 12px; border-left: 3px solid var(--border); font-size: 14px; color: #374151; }
     .columns, .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
     @media (max-width: 860px) { .columns, .card-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
-    .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-    .fact { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
-    .fact strong { display: block; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    /* District profile: one card per topic; inside, each fact is a row with the label on the left and
+       the number on the right (its count, when there is one, in smaller text below). */
+    .fact-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+    @media (max-width: 760px) { .fact-groups { grid-template-columns: minmax(0, 1fr); } }
+    /* Each topic is a closed box with an arrow; clicking (or Enter/Space) drops its facts down. */
+    .fact-group { margin: 0; padding: 0; }
+    .fact-group summary { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 14px 20px; cursor: pointer; list-style: none; border-radius: inherit; }
+    .fact-group summary::-webkit-details-marker { display: none; }
+    .fact-group summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .fact-group summary:hover .fact-chevron { color: var(--accent); }
+    .fact-group h3 { display: flex; align-items: center; gap: 10px; flex: 1; margin: 0; font-size: 16px; font-weight: 700; }
+    .fact-chevron { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      color: var(--muted); transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.15s ease; }
+    .fact-group[open] .fact-chevron { transform: rotate(180deg); }
+    .fact-group .fact-rows { padding: 0 20px 8px; border-top: 1px solid var(--border); }
+    @media (prefers-reduced-motion: reduce) { .fact-chevron { transition: none; } }
+    .fact-group h3 svg { flex: none; width: 32px; height: 32px; padding: 7px; border-radius: 8px; background: var(--accent-soft); color: var(--accent);
+      fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; box-sizing: border-box; }
+    .fact-rows { margin: 0; }
+    .fact-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0; border-top: 1px solid var(--border); }
+    .fact-row:first-child { border-top: 0; }
+    .fact-row dt { font-size: 14px; color: var(--text); }
+    .fact-row dd { margin: 0; text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .fact-row dd small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
     .chips { margin-top: 8px; font-size: 13px; color: var(--muted); }
     .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); background: var(--card); }
     table { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -589,6 +610,41 @@
           <p class="meta">Models: ${esc(brief.models.screen)}, ${esc(brief.models.deep)} · Run cost: $${esc(brief.cost_usd)} · Generated ${esc(brief.generated_at)}</p></div>`;
     }
 
+    // District facts grouped by topic. Any fact not listed here still shows, under "Other".
+    const FACT_GROUPS = [
+      ['Economy & education', '<path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 6-6" />',
+        ['median_household_income', 'poverty_pct', 'unemployment_pct', 'bachelors_pct']],
+      ['Immigration', '<circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18" />',
+        ['foreign_born_pct', 'noncitizen_pct', 'other_language_pct', 'limited_english_pct']],
+      ['Entitlements & health coverage', '<path d="M12 21s-7-4.4-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6c-2.3 4.6-9.3 9-9.3 9z" />',
+        ['social_security_households_pct', 'medicare_coverage_pct', 'medicaid_coverage_pct', 'snap_households_pct', 'uninsured_pct']],
+      ['Housing & taxes', '<path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" />',
+        ['median_home_value', 'median_gross_rent', 'median_property_tax', 'owner_occupied_pct']],
+      ['Jobs & commuting', '<rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /><path d="M3 13h18" />',
+        ['occ_management_pct', 'occ_sales_office_pct', 'occ_service_pct', 'occ_production_pct', 'occ_construction_pct', 'work_from_home_pct', 'commute_transit_pct', 'commute_rail_pct']],
+      ['People', '<circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7" /><path d="M18 14a6.5 6.5 0 0 1 3.5 6" />',
+        ['population', 'median_age', 'avg_household_size', 'race_white_pct', 'race_hispanic_pct', 'race_asian_pct', 'race_black_pct']],
+      ['Seniors & veterans', '<circle cx="12" cy="9" r="5" /><path d="m9 13.5-2 7.5 5-3 5 3-2-7.5" />',
+        ['seniors_voting_age_pct', 'veterans_pct']],
+      ['2024 election', '<path d="m9 12 2 2 4-4" /><rect x="3" y="4" width="18" height="16" rx="2" />',
+        ['margin_2024', 'turnout_2024']],
+    ];
+    function factGroupsHtml(facts) {
+      const byKey = new Map(facts.map((f) => [f.key, f]));
+      const listed = new Set(FACT_GROUPS.flatMap(([, , keys]) => keys));
+      const other = facts.filter((f) => !listed.has(f.key)).map((f) => f.key);
+      const groups = [...FACT_GROUPS, ...(other.length ? [['Other', '<circle cx="12" cy="12" r="9" /><path d="M8 12h8" />', other]] : [])];
+      // "4.4% (12,817 households)" shows the share large and the count small underneath.
+      const value = (display) => { const m = display.match(/^(.*?) \((.+)\)$/); return m ? `${esc(m[1])}<small>${esc(m[2])}</small>` : esc(display); };
+      return `<div class="fact-groups">${groups.map(([title, icon, keys]) => {
+        const rows = keys.map((k) => byKey.get(k)).filter(Boolean);
+        if (!rows.length) return '';
+        return `<details class="card fact-group"><summary><h3><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>${esc(title)}</h3>
+            <svg class="fact-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary>
+          <dl class="fact-rows">${rows.map((f) => `<div class="fact-row" id="fact-${esc(f.key)}"><dt>${esc(f.label)}</dt><dd>${value(f.display)}</dd></div>`).join('')}</dl></details>`;
+      }).join('')}</div>`;
+    }
+
     function districtProfileHtml({ map, member, district }) {
       const rows = district.elections.map((e, i, all) => {
         const prev = all[i - 1];
@@ -601,7 +657,7 @@
       }).join('');
       return `${mapHtml(map, member, district)}
         <h2>District profile: ${esc(district.id)}</h2>
-        <div class="facts">${district.facts.map((f) => `<div class="fact"><strong>${esc(f.display)}</strong><span class="meta">${esc(f.label)}</span></div>`).join('')}</div>
+        ${factGroupsHtml(district.facts)}
         <h2>House elections, 2006–2024</h2>
         <div class="scroll"><table><thead><tr><th>Year</th><th>Democrat</th><th class="num">%</th><th>Republican</th><th class="num">%</th>
           <th class="num">Total votes</th><th class="num">Margin</th><th class="num">Change</th></tr></thead><tbody>${rows}</tbody></table></div>

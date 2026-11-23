@@ -5,7 +5,7 @@
     {
       "key": "population",
       "label": "Total population",
-      "value": 784146.0,
+      "value": 784146,
       "display": "784,146",
       "source": "ACS 2024 1-year estimates"
     },
@@ -19,7 +19,7 @@
     {
       "key": "median_household_income",
       "label": "Median household income",
-      "value": 94772.0,
+      "value": 94772,
       "display": "$94,772",
       "source": "ACS 2024 1-year estimates"
     },
@@ -33,7 +33,7 @@
     {
       "key": "median_property_tax",
       "label": "Median annual real estate taxes (owner-occupied homes)",
-      "value": 7534.0,
+      "value": 7534,
       "display": "$7,534",
       "source": "ACS 2024 1-year estimates"
     },
@@ -68,7 +68,7 @@
     {
       "key": "seniors_voting_age_pct",
       "label": "Citizens of voting age who are 65 or older",
-      "value": 23.0,
+      "value": 23,
       "display": "23.0%",
       "source": "ACS 2024 1-year estimates"
     },
@@ -164,6 +164,83 @@
       "source": "ACS 2024 1-year estimates"
     },
     {
+      "key": "foreign_born_pct",
+      "label": "Residents born outside the U.S.",
+      "value": 10.3,
+      "display": "10.3% (80,729 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "noncitizen_pct",
+      "label": "Residents who are not U.S. citizens",
+      "value": 4.2,
+      "display": "4.2% (33,267 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "other_language_pct",
+      "label": "Residents 5 and older who speak a language other than English at home",
+      "value": 19.1,
+      "display": "19.1% (141,481 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "limited_english_pct",
+      "label": "Residents 5 and older who speak English less than \"very well\"",
+      "value": 8.2,
+      "display": "8.2% (60,675 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "social_security_households_pct",
+      "label": "Households receiving Social Security",
+      "value": 33.7,
+      "display": "33.7% (100,739 households)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "medicare_coverage_pct",
+      "label": "Residents with Medicare coverage",
+      "value": 19.1,
+      "display": "19.1% (148,803 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "uninsured_pct",
+      "label": "Residents without health insurance",
+      "value": 4.8,
+      "display": "4.8% (37,006 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "bachelors_pct",
+      "label": "Adults 25 and older with a bachelor's degree or higher",
+      "value": 37.9,
+      "display": "37.9% (208,339 adults)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "unemployment_pct",
+      "label": "Unemployment rate (civilian labor force)",
+      "value": 5.6,
+      "display": "5.6%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_home_value",
+      "label": "Median home value (owner-occupied)",
+      "value": 331300,
+      "display": "$331,300",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_gross_rent",
+      "label": "Median gross rent",
+      "value": 1475,
+      "display": "$1,475 a month",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
       "key": "margin_2024",
       "label": "2024 House race margin",
       "value": 17.8,
@@ -187,9 +264,9 @@
       "rep_votes": 0,
       "other_votes": 0,
       "total_votes": 140110,
-      "dem_pct": 100.0,
-      "rep_pct": 0.0,
-      "margin_pts": 100.0,
+      "dem_pct": 100,
+      "rep_pct": 0,
+      "margin_pts": 100,
       "new_lines": false
     },
     {
@@ -201,7 +278,7 @@
       "other_votes": 4703,
       "total_votes": 285157,
       "dem_pct": 72.4,
-      "rep_pct": 26.0,
+      "rep_pct": 26,
       "margin_pts": 46.4,
       "new_lines": false
     },
@@ -227,7 +304,7 @@
       "other_votes": 5590,
       "total_votes": 308519,
       "dem_pct": 68.2,
-      "rep_pct": 30.0,
+      "rep_pct": 30,
       "margin_pts": 38.3,
       "new_lines": true
     },
@@ -241,7 +318,7 @@
       "total_votes": 162492,
       "dem_pct": 57.4,
       "rep_pct": 39.4,
-      "margin_pts": 18.0,
+      "margin_pts": 18,
       "new_lines": false
     },
     {
@@ -252,7 +329,7 @@
       "rep_votes": 112388,
       "other_votes": 9854,
       "total_votes": 305473,
-      "dem_pct": 60.0,
+      "dem_pct": 60,
       "rep_pct": 36.8,
       "margin_pts": 23.2,
       "new_lines": false
@@ -280,7 +357,7 @@
       "total_votes": 385030,
       "dem_pct": 62.5,
       "rep_pct": 37.5,
-      "margin_pts": 25.0,
+      "margin_pts": 25,
       "new_lines": false
     },
     {
@@ -305,7 +382,7 @@
       "other_votes": 7862,
       "total_votes": 361060,
       "dem_pct": 57.8,
-      "rep_pct": 40.0,
+      "rep_pct": 40,
       "margin_pts": 17.8,
       "new_lines": false
     }

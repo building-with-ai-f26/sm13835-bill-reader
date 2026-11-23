@@ -5,7 +5,7 @@
     {
       "key": "population",
       "label": "Total population",
-      "value": 800060.0,
+      "value": 800060,
       "display": "800,060",
       "source": "ACS 2024 1-year estimates"
     },
@@ -19,7 +19,7 @@
     {
       "key": "median_household_income",
       "label": "Median household income",
-      "value": 141429.0,
+      "value": 141429,
       "display": "$141,429",
       "source": "ACS 2024 1-year estimates"
     },
@@ -82,7 +82,7 @@
     {
       "key": "race_white_pct",
       "label": "White, non-Hispanic",
-      "value": 60.0,
+      "value": 60,
       "display": "60.0%",
       "source": "ACS 2024 1-year estimates"
     },
@@ -164,6 +164,83 @@
       "source": "ACS 2024 1-year estimates"
     },
     {
+      "key": "foreign_born_pct",
+      "label": "Residents born outside the U.S.",
+      "value": 21.9,
+      "display": "21.9% (175,382 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "noncitizen_pct",
+      "label": "Residents who are not U.S. citizens",
+      "value": 7.5,
+      "display": "7.5% (59,727 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "other_language_pct",
+      "label": "Residents 5 and older who speak a language other than English at home",
+      "value": 30.3,
+      "display": "30.3% (229,697 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "limited_english_pct",
+      "label": "Residents 5 and older who speak English less than \"very well\"",
+      "value": 10.4,
+      "display": "10.4% (79,215 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "social_security_households_pct",
+      "label": "Households receiving Social Security",
+      "value": 30.7,
+      "display": "30.7% (89,896 households)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "medicare_coverage_pct",
+      "label": "Residents with Medicare coverage",
+      "value": 17.8,
+      "display": "17.8% (141,556 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "uninsured_pct",
+      "label": "Residents without health insurance",
+      "value": 4.5,
+      "display": "4.5% (35,790 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "bachelors_pct",
+      "label": "Adults 25 and older with a bachelor's degree or higher",
+      "value": 60.1,
+      "display": "60.1% (338,751 adults)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "unemployment_pct",
+      "label": "Unemployment rate (civilian labor force)",
+      "value": 4,
+      "display": "4.0%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_home_value",
+      "label": "Median home value (owner-occupied)",
+      "value": 667900,
+      "display": "$667,900",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_gross_rent",
+      "label": "Median gross rent",
+      "value": 1964,
+      "display": "$1,964 a month",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
       "key": "margin_2024",
       "label": "2024 House race margin",
       "value": 14.7,
@@ -200,7 +277,7 @@
       "rep_votes": 189696,
       "other_votes": 3526,
       "total_votes": 306732,
-      "dem_pct": 37.0,
+      "dem_pct": 37,
       "rep_pct": 61.8,
       "margin_pts": -24.8,
       "new_lines": false
@@ -226,7 +303,7 @@
       "rep_votes": 182237,
       "other_votes": 3725,
       "total_votes": 309859,
-      "dem_pct": 40.0,
+      "dem_pct": 40,
       "rep_pct": 58.8,
       "margin_pts": -18.8,
       "new_lines": true
@@ -253,7 +330,7 @@
       "other_votes": 10531,
       "total_votes": 334992,
       "dem_pct": 38.9,
-      "rep_pct": 58.0,
+      "rep_pct": 58,
       "margin_pts": -19.1,
       "new_lines": false
     },
@@ -291,7 +368,7 @@
       "rep_votes": 109952,
       "other_votes": 2276,
       "total_votes": 273664,
-      "dem_pct": 59.0,
+      "dem_pct": 59,
       "rep_pct": 40.2,
       "margin_pts": 18.8,
       "new_lines": true

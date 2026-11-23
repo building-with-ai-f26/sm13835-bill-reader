@@ -5,7 +5,7 @@
     {
       "key": "population",
       "label": "Total population",
-      "value": 795125.0,
+      "value": 795125,
       "display": "795,125",
       "source": "ACS 2024 1-year estimates"
     },
@@ -19,7 +19,7 @@
     {
       "key": "median_household_income",
       "label": "Median household income",
-      "value": 103769.0,
+      "value": 103769,
       "display": "$103,769",
       "source": "ACS 2024 1-year estimates"
     },
@@ -33,7 +33,7 @@
     {
       "key": "median_property_tax",
       "label": "Median annual real estate taxes (owner-occupied homes)",
-      "value": 7308.0,
+      "value": 7308,
       "display": "$7,308",
       "source": "ACS 2024 1-year estimates"
     },
@@ -164,6 +164,83 @@
       "source": "ACS 2024 1-year estimates"
     },
     {
+      "key": "foreign_born_pct",
+      "label": "Residents born outside the U.S.",
+      "value": 8.9,
+      "display": "8.9% (70,776 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "noncitizen_pct",
+      "label": "Residents who are not U.S. citizens",
+      "value": 3.6,
+      "display": "3.6% (28,934 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "other_language_pct",
+      "label": "Residents 5 and older who speak a language other than English at home",
+      "value": 13.2,
+      "display": "13.2% (97,409 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "limited_english_pct",
+      "label": "Residents 5 and older who speak English less than \"very well\"",
+      "value": 4,
+      "display": "4.0% (29,777 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "social_security_households_pct",
+      "label": "Households receiving Social Security",
+      "value": 41.5,
+      "display": "41.5% (122,567 households)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "medicare_coverage_pct",
+      "label": "Residents with Medicare coverage",
+      "value": 22.7,
+      "display": "22.7% (179,203 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "uninsured_pct",
+      "label": "Residents without health insurance",
+      "value": 4.5,
+      "display": "4.5% (35,266 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "bachelors_pct",
+      "label": "Adults 25 and older with a bachelor's degree or higher",
+      "value": 42.1,
+      "display": "42.1% (226,105 adults)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "unemployment_pct",
+      "label": "Unemployment rate (civilian labor force)",
+      "value": 4.3,
+      "display": "4.3%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_home_value",
+      "label": "Median home value (owner-occupied)",
+      "value": 522100,
+      "display": "$522,100",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_gross_rent",
+      "label": "Median gross rent",
+      "value": 1834,
+      "display": "$1,834 a month",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
       "key": "margin_2024",
       "label": "2024 House race margin",
       "value": -35.7,
@@ -173,7 +250,7 @@
     {
       "key": "turnout_2024",
       "label": "2024 House votes as a share of citizens of voting age",
-      "value": 69.0,
+      "value": 69,
       "display": "69.0% (394,228 votes)",
       "source": "Clerk of the House; ACS 2024 citizen voting-age population"
     }
@@ -240,7 +317,7 @@
       "other_votes": 1608,
       "total_votes": 174849,
       "dem_pct": 31.1,
-      "rep_pct": 68.0,
+      "rep_pct": 68,
       "margin_pts": -36.8,
       "new_lines": false
     },

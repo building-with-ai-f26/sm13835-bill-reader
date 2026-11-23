@@ -5,7 +5,7 @@
     {
       "key": "population",
       "label": "Total population",
-      "value": 789429.0,
+      "value": 789429,
       "display": "789,429",
       "source": "ACS 2024 1-year estimates"
     },
@@ -19,7 +19,7 @@
     {
       "key": "median_household_income",
       "label": "Median household income",
-      "value": 132702.0,
+      "value": 132702,
       "display": "$132,702",
       "source": "ACS 2024 1-year estimates"
     },
@@ -103,7 +103,7 @@
     {
       "key": "race_hispanic_pct",
       "label": "Hispanic or Latino, any race",
-      "value": 14.0,
+      "value": 14,
       "display": "14.0%",
       "source": "ACS 2024 1-year estimates"
     },
@@ -124,7 +124,7 @@
     {
       "key": "occ_sales_office_pct",
       "label": "Workers in sales and office occupations",
-      "value": 19.0,
+      "value": 19,
       "display": "19.0%",
       "source": "ACS 2024 1-year estimates"
     },
@@ -161,6 +161,83 @@
       "label": "Workers who work from home",
       "value": 15.7,
       "display": "15.7%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "foreign_born_pct",
+      "label": "Residents born outside the U.S.",
+      "value": 16.9,
+      "display": "16.9% (133,484 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "noncitizen_pct",
+      "label": "Residents who are not U.S. citizens",
+      "value": 6.1,
+      "display": "6.1% (47,956 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "other_language_pct",
+      "label": "Residents 5 and older who speak a language other than English at home",
+      "value": 22.7,
+      "display": "22.7% (170,134 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "limited_english_pct",
+      "label": "Residents 5 and older who speak English less than \"very well\"",
+      "value": 7.2,
+      "display": "7.2% (54,292 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "social_security_households_pct",
+      "label": "Households receiving Social Security",
+      "value": 32.1,
+      "display": "32.1% (96,750 households)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "medicare_coverage_pct",
+      "label": "Residents with Medicare coverage",
+      "value": 19.1,
+      "display": "19.1% (149,948 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "uninsured_pct",
+      "label": "Residents without health insurance",
+      "value": 3.8,
+      "display": "3.8% (30,151 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "bachelors_pct",
+      "label": "Adults 25 and older with a bachelor's degree or higher",
+      "value": 55.7,
+      "display": "55.7% (315,833 adults)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "unemployment_pct",
+      "label": "Unemployment rate (civilian labor force)",
+      "value": 4.5,
+      "display": "4.5%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_home_value",
+      "label": "Median home value (owner-occupied)",
+      "value": 591400,
+      "display": "$591,400",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_gross_rent",
+      "label": "Median gross rent",
+      "value": 1841,
+      "display": "$1,841 a month",
       "source": "ACS 2024 1-year estimates"
     },
     {
@@ -202,7 +279,7 @@
       "total_votes": 295628,
       "dem_pct": 42.2,
       "rep_pct": 50.2,
-      "margin_pts": -8.0,
+      "margin_pts": -8,
       "new_lines": false
     },
     {
@@ -226,7 +303,7 @@
       "rep_votes": 175662,
       "other_votes": 8596,
       "total_votes": 307315,
-      "dem_pct": 40.0,
+      "dem_pct": 40,
       "rep_pct": 57.2,
       "margin_pts": -17.1,
       "new_lines": true
@@ -254,7 +331,7 @@
       "total_votes": 343635,
       "dem_pct": 43.1,
       "rep_pct": 54.1,
-      "margin_pts": -11.0,
+      "margin_pts": -11,
       "new_lines": false
     },
     {
@@ -267,7 +344,7 @@
       "total_votes": 322742,
       "dem_pct": 51.7,
       "rep_pct": 46.7,
-      "margin_pts": 5.0,
+      "margin_pts": 5,
       "new_lines": false
     },
     {

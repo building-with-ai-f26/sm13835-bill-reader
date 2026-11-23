@@ -5,21 +5,21 @@
     {
       "key": "population",
       "label": "Total population",
-      "value": 795627.0,
+      "value": 795627,
       "display": "795,627",
       "source": "ACS 2024 1-year estimates"
     },
     {
       "key": "median_age",
       "label": "Median age",
-      "value": 42.0,
+      "value": 42,
       "display": "42.0 years",
       "source": "ACS 2024 1-year estimates"
     },
     {
       "key": "median_household_income",
       "label": "Median household income",
-      "value": 116950.0,
+      "value": 116950,
       "display": "$116,950",
       "source": "ACS 2024 1-year estimates"
     },
@@ -33,7 +33,7 @@
     {
       "key": "median_property_tax",
       "label": "Median annual real estate taxes (owner-occupied homes)",
-      "value": 8462.0,
+      "value": 8462,
       "display": "$8,462",
       "source": "ACS 2024 1-year estimates"
     },
@@ -54,7 +54,7 @@
     {
       "key": "medicaid_coverage_pct",
       "label": "Residents with Medicaid or other means-tested coverage",
-      "value": 7.0,
+      "value": 7,
       "display": "7.0% (54,893 people)",
       "source": "ACS 2024 1-year estimates"
     },
@@ -75,7 +75,7 @@
     {
       "key": "veterans_pct",
       "label": "Civilian adults who are veterans",
-      "value": 5.0,
+      "value": 5,
       "display": "5.0% (31,503 veterans)",
       "source": "ACS 2024 1-year estimates"
     },
@@ -145,7 +145,7 @@
     {
       "key": "commute_transit_pct",
       "label": "Commuters using public transit",
-      "value": 4.0,
+      "value": 4,
       "display": "4.0% (16,320 people)",
       "source": "ACS 2024 1-year estimates"
     },
@@ -161,6 +161,83 @@
       "label": "Workers who work from home",
       "value": 14.3,
       "display": "14.3%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "foreign_born_pct",
+      "label": "Residents born outside the U.S.",
+      "value": 16.1,
+      "display": "16.1% (127,957 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "noncitizen_pct",
+      "label": "Residents who are not U.S. citizens",
+      "value": 6.1,
+      "display": "6.1% (48,475 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "other_language_pct",
+      "label": "Residents 5 and older who speak a language other than English at home",
+      "value": 20.7,
+      "display": "20.7% (156,768 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "limited_english_pct",
+      "label": "Residents 5 and older who speak English less than \"very well\"",
+      "value": 7,
+      "display": "7.0% (52,949 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "social_security_households_pct",
+      "label": "Households receiving Social Security",
+      "value": 35.2,
+      "display": "35.2% (104,719 households)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "medicare_coverage_pct",
+      "label": "Residents with Medicare coverage",
+      "value": 19.5,
+      "display": "19.5% (151,843 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "uninsured_pct",
+      "label": "Residents without health insurance",
+      "value": 4.9,
+      "display": "4.9% (38,402 people)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "bachelors_pct",
+      "label": "Adults 25 and older with a bachelor's degree or higher",
+      "value": 46,
+      "display": "46.0% (260,961 adults)",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "unemployment_pct",
+      "label": "Unemployment rate (civilian labor force)",
+      "value": 5.3,
+      "display": "5.3%",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_home_value",
+      "label": "Median home value (owner-occupied)",
+      "value": 445200,
+      "display": "$445,200",
+      "source": "ACS 2024 1-year estimates"
+    },
+    {
+      "key": "median_gross_rent",
+      "label": "Median gross rent",
+      "value": 1880,
+      "display": "$1,880 a month",
       "source": "ACS 2024 1-year estimates"
     },
     {
@@ -187,7 +264,7 @@
       "rep_votes": 122559,
       "other_votes": 1179,
       "total_votes": 209851,
-      "dem_pct": 41.0,
+      "dem_pct": 41,
       "rep_pct": 58.4,
       "margin_pts": -17.4,
       "new_lines": false
@@ -214,7 +291,7 @@
       "other_votes": 5842,
       "total_votes": 220309,
       "dem_pct": 47.3,
-      "rep_pct": 50.0,
+      "rep_pct": 50,
       "margin_pts": -2.7,
       "new_lines": false
     },
@@ -240,7 +317,7 @@
       "other_votes": 3095,
       "total_votes": 186103,
       "dem_pct": 44.4,
-      "rep_pct": 54.0,
+      "rep_pct": 54,
       "margin_pts": -9.6,
       "new_lines": false
     },
@@ -265,7 +342,7 @@
       "rep_votes": 149500,
       "other_votes": 3902,
       "total_votes": 306875,
-      "dem_pct": 50.0,
+      "dem_pct": 50,
       "rep_pct": 48.7,
       "margin_pts": 1.3,
       "new_lines": false
