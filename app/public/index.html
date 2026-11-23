@@ -121,12 +121,17 @@
     .primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .bills { max-width: 860px; margin: 32px auto; }
     .map-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
-    .map-backdrop { position: absolute; top: 40%; left: 70%; transform: translate(-50%, -50%); height: 46vh; width: auto; opacity: 0.6; }
+    /* Home page state map, to the right of the member's name: in the margin beside the content column
+       when the screen has room for it; otherwise smaller, at the right end of the name row, behind it. */
+    .bills.home { position: relative; }
+    .home-map { position: absolute; z-index: -1; top: 24px; right: 0; height: 150px; width: auto; pointer-events: none; }
+    @media (min-width: 1220px) { .home-map { right: auto; left: calc(100% + 28px); top: 40px; height: 250px; } }
+    @media (max-width: 600px) { .home-map { top: 28px; height: 110px; } }
     /* Same geometry and line style as the setup map, so the map can fly from one page to the other. */
-    .map-backdrop path { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-    .map-backdrop .state { stroke-width: 0.8px; }
-    .map-backdrop .district { stroke-width: 0.6px; }
-    .map-backdrop .district.current { stroke-width: 1px; }
+    .home-map path { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+    .home-map .state { stroke-width: 0.8px; }
+    .home-map .district { stroke-width: 0.6px; }
+    .home-map .district.current { stroke-width: 1px; }
     /* Cards on this page let the map show through faintly. */
     .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; }
     @media (max-width: 760px) { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
@@ -841,7 +846,7 @@
       const flight = mapFlight;
       mapFlight = null;
       if (!flight) return;
-      const real = document.querySelector('.map-backdrop');
+      const real = document.querySelector('.home-map');
       const realState = real && real.querySelector('.state');
       if (!realState) { flight.layer.remove(); return; }
       real.style.visibility = 'hidden';
@@ -1053,8 +1058,8 @@
         + ` <span class="name-district" aria-hidden="true" style="--delay:${after.toFixed(3)}s">${esc(district)}</span>`;
     }
 
-    // A large, faint map of the member's state fixed behind the home page, with their district filled
-    // in their party color. Drawn from the same U.S. map data as the setup page (same shapes, same
+    // The member's state, to the right of their name on the home page, with their district filled in
+    // their party color. Drawn from the same U.S. map data as the setup page (same shapes, same
     // projection), so the setup map can turn into this one without a visible swap. Decorative only:
     // screen readers skip it and it can't be clicked.
     function mapBackdrop(usmap, member) {
@@ -1065,12 +1070,11 @@
       if (!state || !current) return '';
       const party = { D: 'dem', R: 'rep' }[member.party] || 'ind';
       const [x0, y0, x1, y1] = state.bbox, pad = 0.5;
-      // The screen-sized layer clips the map, so it can never make the page scroll sideways on a phone.
-      return `<div class="map-layer" aria-hidden="true"><svg class="map-backdrop" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" focusable="false">
+      return `<svg class="home-map" aria-hidden="true" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" focusable="false">
         <path class="state" data-state="${esc(abbr)}" d="${esc(state.path)}" />
         ${districts.filter((d) => d !== current).map((d) => `<path class="district" data-district="${esc(d.id)}" d="${esc(d.path)}" />`).join('')}
         <path class="district current ${party}" data-district="${esc(current.id)}" d="${esc(current.path)}" />
-      </svg></div>`;
+      </svg>`;
     }
 
     // ---- Choose a bill: H.R. 1, earlier uploads, or drop in a new one.
@@ -1322,16 +1326,16 @@
           ${icon ? `<span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span>` : ''}
           <span class="tile-title">${esc(title)}</span><span class="tile-stat">${esc(stat)}</span>
           <span class="tile-desc">${esc(desc)}</span><span class="tile-go">Open →</span></a>`;
-        app.innerHTML = `${mapBackdrop(usmap, member)}<div class="bills">${kicker}
+        app.innerHTML = `<div class="bills home">${mapBackdrop(usmap, member)}${kicker}
           <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
           ${member.honorific ? `<p class="member-welcome" style="--delay:${(nameTiming(member.name).after + 1.2).toFixed(3)}s">Welcome, ${esc(member.honorific)}</p>` : ''}
           <div class="tiles home-tiles">
             ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', readOnly ? 'Local app only' : 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
             ${tile(`${home}/list`, HOME_ICONS.list, 'Review Uploaded Bills', `${plural(bills.length, 'bill')} · ${ready} ready`, `H.R. 1 and your uploads, and whether each brief is ready for ${member.name.replace(/\.$/, '')}.`)}
             ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.')}
-            ${tile(`${home}/model`, null, 'Media Panel', 'Temporary', 'Every promise, where it came from, and how it was tested.', 'dm-tile media-tile')
-              .replace('<a ', `<a style="--photo:url(${MEDIA_PHOTO})" `)
-              .replace('</a>', '<span class="media-credit">Photo: Vini6305 (edited) · Wikimedia Commons · CC BY-SA 4.0</span></a>')}
+            <a class="tile dm-tile media-tile" href="${home}/model" style="--photo:url(${MEDIA_PHOTO})">
+              <span class="tile-title">Media Panel</span>
+              <span class="media-credit">Photo: Vini6305 (edited) · Wikimedia Commons · CC BY-SA 4.0</span></a>
           </div></div>`;
         landMap();
         return;
