@@ -14,7 +14,9 @@ data/uploads/
 data/media/transcripts/
 
 # AI Agent Local State / Logs (keep curated logs in journal/)
-.claude/
+.claude/*
+# ...except project skills, which are versioned with the app
+!.claude/skills/
 .codex/
 .cursor/
 .opencode/

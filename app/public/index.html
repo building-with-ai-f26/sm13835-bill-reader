@@ -164,6 +164,17 @@
     .dm-box blockquote { margin: 8px 0; }
     .dm-box details { font-size: 13px; color: #374151; margin-top: 4px; }
     .dm-box summary { cursor: pointer; color: var(--accent); font-weight: 500; }
+    .dm-subhead { font-size: 15px; margin: 24px 0 8px; }
+    .dm-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 760px) { .dm-filters { grid-template-columns: minmax(0, 1fr); } }
+    .dm-filters label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .dm-filters select { font: inherit; font-size: 16px; width: 100%; min-height: 44px; padding: 8px 12px;
+      border: 1px solid #d0d5dd; border-radius: 8px; background: var(--card); color: var(--text); }
+    .dm-filters select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .dm-filter-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 10px 0 10px; }
+    .dm-filter-status .meta { margin: 0; }
+    .dm-clear { min-height: 44px; }
+    .dm-clear[hidden] { display: none; }
     .dm-cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 14px; }
     .dm-cand { display: flex; flex-direction: column; gap: 4px; }
     .dm-cand.approved { border-color: #abefc6; background: #f6fef9; }
@@ -833,6 +844,64 @@
     };
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
 
+    // ---- TV appearances table: one row per appearance, and filters by month or year, network and topic.
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const topicKey = (t) => String(t).trim().toLowerCase();
+    const topicLabel = (t) => { const s = String(t).trim(); return s.charAt(0).toUpperCase() + s.slice(1); };
+
+    function tvRow(a, done) {
+      const t = done.get(a.id);
+      const status = t ? `✓ ${esc(t.duration)} · ${t.member_words.toLocaleString()} words`
+        : a.youtube ? 'Not transcribed' : 'Not on YouTube';
+      const labels = `${a.local ? ' <span class="tag neutral dm-mini">Local</span>' : ''}${a.with ? ` <span class="tag neutral dm-mini" title="With ${esc(a.with)}">Joint</span>` : ''}`;
+      return `<tr><td>${esc(shortDate(a.date))}</td><td>${esc(a.network)}${a.show && a.show !== 'unknown' && a.show !== 'news' ? ` · ${esc(a.show)}` : ''}${labels}</td>
+        <td>${esc((a.topics || []).join(', '))}</td>
+        <td>${a.youtube ? link(a.youtube, 'YouTube ↗') : a.url ? link(a.url, `${host(a.url)} ↗`) : ''}</td><td>${status}</td></tr>`;
+    }
+
+    // Each option shows how many appearances it holds, so an empty choice is never offered.
+    function tvFilterControls(appearances) {
+      const tally = (keyOf) => appearances.reduce((m, a) => { for (const k of [].concat(keyOf(a))) m.set(k, (m.get(k) || 0) + 1); return m; }, new Map());
+      const years = tally((a) => a.date.slice(0, 4));
+      const months = tally((a) => a.date.slice(0, 7));
+      const networks = tally((a) => a.network);
+      const topics = tally((a) => (a.topics || []).map(topicKey));
+      const firstLabel = new Map();
+      appearances.forEach((a) => (a.topics || []).forEach((t) => { if (!firstLabel.has(topicKey(t))) firstLabel.set(topicKey(t), topicLabel(t)); }));
+      const dateOptions = [...years.keys()].sort().reverse().map((y) => `<optgroup label="${esc(y)}">
+          <option value="${esc(y)}">All of ${esc(y)} (${years.get(y)})</option>
+          ${[...months.keys()].filter((m) => m.startsWith(y)).sort().reverse().map((m) => `<option value="${esc(m)}">${MONTHS[Number(m.slice(5)) - 1]} ${esc(y)} (${months.get(m)})</option>`).join('')}
+        </optgroup>`).join('');
+      const networkOptions = [...networks].sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' })).map(([n, c]) => `<option value="${esc(n)}">${esc(n)} (${c})</option>`).join('');
+      const topicOptions = [...topics].sort((a, b) => firstLabel.get(a[0]).localeCompare(firstLabel.get(b[0]))).map(([k, c]) => `<option value="${esc(k)}">${esc(firstLabel.get(k))} (${c})</option>`).join('');
+      return `<div><label for="tv-date">Month or year</label><select id="tv-date"><option value="">All dates</option>${dateOptions}</select></div>
+        <div><label for="tv-network">Network</label><select id="tv-network"><option value="">All networks</option>${networkOptions}</select></div>
+        <div><label for="tv-topic">Topic</label><select id="tv-topic"><option value="">All topics</option>${topicOptions}</select></div>`;
+    }
+
+    function wireTvFilters(dm) {
+      const media = dm.media;
+      const body = document.getElementById('tv-rows');
+      if (!media || !body) return;
+      const done = new Map(dm.transcripts.map((t) => [t.id, t]));
+      const [date, network, topic] = ['tv-date', 'tv-network', 'tv-topic'].map((id) => document.getElementById(id));
+      const count = document.getElementById('tv-count');
+      const clear = document.getElementById('tv-clear');
+      const total = media.appearances.length;
+      const draw = () => {
+        const shown = media.appearances.filter((a) => (!date.value || a.date.startsWith(date.value))
+          && (!network.value || a.network === network.value)
+          && (!topic.value || (a.topics || []).some((t) => topicKey(t) === topic.value)));
+        const filtered = Boolean(date.value || network.value || topic.value);
+        body.innerHTML = shown.length ? shown.map((a) => tvRow(a, done)).join('')
+          : '<tr><td colspan="5" class="meta">No appearances match these filters. Change one, or clear them all.</td></tr>';
+        count.textContent = filtered ? `Showing ${shown.length} of ${total} appearances` : `Showing all ${total} appearances`;
+        clear.hidden = !filtered;
+      };
+      [date, network, topic].forEach((s) => s.addEventListener('change', draw));
+      clear.addEventListener('click', () => { date.value = ''; network.value = ''; topic.value = ''; draw(); date.focus(); });
+    }
+
     // The review list of TV statements: filters, then one card per statement with Approve / Reject.
     // Decisions are saved by the server (POST /api/candidates/review) and the list redraws in place.
     function wireReview(dm, memberId, readOnly) {
@@ -926,15 +995,7 @@
         const onYoutube = media.appearances.filter((a) => a.youtube).length;
         const cost = dm.transcripts.reduce((n, t) => n + (t.cost_usd || 0), 0);
         const words = dm.transcripts.reduce((n, t) => n + t.member_words, 0);
-        const rows = media.appearances.map((a) => {
-          const t = done.get(a.id);
-          const status = t ? `✓ ${esc(t.duration)} · ${t.member_words.toLocaleString()} words`
-            : a.youtube ? 'Not transcribed' : 'Not on YouTube';
-          const labels = `${a.local ? ' <span class="tag neutral dm-mini">Local</span>' : ''}${a.with ? ` <span class="tag neutral dm-mini" title="With ${esc(a.with)}">Joint</span>` : ''}`;
-          return `<tr><td>${esc(shortDate(a.date))}</td><td>${esc(a.network)}${a.show && a.show !== 'unknown' && a.show !== 'news' ? ` · ${esc(a.show)}` : ''}${labels}</td>
-            <td>${esc((a.topics || []).join(', '))}</td>
-            <td>${a.youtube ? link(a.youtube, 'YouTube ↗') : a.url ? link(a.url, `${host(a.url)} ↗`) : ''}</td><td>${status}</td></tr>`;
-        }).join('');
+        const rows = media.appearances.map((a) => tvRow(a, done)).join('');
         return `<h2>TV appearances (new source, in progress)</h2>
           <p class="meta">${esc(media.scope)}. Gemini watched each YouTube link and wrote a speaker-labeled transcript; nothing was downloaded. Transcripts stay on this computer.</p>
           <div class="dm-flow">
@@ -958,7 +1019,11 @@
           }).join('')}</div>
           ${media.appearances.filter((a) => a.accuracy_check).map((a) => `<div class="card alert possible" style="margin-top:12px"><span class="tag possible">Accuracy check</span>
             <div><strong>${esc(a.show)}, ${esc(shortDate(a.date))}:</strong> ${esc(a.accuracy_check)}</div></div>`).join('')}
-          <div class="scroll"><table><thead><tr><th>Date</th><th>Network · show</th><th>Topics</th><th>Video</th><th>Transcript (his words)</th></tr></thead><tbody>${rows}</tbody></table></div>
+          <h3 class="dm-subhead">Every appearance</h3>
+          <div class="dm-filters" id="tv-filters">${tvFilterControls(media.appearances)}</div>
+          <div class="dm-filter-status"><p class="meta" id="tv-count" aria-live="polite">Showing all ${media.appearances.length} appearances</p>
+            <button type="button" class="filter-btn dm-clear" id="tv-clear" hidden>Clear filters</button></div>
+          <div class="scroll"><table><thead><tr><th>Date</th><th>Network · show</th><th>Topics</th><th>Video</th><th>Transcript (his words)</th></tr></thead><tbody id="tv-rows">${rows}</tbody></table></div>
           ${dm.candidates ? `<h2 id="review">TV statements to review</h2>
             <p class="meta">Claude Sonnet read every transcript and pulled out promises and claims about his record ($${esc(dm.candidates.cost_usd.toFixed(2))}).
               Each quote was checked word for word against his own lines; ${plural(dm.candidates.dropped.length, 'statement')} failed and ${dm.candidates.dropped.length === 1 ? 'was' : 'were'} dropped.
@@ -1049,6 +1114,7 @@
         const dm = await response.json();
         if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(dm.error)}</div></div>`; return; }
         app.innerHTML = `<div class="bills dm">${head('Data Model')}${dataModelHtml(dm)}</div>`;
+        wireTvFilters(dm);
         wireReview(dm, memberId, readOnly);
         return;
       }
