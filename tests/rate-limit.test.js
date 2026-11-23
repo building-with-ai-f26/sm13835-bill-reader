@@ -64,8 +64,17 @@ test('memory is capped: once full, new visitors are refused instead of remembere
   assert.strictEqual(limiter.check('all', 'a').allowed, true); // known visitors still work
 });
 
-test('trusts the forwarded address only behind a proxy', () => {
-  const req = { headers: { 'x-forwarded-for': '203.0.113.5, 10.0.0.1' }, socket: { remoteAddress: '127.0.0.1' } };
-  assert.strictEqual(visitorOf(req, true), '203.0.113.5');
+test('behind a proxy, a forged first X-Forwarded-For entry is ignored; the proxy-added last one counts', () => {
+  const forged = { headers: { 'x-forwarded-for': '198.51.100.7, 203.0.113.5' }, socket: { remoteAddress: '10.0.0.1' } };
+  assert.strictEqual(visitorOf(forged, true), '203.0.113.5');
+});
+
+test('the edge network client header wins over X-Forwarded-For', () => {
+  const req = { headers: { 'cf-connecting-ip': '203.0.113.9', 'x-forwarded-for': '198.51.100.7, 10.0.0.2' }, socket: { remoteAddress: '10.0.0.1' } };
+  assert.strictEqual(visitorOf(req, true), '203.0.113.9');
+});
+
+test('locally, forwarding headers are ignored entirely', () => {
+  const req = { headers: { 'x-forwarded-for': '198.51.100.7', 'cf-connecting-ip': '198.51.100.8' }, socket: { remoteAddress: '127.0.0.1' } };
   assert.strictEqual(visitorOf(req, false), '127.0.0.1');
 });

@@ -46,11 +46,19 @@ function bucketsFor(method, pathname) {
   return buckets;
 }
 
-// The visitor's address. Behind a host's proxy (Render) the real address is the first entry of
-// X-Forwarded-For; locally that header is ignored because any browser could fake it.
+// The visitor's address. Locally, the connection's own address (forwarding headers are ignored,
+// because any browser could fake them). Behind a host's proxy (Render), a visitor can send their
+// own X-Forwarded-For, and the proxy adds the real address after it, so the FIRST entry can be
+// forged (tested on the live site: it was). Use the edge network's client header when present
+// (it overwrites whatever the visitor sends), otherwise the LAST X-Forwarded-For entry.
 function visitorOf(req, behindProxy) {
-  const forwarded = behindProxy && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  return forwarded || req.socket.remoteAddress || 'unknown';
+  if (behindProxy) {
+    const edge = req.headers['cf-connecting-ip'] || req.headers['true-client-ip'];
+    if (edge) return String(edge).trim();
+    const chain = String(req.headers['x-forwarded-for'] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (chain.length) return chain[chain.length - 1];
+  }
+  return req.socket.remoteAddress || 'unknown';
 }
 
 module.exports = { LIMITS, createLimiter, bucketsFor, visitorOf };
