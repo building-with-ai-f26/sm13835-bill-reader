@@ -1,0 +1,984 @@
+{
+  "member": "gottheimer",
+  "scope": "TV appearances on NBC-family networks (NBC News, CNBC, MSNBC/MS NOW), Fox (Fox News, Fox Business), CBS News, ABC News, and the local CBS and ABC stations in New York (WCBS, WABC), Nov 22, 2021 to Nov 22, 2026",
+  "checked_on": "2026-11-22",
+  "method": "Web searches of each network's site, then every page opened to confirm the date, show and that Gottheimer is the guest. Dates are as printed on each page unless noted. Search is not exhaustive: networks publish no guest index, and not every segment is posted online.",
+  "ownership_note": "MSNBC (now MS NOW) and CNBC were NBCUniversal networks for most of this window; both moved to Versant in the 2025 spin-off.",
+  "appearances": [
+    {
+      "id": "cnbc-2022-01-13",
+      "date": "2022-01-13",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "congressional stock trading"
+      ],
+      "url": "https://www.cnbc.com/video/2022/01/13/rep-gottheimer-lawmakers-shouldnt-be-directly-involved-in-stock-trading.html",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=_OVuj8MRCIc"
+    },
+    {
+      "id": "fox-2022-02-02",
+      "date": "2022-02-02",
+      "network": "Fox News",
+      "show": "America's Newsroom",
+      "type": "interview",
+      "topics": [
+        "police funding"
+      ],
+      "url": "https://www.foxnews.com/video/6294972170001",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cbsny-2022-02-11",
+      "date": "2022-02-11",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "rising costs",
+        "supply chain"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=NdVgcwBoe6Q",
+      "transcript": false
+    },
+    {
+      "id": "fox-2022-03-22",
+      "date": "2022-03-22",
+      "network": "Fox News",
+      "show": "Fox & Friends",
+      "type": "interview",
+      "topics": [
+        "Iran deal",
+        "IRGC terror designation"
+      ],
+      "url": "https://www.foxnews.com/media/biden-iran-deal-talks-revolutionary-guard-democrat-gottheimer",
+      "transcript": false,
+      "note": "Article quotes him; embedded clip.",
+      "youtube": null
+    },
+    {
+      "id": "fox-2022-04-30",
+      "date": "2022-04-30",
+      "network": "Fox News",
+      "show": "Fox News Live",
+      "type": "interview",
+      "topics": [
+        "student debt forgiveness",
+        "gas prices"
+      ],
+      "url": "https://www.foxnews.com/video/6305456325112",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2022-05-02",
+      "date": "2022-05-02",
+      "network": "Fox News",
+      "show": "America Reports",
+      "type": "interview",
+      "topics": [
+        "law enforcement",
+        "border security"
+      ],
+      "url": "https://www.foxnews.com/video/6305525524112",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2022-06-15",
+      "date": "2022-06-15",
+      "network": "Fox News",
+      "show": "America's Newsroom",
+      "type": "interview",
+      "topics": [
+        "his vote against the Supreme Court security bill"
+      ],
+      "url": "https://www.foxnews.com/video/6307767712112",
+      "transcript": false,
+      "note": "Explains a specific House vote.",
+      "youtube": null
+    },
+    {
+      "id": "abc7-2022-11-10",
+      "date": "2022-11-10",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "bipartisan cooperation after the midterms"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=Oa31WriOhZc",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2022-12-09",
+      "date": "2022-12-09",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "congestion pricing"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=bhs_4d1mKds",
+      "transcript": false
+    },
+    {
+      "id": "fox-2023-01-22",
+      "date": "2023-01-22",
+      "network": "Fox News",
+      "show": "Fox News Sunday",
+      "type": "joint interview",
+      "with": "Rep. Brian Fitzpatrick (R-Pa.)",
+      "topics": [
+        "Biden classified documents",
+        "debt limit"
+      ],
+      "url": "https://www.foxnews.com/video/6319085386112",
+      "transcript": true,
+      "transcript_url": "https://www.foxnews.com/transcript/fox-news-sunday-january-22-2022",
+      "note": "The transcript URL and body say 2022, but the page is published Jan 25, 2023 and the Biden documents story is from January 2023; the video page says 2023-01-22.",
+      "youtube": null
+    },
+    {
+      "id": "cbs-2023-01-26",
+      "date": "2023-01-26",
+      "network": "CBS News",
+      "show": "Red & Blue",
+      "type": "sound bites in a news segment",
+      "with": "Rep. Brian Fitzpatrick (R-Pa.)",
+      "topics": [
+        "debt ceiling",
+        "gun safety",
+        "Problem Solvers Caucus"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=cKo29ZHXckc",
+      "transcript": false,
+      "note": "Correspondent report with two short Gottheimer clips, not a sit-down interview."
+    },
+    {
+      "id": "mtp-now-2023-04-28",
+      "date": "2023-04-28",
+      "network": "NBC News NOW",
+      "show": "Meet the Press NOW",
+      "type": "interview",
+      "topics": [
+        "debt ceiling",
+        "Biden re-election"
+      ],
+      "url": "https://www.nbcnews.com/meet-the-press/video/problem-solvers-co-chair-we-can-t-afford-to-default-171683397663",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=AsiZRTaljGU"
+    },
+    {
+      "id": "ftn-2023-05-21",
+      "date": "2023-05-21",
+      "network": "CBS News",
+      "show": "Face the Nation",
+      "type": "joint interview",
+      "with": "Rep. Brian Fitzpatrick (R-Pa.)",
+      "topics": [
+        "debt ceiling",
+        "default date"
+      ],
+      "url": "https://www.cbsnews.com/news/debt-default-brian-fitzpatrick-josh-gottheimer-face-the-nation-interview-2023-05-21/",
+      "youtube": "https://www.youtube.com/watch?v=UeGmjpUM6y4",
+      "transcript": true,
+      "transcript_url": "https://www.cbsnews.com/news/brian-fitzpatrick-josh-gottheimer-face-the-nation-transcript/"
+    },
+    {
+      "id": "cbsny-2023-06-09",
+      "date": "2023-06-09",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "LGBTQ+ roundtable"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=SQADVXwS4ag",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2023-07-02-salt",
+      "date": "2023-07-02",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "SALT restoration",
+        "working with Republicans"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=0hj2J36dBio",
+      "transcript": false,
+      "note": "Same day as the congestion pricing interview; may be part of the same Point episode."
+    },
+    {
+      "id": "cbsny-2023-07-02",
+      "date": "2023-07-02",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "congestion pricing"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=EFmd_r0LHIM",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2023-07-27",
+      "date": "2023-07-27",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "school safety bills"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=wmt0iUWQl44",
+      "transcript": false,
+      "note": "He appears but does not speak in this clip (0 words)."
+    },
+    {
+      "id": "ftn-2023-10-01",
+      "date": "2023-10-01",
+      "network": "CBS News",
+      "show": "Face the Nation",
+      "type": "joint interview",
+      "with": "Rep. Brian Fitzpatrick (R-Pa.)",
+      "topics": [
+        "shutdown deal",
+        "Ukraine aid"
+      ],
+      "url": "https://www.cbsnews.com/news/brian-fitzpatrick-josh-gottheimer-face-the-nation-transcript-10-01-2023/",
+      "youtube": "https://www.youtube.com/watch?v=W2XDGqP43Qs",
+      "transcript": true,
+      "transcript_url": "https://www.cbsnews.com/news/brian-fitzpatrick-josh-gottheimer-face-the-nation-transcript-10-01-2023/",
+      "accuracy_check": "Compared with the official CBS transcript (2026-11-22): 643 of 683 of his words match (94%). Gemini wrongly labeled one ~60-word Fitzpatrick answer as Gottheimer; review attribution before using any quote."
+    },
+    {
+      "id": "fox-2023-11-02",
+      "date": "2023-11-02",
+      "network": "Fox News",
+      "show": "America Reports",
+      "type": "interview",
+      "topics": [
+        "antisemitism",
+        "White House Islamophobia plan"
+      ],
+      "url": "https://www.foxnews.com/video/6340380613112",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cbsny-2024-01-22",
+      "date": "2024-01-22",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "crisis pregnancy center funding"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=EdDROjTq2sI",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2024-05-05",
+      "date": "2024-05-05",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "college protests",
+        "congestion pricing"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=8kKnXBHxoiw",
+      "transcript": false
+    },
+    {
+      "id": "abc7-2024-08-12",
+      "date": "2024-08-12",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "rail passenger bill of rights"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=jEOMNIMVX2g",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2024-11-15",
+      "date": "2024-11-15",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "governor campaign launch"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=DkTLn3N-tM4",
+      "transcript": false
+    },
+    {
+      "id": "abc7-2024-11-15",
+      "date": "2024-11-15",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "governor campaign launch"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=HB-wd9fvFtY",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2024-11-19",
+      "date": "2024-11-19",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "congestion pricing"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=e_zZr8Q2qsU",
+      "transcript": false
+    },
+    {
+      "id": "abc7-2024-11-19",
+      "date": "2024-11-19",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "congestion pricing"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=Rfb7Utg2Zdk",
+      "transcript": false
+    },
+    {
+      "id": "abc7-2024-11-24",
+      "date": "2024-11-24",
+      "network": "ABC7 New York",
+      "show": "Up Close",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "governor campaign"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=dcChEbYb8ws",
+      "transcript": false
+    },
+    {
+      "id": "abc7-2024-12-10",
+      "date": "2024-12-10",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "drone sightings bills"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=6t42p5pz2-w",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2024-12-11",
+      "date": "2024-12-11",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "Syria",
+        "Turkish government"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=xb21N_UaF6s",
+      "transcript": false
+    },
+    {
+      "id": "cbsny-2025-01-20",
+      "date": "2025-01-20",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "hopes for the incoming administration"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=_jCFHj_Ng_4",
+      "transcript": false
+    },
+    {
+      "id": "cnbc-2025-03-05",
+      "date": "2025-03-05",
+      "network": "CNBC",
+      "show": "unknown",
+      "type": "interview",
+      "topics": [
+        "Trump joint address",
+        "affordability"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=4terr3jx-K0",
+      "transcript": false,
+      "note": "Found by YouTube search on the network’s own channel (upload date shown); not on the original list."
+    },
+    {
+      "id": "cbsny-2025-03-30",
+      "date": "2025-03-30",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "governor campaign"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=nPEuM0wjYs0",
+      "transcript": false
+    },
+    {
+      "id": "cnbc-2025-04-02",
+      "date": "2025-04-02",
+      "network": "CNBC",
+      "show": "The Exchange",
+      "type": "interview",
+      "topics": [
+        "tariffs",
+        "consumer costs"
+      ],
+      "url": "https://www.cnbc.com/video/2025/04/02/congressman-josh-gottheimer-consumers-want-less-chaos-and-more-certainty.html",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=ydOMTcgFGwo"
+    },
+    {
+      "id": "cnbc-2025-05-20",
+      "date": "2025-05-20",
+      "network": "CNBC",
+      "show": "The Exchange",
+      "type": "interview",
+      "topics": [
+        "SALT cap"
+      ],
+      "url": "https://www.cnbc.com/video/2025/05/20/rep-josh-gottheimer-on-salt-red-moocher-states-expect-the-northeastern-u-s-to-pay-for-them.html",
+      "transcript": false,
+      "note": "Directly relevant to H.R. 1 (SALT), two days before the House vote.",
+      "youtube": "https://www.youtube.com/watch?v=5VlM5HbuUA4"
+    },
+    {
+      "id": "abc7-2025-06-04",
+      "date": "2025-06-04",
+      "network": "ABC7 New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "cost of living",
+        "governor campaign"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=nGt1I0_es4c",
+      "transcript": false
+    },
+    {
+      "id": "mtp-now-2025-06-06",
+      "date": "2025-06-06",
+      "network": "NBC News NOW",
+      "show": "Meet the Press NOW",
+      "host": "Kristen Welker",
+      "role": "candidate for NJ governor",
+      "type": "interview",
+      "topics": [
+        "NJ governor race"
+      ],
+      "url": "https://www.nbcnews.com/meet-the-press/video/n-j-gubernatorial-candidate-november-is-going-to-be-tough-for-democrats-241075269731",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=LuAe7Uc0_38"
+    },
+    {
+      "id": "fox-2025-10-25",
+      "date": "2025-10-25",
+      "network": "Fox News",
+      "show": "unknown",
+      "type": "interview",
+      "topics": [
+        "Mamdani",
+        "socialism"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=kAzLuasHi5Y",
+      "transcript": false,
+      "note": "Found by YouTube search on the network’s own channel (upload date shown); not on the original list."
+    },
+    {
+      "id": "cnbc-2025-11-25",
+      "date": "2025-11-25",
+      "network": "CNBC",
+      "show": "unknown",
+      "type": "interview",
+      "topics": [
+        "health care policy framework"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=eXNsSdf5XMA",
+      "transcript": false,
+      "note": "Found by YouTube search on the network’s own channel (upload date shown); not on the original list."
+    },
+    {
+      "id": "cnbc-2025-12-10",
+      "date": "2025-12-10",
+      "network": "CNBC",
+      "show": "unknown",
+      "type": "interview",
+      "topics": [
+        "federal AI law",
+        "state carve-outs"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=EtX6cfZeijw",
+      "transcript": false,
+      "note": "Found by YouTube search on the network’s own channel (upload date shown); not on the original list."
+    },
+    {
+      "id": "cbsny-2026-02-09",
+      "date": "2026-02-09",
+      "network": "CBS New York",
+      "show": "news",
+      "local": true,
+      "type": "news report",
+      "topics": [
+        "school bus seat belts"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=_IMU_Ek1QF8",
+      "transcript": false
+    },
+    {
+      "id": "cnbc-2026-02-25",
+      "date": "2026-02-25",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "State of the Union",
+        "affordability",
+        "Iran"
+      ],
+      "url": "https://www.cnbc.com/video/2026/02/25/rep-gottheimer-surprised-pres-trump-didnt-spend-more-time-talking-about-affordability.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cnbc-2026-03-02",
+      "date": "2026-03-02",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "rare-disease legislation",
+        "Iran"
+      ],
+      "url": "https://www.cnbc.com/video/2026/03/02/rep-josh-gottheimer-investments-in-rare-diseases-can-lead-to-unbelievable-breakthroughs.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cnbc-2026-03-23",
+      "date": "2026-03-23",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "Iran war",
+        "gas prices"
+      ],
+      "url": "https://www.cnbc.com/video/2026/03/23/rep-josh-gottheimer-we-have-to-crush-the-government-of-iran.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2026-03-25",
+      "date": "2026-03-25",
+      "network": "Fox News",
+      "show": "America's Newsroom",
+      "type": "interview",
+      "topics": [
+        "DHS shutdown",
+        "ICE reform"
+      ],
+      "url": "https://www.foxnews.com/video/6391652266112",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cbsny-2026-04-05",
+      "date": "2026-04-05",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "DHS shutdown",
+        "Iran war"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=rVKEXhAPlHs",
+      "transcript": false
+    },
+    {
+      "id": "cnbc-2026-04-27",
+      "date": "2026-04-27",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "AI regulation"
+      ],
+      "url": "https://www.cnbc.com/video/2026/04/27/rep-gottheimer-on-regulating-ai-we-need-to-have-structure-in-place-to-review-the-latest-innovation.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2026-05-22",
+      "date": "2026-05-22",
+      "network": "Fox News",
+      "show": "unknown",
+      "type": "joint interview",
+      "with": "Rep. Byron Donalds (R-Fla.)",
+      "topics": [
+        "antisemitism in 2026 campaigns"
+      ],
+      "url": "https://www.foxnews.com/video/6396364084112",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=zNU6TE-hj5A"
+    },
+    {
+      "id": "ftn-2026-05-24",
+      "date": "2026-05-24",
+      "network": "CBS News",
+      "show": "Face the Nation",
+      "type": "joint interview",
+      "with": "Rep. Mike Lawler (R-N.Y.)",
+      "topics": [
+        "Iran war powers",
+        "Strait of Hormuz",
+        "antisemitism"
+      ],
+      "url": "https://www.cbsnews.com/news/josh-gottheimer-mike-lawler-house-problem-solvers-caucus-face-the-nation-transcript-05-24-2026/",
+      "youtube": "https://www.youtube.com/watch?v=hIpLOoq0rk0",
+      "transcript": true,
+      "transcript_url": "https://www.cbsnews.com/news/josh-gottheimer-mike-lawler-house-problem-solvers-caucus-face-the-nation-transcript-05-24-2026/"
+    },
+    {
+      "id": "fbn-2026-06-05",
+      "date": "2026-06-05",
+      "network": "Fox Business",
+      "show": "Varney & Co.",
+      "type": "interview",
+      "topics": [
+        "NJ House candidate Adam Hamawy",
+        "Delaney Hall protests"
+      ],
+      "url": "https://www.foxbusiness.com/video/6397656203112",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=iLzhDfe7fes"
+    },
+    {
+      "id": "cnbc-2026-06-11",
+      "date": "2026-06-11",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "AI regulation",
+        "midterms"
+      ],
+      "url": "https://www.cnbc.com/video/2026/06/11/rep-josh-gottheimer-on-regulating-ai-2026-midterm-elections.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2026-07-22",
+      "date": "2026-07-22",
+      "network": "Fox News",
+      "show": "America's Newsroom",
+      "type": "interview",
+      "topics": [
+        "Mamdani and Netanyahu",
+        "NJ voter rolls"
+      ],
+      "url": "https://www.foxnews.com/video/6401839049112",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "fox-2026-08-03",
+      "date": "2026-08-03",
+      "network": "Fox News",
+      "show": "The Big Weekend Show",
+      "type": "interview",
+      "topics": [
+        "DOJ access to NJ voter rolls",
+        "DSA influence on Democrats"
+      ],
+      "url": "https://www.foxnews.com/video/6402689477112",
+      "transcript": false,
+      "note": "Short clips likely cut from this interview: foxnews.com/video/6402686749112, 6402690154112 (Aug 3) and 6402796750112 (Aug 4).",
+      "youtube": "https://www.youtube.com/watch?v=z_FgebGtBEg"
+    },
+    {
+      "id": "fox-2026-08-25",
+      "date": "2026-08-25",
+      "network": "Fox News",
+      "show": "unknown",
+      "type": "interview",
+      "topics": [
+        "El-Sayed",
+        "Hasan Piker"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=Z4TFtEgglFY",
+      "transcript": false,
+      "note": "Found by YouTube search on the network’s own channel (upload date shown); not on the original list."
+    },
+    {
+      "id": "fox-2026-08-28",
+      "date": "2026-08-28",
+      "network": "Fox News",
+      "show": "unknown (tagged Fox & Friends)",
+      "type": "interview",
+      "topics": [
+        "Hasan Piker",
+        "Democratic divisions"
+      ],
+      "url": "https://www.foxnews.com/video/6404201659112",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=mxdzhK_jYhk"
+    },
+    {
+      "id": "cnbc-2026-09-16",
+      "date": "2026-09-16",
+      "network": "CNBC",
+      "show": "The Exchange",
+      "type": "interview",
+      "topics": [
+        "Fed rate hike",
+        "utility bills",
+        "data centers"
+      ],
+      "url": "https://www.cnbc.com/video/2026/09/16/rep-josh-gottheimer-you-cant-get-rid-of-data-centers-but-put-them-only-where-people-want-them.html",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=XkTUPNn4v1k"
+    },
+    {
+      "id": "cbsny-2026-09-20",
+      "date": "2026-09-20",
+      "network": "CBS New York",
+      "show": "The Point",
+      "local": true,
+      "type": "interview",
+      "topics": [
+        "extended interview"
+      ],
+      "url": null,
+      "youtube": "https://www.youtube.com/watch?v=qSqrP8ei3s0",
+      "transcript": false,
+      "note": "YouTube title calls him \"N.J. Sen.\"; the on-screen caption says \"Rep. Josh Gottheimer (D) NJ\", so the title is a CBS error."
+    },
+    {
+      "id": "cnbc-2026-10-07",
+      "date": "2026-10-07",
+      "network": "CNBC",
+      "show": "Squawk Box",
+      "type": "interview",
+      "topics": [
+        "AI regulation",
+        "midterms"
+      ],
+      "url": "https://www.cnbc.com/video/2026/10/07/rep-gottheimer-on-regulating-ai-cant-sit-back-and-wait-if-we-want-to-win-the-race-the-right-way.html",
+      "transcript": false,
+      "youtube": null
+    },
+    {
+      "id": "cnbc-2026-11-13",
+      "date": "2026-11-13",
+      "network": "CNBC",
+      "show": "The Exchange",
+      "type": "interview",
+      "topics": [
+        "Nvidia / Jensen Huang briefing",
+        "Microsoft outage"
+      ],
+      "url": "https://www.cnbc.com/video/2026/11/13/rep-josh-gottheimer-on-nvidia-we-want-more-facts-we-have-to-understand-what-went-on.html",
+      "transcript": false,
+      "youtube": "https://www.youtube.com/watch?v=j7ZF-4hDKrk"
+    }
+  ],
+  "date_unconfirmed": [
+    {
+      "network": "MS NOW (formerly MSNBC)",
+      "show": "Ana Cabrera Reports",
+      "likely_date": "2025-06 (Iran strikes)",
+      "topics": [
+        "Trump's strikes on Iranian nuclear sites"
+      ],
+      "url": "https://www.msnbc.com/ana-cabrera-reports/watch/rep-gottheimer-says-trump-s-strikes-on-iranian-nuclear-facilities-are-big-win-242164805910"
+    },
+    {
+      "network": "MS NOW (formerly MSNBC)",
+      "show": "Weekends with Alex Witt",
+      "likely_date": "2025-01 (Gaza ceasefire)",
+      "topics": [
+        "ceasefire"
+      ],
+      "url": "https://www.msnbc.com/weekends-with-alex-witt/watch/rep-gottheimer-on-ceasefire-we-should-worry-less-about-who-gets-credit-229721669934"
+    },
+    {
+      "network": "MS NOW (formerly MSNBC)",
+      "show": "unknown (Craig Melvin)",
+      "likely_date": "unknown",
+      "topics": [
+        "working together"
+      ],
+      "url": "https://www.ms.now/craig-melvin/watch/rep-josh-gottheimer-it-s-going-to-take-us-all-working-together-99795525944"
+    },
+    {
+      "network": "MS NOW (formerly MSNBC)",
+      "show": "Morning Joe",
+      "likely_date": "2024-04",
+      "topics": [
+        "hostages",
+        "Gaza aid"
+      ],
+      "url": "https://www.msnbc.com/morning-joe/watch/house-member-stresses-need-for-humanitarian-aid-getting-hostages-home-208702021860",
+      "note": "Page title says 'House member'; not confirmed to be Gottheimer."
+    },
+    {
+      "network": "MS NOW (formerly MSNBC)",
+      "show": "Katy Tur",
+      "likely_date": "2022-12 (incoming GOP House)",
+      "topics": [
+        "working with the GOP-led House"
+      ],
+      "url": "https://www.msnbc.com/katy-tur/watch/rep-gottheimer-on-incoming-gop-led-house-looking-for-the-places-we-can-work-together-155873349882"
+    },
+    {
+      "network": "ABC News",
+      "show": "ABC News Live",
+      "likely_date": "2024-12 (New Jersey drone sightings)",
+      "topics": [
+        "drone sightings",
+        "federal briefings"
+      ],
+      "url": null,
+      "note": "ABC reporting says he was interviewed by Kayna Whitworth; no video copy found on YouTube."
+    }
+  ],
+  "not_tv": [
+    {
+      "date": "2026-11-15 (from URL)",
+      "network": "Fox News Radio",
+      "topics": [
+        "moderate Democrats' 2027 focus",
+        "costs"
+      ],
+      "url": "https://radio.foxnews.com/2026/11/15/common-sense-rep-josh-gottheimer-on-what-moderate-democrats-will-focus-on-next-year/"
+    }
+  ],
+  "checked_and_excluded": [
+    {
+      "date": "2026-03-01",
+      "url": "https://www.nbcnews.com/meet-the-press/transcripts/meet-press-march-1-2026-rcna261198",
+      "reason": "Mentioned by another guest; he does not speak."
+    },
+    {
+      "date": "2021-11 (infrastructure passage)",
+      "url": "https://www.msnbc.com/stephanie-ruhle/watch/-we-should-all-take-a-huge-victory-lap-rep-josh-gottheimer-on-passing-infrastructure-bill-125786181508",
+      "reason": "Bill passed Nov 5, 2021, before the window."
+    },
+    {
+      "date": "2021-10-03",
+      "url": "https://www.nbcnews.com/meet-the-press/news/meet-press-october-3-2021-n1280648",
+      "reason": "Outside the window; mention only."
+    },
+    {
+      "date": "2021-04-04",
+      "url": "https://www.nbcnews.com/meet-the-press/meet-press-april-04-2021-n1262993",
+      "reason": "Outside the window; one-line sound bite."
+    },
+    {
+      "date": "2018-11-16",
+      "url": "https://www.foxnews.com/video/5968070246001",
+      "reason": "Outside the window."
+    },
+    {
+      "date": "2017-11-15",
+      "url": "https://www.foxnews.com/video/5647914724001",
+      "reason": "Outside the window."
+    },
+    {
+      "date": "2017-11-15",
+      "url": "https://www.foxnews.com/video/5647839877001",
+      "reason": "Outside the window."
+    },
+    {
+      "date": "2026-06-28",
+      "url": "https://abcnews.com/Politics/week-transcript-6-28-26-new-york-city/story?id=134279911",
+      "reason": "ABC This Week: his quote is read on air; he is not a guest."
+    },
+    {
+      "date": "2024-02-18",
+      "url": "https://www.cbsnews.com/news/face-the-nation-full-transcript-02-18-2024/",
+      "reason": "Face the Nation: not confirmed as a guest."
+    },
+    {
+      "date": "2021-06",
+      "url": "https://abcnews.go.com/GMA/GMA3/video/breakthrough-bipartisan-infrastructure-plan-78467165",
+      "reason": "GMA3 infrastructure segment, before the window."
+    },
+    {
+      "date": "2025-03-30",
+      "url": "https://www.youtube.com/watch?v=JLDb8gH3ifk",
+      "reason": "Full Point episode containing the same interview as cbsny-2025-03-30."
+    },
+    {
+      "date": "2026-04-05",
+      "url": "https://www.youtube.com/watch?v=l1t7zgfo-g8",
+      "reason": "Full Point episode containing the same interview as cbsny-2026-04-05."
+    }
+  ],
+  "youtube_note": "youtube: the network’s own upload, found by YouTube search; null when no copy was found. Transcripts are made by Gemini watching that link (nothing downloaded) and kept in data/media/transcripts/ (Git-ignored)."
+}

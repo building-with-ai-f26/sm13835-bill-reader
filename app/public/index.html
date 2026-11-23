@@ -129,6 +129,59 @@
     .home-tiles .tile-icon { align-self: center; }
     .home-tiles .tile-title, .home-tiles .tile-stat { text-align: center; }
     .bills .tile, .bills .card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+    /* Setup: the form on the left, a U.S. map on the right (stacked on phones). */
+    .setup { max-width: 1120px; margin: 48px auto; display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 40px; align-items: start; }
+    @media (max-width: 860px) { .setup { grid-template-columns: minmax(0, 1fr); gap: 16px; margin: 24px auto; } }
+    .us-map-card { margin: 0; padding: 16px; }
+    .us-map { display: block; width: 100%; height: auto; aspect-ratio: 5 / 3; }
+    .us-map-card figcaption { margin-top: 8px; }
+    .us-state { fill: #ffffff; stroke: #c4cad3; stroke-width: 0.8; vector-effect: non-scaling-stroke; stroke-linejoin: round; transition: fill 0.3s ease; }
+    .us-state.selected { fill: #e4e7ec; stroke: #98a2b3; }
+    .us-district { fill: none; stroke: #b4bbc6; stroke-width: 0.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; opacity: 0; transition: opacity 0.4s ease; }
+    .us-district.visible { opacity: 1; }
+    .us-district.selected { stroke: #000000; stroke-width: 2.2; }
+
+    /* TEMPORARY Data Model page: how each promise is sourced and tested. Delete this block,
+       the "model" page in billsView and /api/datamodel in server.js to remove it. */
+    .home-tiles .dm-tile { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 14px; border-style: dashed; }
+    .home-tiles .dm-tile .tile-icon { margin-bottom: 0; }
+    .home-tiles .dm-tile .tile-title, .home-tiles .dm-tile .tile-stat { text-align: left; }
+    .home-tiles .dm-tile .tile-stat { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .dm-tile .tile-go { margin: 0 0 0 auto; padding: 0; white-space: nowrap; }
+    @media (max-width: 760px) { .home-tiles .dm-tile { flex-wrap: wrap; } .dm-tile .tile-desc { flex-basis: 100%; } }
+    .bills.dm { max-width: 1080px; }
+    .dm h2 { font-size: 18px; margin: 32px 0 4px; }
+    .dm-flow { display: flex; align-items: stretch; gap: 6px; margin: 12px 0 8px; overflow-x: auto; padding-bottom: 4px; }
+    .dm-stage { flex: 1 1 0; min-width: 150px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+    .dm-stage.pending { border-style: dashed; box-shadow: none; background: #fbfbfc; }
+    .dm-num { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .dm-stage .meta { margin-top: 4px; }
+    .dm-arrow { align-self: center; color: #98a2b3; font-size: 18px; flex: none; }
+    .dm-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
+    .dm-chain { display: grid; grid-template-columns: minmax(0, 1.4fr) 22px minmax(0, 1fr) 22px minmax(0, 1.1fr); align-items: stretch; margin-bottom: 14px; }
+    .dm-chain .dm-arrow { justify-self: center; }
+    .dm-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+    .dm-box blockquote { margin: 8px 0; }
+    .dm-box details { font-size: 13px; color: #374151; margin-top: 4px; }
+    .dm-box summary { cursor: pointer; color: var(--accent); font-weight: 500; }
+    .dm-cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 14px; }
+    .dm-cand { display: flex; flex-direction: column; gap: 4px; }
+    .dm-cand.approved { border-color: #abefc6; background: #f6fef9; }
+    .dm-cand.rejected { opacity: 0.6; }
+    .dm-flag { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 3px 8px; }
+    .dm-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
+    .tag.dm-mini { font-size: 11px; padding: 0 6px; margin: 0 0 0 4px; vertical-align: 1px; }
+    .tag.neutral { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px #d5deeb; text-transform: none; }
+    .dm-entities { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 12px; }
+    .dm-entity h3 { font-size: 15px; margin: 0 0 2px; }
+    .dm-fields { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .dm-fields code { font-size: 12px; background: #f2f4f7; border-radius: 6px; padding: 2px 6px; }
+    .dm-fields code.new { background: var(--good-bg); color: var(--good); }
+    @media (max-width: 760px) {
+      .dm-chain { grid-template-columns: minmax(0, 1fr); }
+      .dm-chain .dm-arrow { transform: rotate(90deg); padding: 2px 0; }
+    }
+
     /* The signed-in member's name, in their party's color. */
     .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere; }
     .member-name.rep { color: #9b1c1c; }
@@ -139,7 +192,10 @@
     .name-district { display: inline-block; font-size: 0.6em; font-weight: 700; color: #111827;
       animation: fade-in 1.2s ease-out var(--delay) both; }
     @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-    @media (prefers-reduced-motion: reduce) { .name-word, .name-district { animation: none; } }
+    /* "Welcome, Congressman/Congresswoman": half the name's size; fades in once the district's 1.2s fade ends. */
+    .member-welcome { font-family: "Times New Roman", Times, serif; font-style: italic; font-weight: 400; color: #000;
+      font-size: clamp(20px, 4vw, 38px); line-height: 1.2; margin: 0 0 6px; animation: fade-in 1.2s ease-out var(--delay) both; }
+    @media (prefers-reduced-motion: reduce) { .name-word, .name-district, .member-welcome { animation: none; } }
     .subhead { margin: 20px 0 12px; }
     .bill-list { display: grid; gap: 12px; }
     .bill-card { display: grid; gap: 4px; text-decoration: none; color: var(--text); margin: 0;
@@ -497,7 +553,7 @@
           <strong>${esc(district.id)}</strong>
           <p>${esc(memberLabel(member))}</p>
           ${member.note ? `<p class="meta">${esc(member.note)}</p>` : ''}
-          <p class="meta">Shaded in the member's party color: ${party[1]}.<br />Boundaries: ${link(map.source_url, 'U.S. Census Bureau')}, 119th Congress.</p>
+          <p class="meta">Boundaries: ${link(map.source_url, 'U.S. Census Bureau')}, 119th Congress.</p>
         </div>
       </div>`;
     }
@@ -616,39 +672,108 @@
       });
     }
 
+    // ---- Setup: state, member, then district on the left; a U.S. map on the right that zooms to
+    // the chosen state (shaded light gray) and outlines the chosen district in black.
+    const parseBox = (v) => (typeof v === 'string' ? v.split(/\s+/).map(Number) : v);
+    function zoomMap(svg, target) {
+      const from = parseBox(svg.getAttribute('viewBox'));
+      const to = parseBox(target);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { svg.setAttribute('viewBox', to.join(' ')); return; }
+      cancelAnimationFrame(svg._zoom);
+      const start = performance.now(), ms = 700;
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / ms);
+        const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; // ease in and out
+        svg.setAttribute('viewBox', from.map((v, i) => (v + (to[i] - v) * e).toFixed(3)).join(' '));
+        if (t < 1) svg._zoom = requestAnimationFrame(step);
+      };
+      svg._zoom = requestAnimationFrame(step);
+    }
+    // A state's box with room around it, so the zoomed state never touches the edge.
+    const boxAround = ([x0, y0, x1, y1]) => {
+      const w = x1 - x0, h = y1 - y0, pad = Math.max(w, h) * 0.18 + 2;
+      return [x0 - pad, y0 - pad, w + pad * 2, h + pad * 2];
+    };
+
     async function setupView() {
-      const { members } = await (await fetch('/api/members')).json();
-      const byName = [...members].sort((a, b) => lastName(a).localeCompare(lastName(b)));
-      app.innerHTML = `<div class="auth">
-        <div class="kicker">Bill Reader · New Jersey delegation, 119th Congress</div>
-        <h1>Set up your office</h1>
-        <p class="meta">Choose the member you work for, then their district. Member data (votes and public commitments) and district data (Census and elections) come from separate sources.</p>
-        <form id="setup" class="card form">
-          <label for="member">1. Member</label>
-          <select id="member"><option value="">Choose a member…</option>
-            ${byName.map((m) => `<option value="${esc(m.id)}">${esc(memberLabel(m))}</option>`).join('')}</select>
-          <label for="district">2. District</label>
-          <select id="district" disabled><option value="">Choose a member first</option></select>
-          <p id="member-status" class="meta" aria-live="polite"></p>
-          <button type="submit" class="primary" id="continue" disabled>Continue to bills</button>
-        </form>
-        <p class="meta"><a href="#/login">Sign out</a></p>
+      const [{ members }, usmap] = await Promise.all([
+        fetch('/api/members').then((r) => r.json()),
+        fetch('/api/usmap').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]);
+      const stateOf = (m) => m.district.split('-')[0];
+      const perState = members.reduce((n, m) => ({ ...n, [stateOf(m)]: (n[stateOf(m)] || 0) + 1 }), {});
+      const states = usmap ? usmap.states : [{ abbr: 'NJ', name: 'New Jersey' }];
+      app.innerHTML = `<div class="setup">
+        <div>
+          <div class="kicker">Bill Reader · 119th Congress</div>
+          <h1>Set up your office</h1>
+          <p class="meta">Choose your state, the member you work for, then their district. Member data (votes and public commitments) and district data (Census and elections) come from separate sources.</p>
+          <form id="setup" class="card form">
+            <label for="state">1. State</label>
+            <select id="state"><option value="">Choose a state…</option>
+              ${states.map((s) => `<option value="${esc(s.abbr)}">${esc(s.name)}${perState[s.abbr] ? ` (${plural(perState[s.abbr], 'member')})` : ''}</option>`).join('')}</select>
+            <label for="member">2. Member</label>
+            <select id="member" disabled><option value="">Choose a state first</option></select>
+            <label for="district">3. District</label>
+            <select id="district" disabled><option value="">Choose a member first</option></select>
+            <p id="member-status" class="meta" aria-live="polite"></p>
+            <button type="submit" class="primary" id="continue" disabled>Continue to bills</button>
+          </form>
+          <p class="meta"><a href="#/login">Sign out</a></p>
+        </div>
+        ${usmap ? `<figure class="card us-map-card">
+          <svg class="us-map" id="us-map" viewBox="${esc(usmap.viewBox)}" role="img" aria-label="Map of the United States">
+            <g>${usmap.states.map((s) => `<path class="us-state" data-state="${esc(s.abbr)}" d="${esc(s.path)}" />`).join('')}</g>
+            <g id="us-districts">${usmap.districts.map((d) => `<path class="us-district" data-state="${esc(d.state)}" data-district="${esc(d.id)}" d="${esc(d.path)}" />`).join('')}</g>
+          </svg>
+          <figcaption class="meta">Boundaries: ${link(usmap.source_url, 'U.S. Census Bureau')}, 2024 (119th Congress).</figcaption>
+        </figure>` : ''}
       </div>`;
+      const stateSelect = document.getElementById('state');
       const memberSelect = document.getElementById('member');
       const districtSelect = document.getElementById('district');
       const status = document.getElementById('member-status');
       const button = document.getElementById('continue');
+      const svg = document.getElementById('us-map');
+      const mark = (selector, cls, test) => svg && svg.querySelectorAll(selector).forEach((el) => el.classList.toggle(cls, test(el)));
+      const resetDistrict = (text) => {
+        districtSelect.disabled = true;
+        districtSelect.innerHTML = `<option value="">${esc(text)}</option>`;
+        mark('.us-district', 'selected', () => false);
+        button.disabled = true;
+      };
+
+      stateSelect.addEventListener('change', () => {
+        const abbr = stateSelect.value;
+        const here = members.filter((m) => stateOf(m) === abbr).sort((a, b) => lastName(a).localeCompare(lastName(b)));
+        memberSelect.disabled = !here.length;
+        memberSelect.innerHTML = !abbr ? '<option value="">Choose a state first</option>'
+          : here.length ? `<option value="">Choose a member…</option>${here.map((m) => `<option value="${esc(m.id)}">${esc(memberLabel(m))}</option>`).join('')}`
+          : '<option value="">No members set up for this state yet</option>';
+        resetDistrict('Choose a member first');
+        status.textContent = abbr && !here.length ? 'Bill Reader covers New Jersey for now; more states are coming.' : '';
+        if (!svg) return;
+        mark('.us-state', 'selected', (el) => el.dataset.state === abbr);
+        mark('.us-district', 'visible', (el) => el.dataset.state === abbr);
+        const state = usmap.states.find((s) => s.abbr === abbr);
+        zoomMap(svg, state ? boxAround(state.bbox) : usmap.viewBox);
+      });
       memberSelect.addEventListener('change', () => {
         const m = members.find((x) => x.id === memberSelect.value);
-        districtSelect.disabled = !m;
-        districtSelect.innerHTML = m
-          ? `<option value="">Choose a district…</option><option value="${esc(m.district)}">${esc(m.district)}</option>`
-          : '<option value="">Choose a member first</option>';
+        resetDistrict('Choose a member first');
+        if (m) {
+          districtSelect.disabled = false;
+          districtSelect.innerHTML = `<option value="">Choose a district…</option><option value="${esc(m.district)}">${esc(m.district)}</option>`;
+        }
         // Which bills have briefs is shown on the next page, per bill.
         status.textContent = m ? `${m.note ? m.note + ' ' : ''}Next, choose a bill or upload a new one.` : '';
-        button.disabled = true;
       });
-      districtSelect.addEventListener('change', () => { button.disabled = !districtSelect.value; });
+      districtSelect.addEventListener('change', () => {
+        button.disabled = !districtSelect.value;
+        mark('.us-district', 'selected', (el) => el.dataset.district === districtSelect.value);
+        const outline = svg && svg.querySelector('.us-district.selected');
+        if (outline) outline.parentNode.appendChild(outline); // drawn last, so its black line sits on top
+      });
       document.getElementById('setup').addEventListener('submit', (event) => {
         event.preventDefault();
         go(`#/bills/${encodeURIComponent(memberSelect.value)}/${encodeURIComponent(districtSelect.value)}`);
@@ -658,11 +783,15 @@
     // The member's name flies in from the right one word at a time. Each word finishes before the
     // next starts, and the whole name lands in under a second (0.3s a word, shorter for long names).
     // Then the district fades in beside it, in black, once the last word has landed.
-    function nameWords(name, district) {
+    const nameTiming = (name) => {
       const words = name.split(/\s+/);
       const each = Math.min(0.3, 0.9 / words.length);
+      return { words, each, after: words.length * each + 0.5 }; // half-second pause after the last word
+    };
+    function nameWords(name, district) {
+      const { words, each, after } = nameTiming(name);
       return words.map((w, i) => `<span class="name-word" aria-hidden="true" style="--delay:${(i * each).toFixed(3)}s;--dur:${each.toFixed(3)}s">${esc(w)}</span>`).join(' ')
-        + ` <span class="name-district" aria-hidden="true" style="--delay:${(words.length * each + 0.5).toFixed(3)}s">${esc(district)}</span>`; // half-second pause first
+        + ` <span class="name-district" aria-hidden="true" style="--delay:${after.toFixed(3)}s">${esc(district)}</span>`;
     }
 
     // A large, faint map of New Jersey fixed behind the bill list, with this member's district
@@ -683,7 +812,173 @@
       upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <polyline points="17 8 12 3 7 8" /> <line x1="12" x2="12" y1="3" y2="15" />', // upload
       list: '<path d="M3 12h.01" /> <path d="M3 18h.01" /> <path d="M3 6h.01" /> <path d="M8 12h13" /> <path d="M8 18h13" /> <path d="M8 6h13" />', // list
       district: TAB_ICONS.district, // map-pin
+      model: '<ellipse cx="12" cy="5" rx="9" ry="3" /> <path d="M3 5v14a9 3 0 0 0 18 0V5" /> <path d="M3 12a9 3 0 0 0 18 0" />', // database
     };
+
+    // ---- TEMPORARY Data Model page (#/bills/<member>/<district>/model): each promise, where it
+    // came from, how the H.R. 1 brief tested it, the member's votes, and the TV-appearance pipeline.
+    const shortDate = (d) => {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
+      return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : (d || '');
+    };
+    const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
+
+    // The review list of TV statements: filters, then one card per statement with Approve / Reject.
+    // Decisions are saved by the server (POST /api/candidates/review) and the list redraws in place.
+    function wireReview(dm, memberId) {
+      const panel = document.getElementById('review-panel');
+      if (!panel || !dm.candidates) return;
+      const all = dm.candidates.candidates;
+      const view = { status: 'pending', kind: 'all', flagged: false };
+      const btn = (group, value, label) => `<button type="button" class="filter-btn" data-${group}="${value}" aria-pressed="${view[group] === value}">${esc(label)}</button>`;
+      const card = (c) => `<div class="dm-box dm-cand ${esc(c.status)}">
+          <div><span class="tag ${c.kind === 'promise' ? 'neutral' : 'mixed'}">${c.kind === 'promise' ? 'Promise' : 'Record claim'}</span>
+            <span class="tag neutral">${esc(c.topic)} · ${esc(c.strength)}</span>
+            ${c.status !== 'pending' ? `<span class="tag ${c.status === 'approved' ? 'helps' : 'hurts'}">${c.status === 'approved' ? 'Approved' : 'Rejected'}</span>` : ''}</div>
+          <blockquote>“${esc(c.quote)}”</blockquote>
+          <div class="meta">${esc(c.summary)}</div>
+          <div class="meta">Scope: ${esc(c.scope)}</div>
+          <div class="meta">${esc(shortDate(c.date))} · ${esc(c.network)}${c.show && !['news', 'unknown'].includes(c.show) ? ` · ${esc(c.show)}` : ''}
+            ${c.youtube ? ` · ${link(c.youtube, `Watch at ${c.timestamp} ↗`)}` : ''}${c.official_check === 'confirmed' ? ' · ✓ Matches the official transcript' : ''}${c.also_in.length ? ` · Also in ${esc(c.also_in.join(', '))}` : ''}</div>
+          ${c.flags.map((f) => `<div class="dm-flag">⚠ ${esc(f)}</div>`).join('')}
+          <div class="dm-actions">${c.status === 'pending'
+            ? `<button type="button" class="filter-btn" data-review="approved" data-id="${esc(c.id)}">Approve</button><button type="button" class="filter-btn" data-review="rejected" data-id="${esc(c.id)}">Reject</button>`
+            : `<button type="button" class="filter-btn" data-review="pending" data-id="${esc(c.id)}">Undo</button>`}</div>
+        </div>`;
+      const draw = () => {
+        const count = (s) => all.filter((c) => s === 'all' || c.status === s).length;
+        const shown = all
+          .filter((c) => view.status === 'all' || c.status === view.status)
+          .filter((c) => view.kind === 'all' || c.kind === view.kind)
+          .filter((c) => !view.flagged || c.flags.length)
+          .sort((a, b) => b.date.localeCompare(a.date));
+        panel.innerHTML = `<div class="filter-row">${btn('status', 'pending', `Pending (${count('pending')})`)}${btn('status', 'approved', `Approved (${count('approved')})`)}${btn('status', 'rejected', `Rejected (${count('rejected')})`)}${btn('status', 'all', `All (${all.length})`)}</div>
+          <div class="filter-row" style="margin-top:8px">${btn('kind', 'all', 'Promises and claims')}${btn('kind', 'promise', 'Promises')}${btn('kind', 'record_claim', 'Record claims')}
+            <button type="button" class="filter-btn" data-flagged="1" aria-pressed="${view.flagged}">Flagged only</button></div>
+          <div class="dm-cands">${shown.map(card).join('') || '<p class="meta">Nothing here.</p>'}</div>`;
+      };
+      panel.addEventListener('click', async (event) => {
+        const b = event.target.closest('button');
+        if (!b) return;
+        if (b.dataset.status) view.status = b.dataset.status;
+        else if (b.dataset.kind) view.kind = b.dataset.kind;
+        else if (b.dataset.flagged) view.flagged = !view.flagged;
+        else if (b.dataset.review) {
+          b.disabled = true;
+          const response = await fetch('/api/candidates/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ member: memberId, id: b.dataset.id, status: b.dataset.review }) });
+          const result = await response.json();
+          if (!response.ok) { b.disabled = false; alertBox(result.error); return; }
+          Object.assign(all.find((c) => c.id === b.dataset.id), result.candidate);
+        }
+        draw();
+      });
+      const alertBox = (msg) => panel.insertAdjacentHTML('afterbegin', `<div class="card alert possible">${esc(msg)}</div>`);
+      draw();
+    }
+
+    function dataModelHtml(dm) {
+      const { promises, votes_on_bill: votes } = dm.member;
+      const alerts = new Map(dm.alerts.map((a) => [a.promise_id, a]));
+      const count = (list, key) => list.reduce((m, x) => m.set(key(x), (m.get(key(x)) || 0) + 1), new Map());
+      const sourceTypes = count(promises, (p) => p.source_type);
+      const direct = dm.alerts.filter((a) => a.severity === 'direct').length;
+      const arrow = '<span class="dm-arrow" aria-hidden="true">→</span>';
+      const stage = (label, num, meta, pending) => `<div class="dm-stage${pending ? ' pending' : ''}"><div class="dm-label">${esc(label)}</div><div class="dm-num">${esc(num)}</div><div class="meta">${meta}</div></div>`;
+      const voteLine = votes.map((v) => `${esc(v.vote)} · ${esc(shortDate(v.date))}`).join('<br />');
+
+      const chains = promises.map((p) => {
+        const a = alerts.get(p.id);
+        const test = a
+          ? `<span class="tag ${esc(a.severity)}">${a.severity === 'direct' ? 'Direct conflict' : 'Possible tension'}</span>
+             <div class="meta">${plural((a.section_ids || []).length, 'H.R. 1 section')} cited</div>
+             <details><summary>Why</summary>${esc(a.explanation)}</details>`
+          : '<span class="meta">Not checked against H.R. 1 yet.</span>';
+        return `<div class="dm-chain">
+          <div class="dm-box"><div class="dm-label">Promise</div>
+            <span class="tag neutral">${esc(p.topic)} · ${esc(p.strength)}</span>
+            <blockquote>“${esc(p.quote)}”</blockquote>
+            <div class="meta">Scope: ${esc(p.scope)}${p.other_bill ? ' (another bill)' : ''}</div></div>
+          ${arrow}
+          <div class="dm-box"><div class="dm-label">Where it was said</div>
+            <strong>${esc(p.source_type)}</strong>
+            <div class="meta">${esc(shortDate(p.date))}${esc((p.date || '').replace(/^\d{4}-\d{2}-\d{2}/, ''))}</div>
+            <div class="meta">${p.url ? link(p.url, `${host(p.url)} ↗`) : 'No link'}</div></div>
+          ${arrow}
+          <div class="dm-box"><div class="dm-label">H.R. 1 check</div>${test}
+            <div class="meta" style="margin-top:6px">His votes: ${votes.map((v) => esc(v.vote)).join(', ')}</div></div>
+        </div>`;
+      }).join('');
+
+      const media = dm.media;
+      const tv = media ? (() => {
+        const done = new Map(dm.transcripts.map((t) => [t.id, t]));
+        const onYoutube = media.appearances.filter((a) => a.youtube).length;
+        const cost = dm.transcripts.reduce((n, t) => n + (t.cost_usd || 0), 0);
+        const words = dm.transcripts.reduce((n, t) => n + t.member_words, 0);
+        const rows = media.appearances.map((a) => {
+          const t = done.get(a.id);
+          const status = t ? `✓ ${esc(t.duration)} · ${t.member_words.toLocaleString()} words`
+            : a.youtube ? 'Not transcribed' : 'Not on YouTube';
+          const labels = `${a.local ? ' <span class="tag neutral dm-mini">Local</span>' : ''}${a.with ? ` <span class="tag neutral dm-mini" title="With ${esc(a.with)}">Joint</span>` : ''}`;
+          return `<tr><td>${esc(shortDate(a.date))}</td><td>${esc(a.network)}${a.show && a.show !== 'unknown' && a.show !== 'news' ? ` · ${esc(a.show)}` : ''}${labels}</td>
+            <td>${esc((a.topics || []).join(', '))}</td>
+            <td>${a.youtube ? link(a.youtube, 'YouTube ↗') : a.url ? link(a.url, `${host(a.url)} ↗`) : ''}</td><td>${status}</td></tr>`;
+        }).join('');
+        return `<h2>TV appearances (new source, in progress)</h2>
+          <p class="meta">${esc(media.scope)}. Gemini watched each YouTube link and wrote a speaker-labeled transcript; nothing was downloaded. Transcripts stay on this computer.</p>
+          <div class="dm-flow">
+            ${stage('Appearances found', media.appearances.length, `${(media.checked_and_excluded || []).length} more checked and excluded`)}${arrow}
+            ${stage('On YouTube', onYoutube, `${media.appearances.length - onYoutube} not posted there`)}${arrow}
+            ${stage('Transcribed', dm.transcripts.length, `${words.toLocaleString()} of his words · $${cost.toFixed(2)}`)}${arrow}
+            ${(() => {
+              const c = dm.candidates ? dm.candidates.candidates : [];
+              const approved = c.filter((x) => x.status === 'approved' && x.kind === 'promise').length;
+              const pending = c.filter((x) => x.status === 'pending').length;
+              return c.length
+                ? stage('Promises from TV', approved, `${plural(c.length, 'statement')} found · ${pending} awaiting review`, !approved)
+                : stage('Promises from TV', 0, 'Next step: Claude pulls out promises; staff approve each one', true);
+            })()}
+          </div>
+          <div class="dm-entities">${[...count(media.appearances, (a) => a.network)].sort((x, y) => y[1] - x[1]).map(([net, n]) => {
+            const ids = media.appearances.filter((a) => a.network === net);
+            const t = ids.filter((a) => done.has(a.id));
+            return `<div class="dm-box"><div class="dm-label">${esc(net)}${ids.some((a) => a.local) ? ' · local' : ''}</div><strong>${plural(n, 'appearance')}</strong>
+              <div class="meta">${t.length} transcribed · ${t.reduce((s, a) => s + done.get(a.id).member_words, 0).toLocaleString()} of his words</div></div>`;
+          }).join('')}</div>
+          ${media.appearances.filter((a) => a.accuracy_check).map((a) => `<div class="card alert possible" style="margin-top:12px"><span class="tag possible">Accuracy check</span>
+            <div><strong>${esc(a.show)}, ${esc(shortDate(a.date))}:</strong> ${esc(a.accuracy_check)}</div></div>`).join('')}
+          <div class="scroll"><table><thead><tr><th>Date</th><th>Network · show</th><th>Topics</th><th>Video</th><th>Transcript (his words)</th></tr></thead><tbody>${rows}</tbody></table></div>
+          ${dm.candidates ? `<h2 id="review">TV statements to review</h2>
+            <p class="meta">Claude Sonnet read every transcript and pulled out promises and claims about his record ($${esc(dm.candidates.cost_usd.toFixed(2))}).
+              Each quote was checked word for word against his own lines; ${plural(dm.candidates.dropped.length, 'statement')} failed and ${dm.candidates.dropped.length === 1 ? 'was' : 'were'} dropped.
+              Approve a statement to add it to his promises (or record claims); nothing counts until a person approves it. Watch the clip before approving anything flagged.</p>
+            <div id="review-panel"></div>` : ''}`;
+      })() : '';
+
+      const fields = (keys, added = []) => `<div class="dm-fields">${keys.map((k) => `<code>${esc(k)}</code>`).join('')}${added.map((k) => `<code class="new">+ ${esc(k)}</code>`).join('')}</div>`;
+      const entity = (name, rel, keys, added) => `<div class="dm-box dm-entity"><h3>${esc(name)}</h3><div class="meta">${esc(rel)}</div>${fields(keys, added)}</div>`;
+
+      return `<p class="meta">Temporary view. Each promise is shown with where it was said, then how the H.R. 1 analysis tested it and how ${esc(dm.member.name)} voted.</p>
+        <div class="dm-flow">
+          ${stage('Sources', sourceTypes.size, [...sourceTypes].map(([t, n]) => `${esc(t)} (${n})`).join('<br />'))}${arrow}
+          ${stage('Promises', promises.length, esc([...count(promises, (p) => p.topic).keys()].join(', ')))}${arrow}
+          ${stage('Tested against H.R. 1', dm.alerts.length, `${direct} direct conflict · ${dm.alerts.length - direct} possible tension`)}${arrow}
+          ${stage('His H.R. 1 votes', votes.length, voteLine)}
+        </div>
+        <h2>Each promise, end to end</h2>
+        ${chains}
+        ${tv}
+        <h2>The data model</h2>
+        <p class="meta">What each record holds and how they connect. Green fields are planned for promises that come from TV.</p>
+        <div class="dm-entities">
+          ${entity('Member', 'data/members/<id>.json · has many promises and votes', ['id', 'name', 'party', 'district', 'promises[]', 'votes_on_bill[]'])}
+          ${entity('Promise', 'inside the member file · tested by brief alerts', promises[0] ? Object.keys(promises[0]) : [], ['appearance_id', 'timestamp', 'youtube'])}
+          ${entity('Vote', 'inside the member file · from House roll calls', votes[0] ? Object.keys(votes[0]) : [])}
+          ${entity('Brief alert', 'data/briefs/hr1-<id>.json · one per promise', dm.alerts[0] ? Object.keys(dm.alerts[0]) : ['promise_id', 'severity', 'explanation', 'section_ids'])}
+          ${media ? entity('TV appearance', `data/media/<id>.json · ${media.appearances.length} for this member`, ['id', 'date', 'network', 'show', 'type', 'with', 'local', 'topics', 'url', 'youtube', 'accuracy_check']) : ''}
+          ${media ? entity('Transcript', 'data/media/transcripts/ (Git-ignored) · one per appearance', ['duration', 'turns[t, speaker, text]', 'on_screen', 'source']) : ''}
+        </div>`;
+    }
 
     // ---- The member's home: three boxes (upload a bill, review bills, district info), each
     // opening its own page at #/bills/<member>/<district>/upload, /list or /district.
@@ -702,16 +997,18 @@
 
       if (!page) {
         const ready = bills.filter((b) => b.has_brief).length;
-        const tile = (href, icon, title, stat, desc) => `<a class="tile" href="${href}">
+        const tile = (href, icon, title, stat, desc, cls = '') => `<a class="tile ${cls}" href="${href}">
           <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span>
           <span class="tile-title">${esc(title)}</span><span class="tile-stat">${esc(stat)}</span>
           <span class="tile-desc">${esc(desc)}</span><span class="tile-go">Open →</span></a>`;
         app.innerHTML = `${mapBackdrop(map, member)}<div class="bills">${kicker}
           <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
+          ${member.honorific ? `<p class="member-welcome" style="--delay:${(nameTiming(member.name).after + 1.2).toFixed(3)}s">Welcome, ${esc(member.honorific)}</p>` : ''}
           <div class="tiles home-tiles">
             ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
             ${tile(`${home}/list`, HOME_ICONS.list, 'Review Uploaded Bills', `${plural(bills.length, 'bill')} · ${ready} ready`, `H.R. 1 and your uploads, and whether each brief is ready for ${member.name.replace(/\.$/, '')}.`)}
             ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.')}
+            ${tile(`${home}/model`, HOME_ICONS.model, 'Data Model', 'Temporary', 'Every promise, where it came from, and how it was tested.', 'dm-tile')}
           </div></div>`;
         return;
       }
@@ -732,6 +1029,15 @@
         const data = await response.json();
         if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(data.error)}</div></div>`; return; }
         app.innerHTML = `<header class="page-head">${head('District Info')}</header>${districtProfileHtml(data)}`;
+        return;
+      }
+
+      if (page === 'model') {
+        const response = await fetch(`/api/datamodel?member=${encodeURIComponent(memberId)}`);
+        const dm = await response.json();
+        if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(dm.error)}</div></div>`; return; }
+        app.innerHTML = `<div class="bills dm">${head('Data Model')}${dataModelHtml(dm)}</div>`;
+        wireReview(dm, memberId);
         return;
       }
 

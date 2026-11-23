@@ -10,6 +10,9 @@ credentials.json
 # Uploaded bills and their briefs: possibly unreleased drafts, kept on this computer only
 data/uploads/
 
+# Full TV-interview transcripts (network content): kept on this computer; only the member's quoted words go in the repo
+data/media/transcripts/
+
 # AI Agent Local State / Logs (keep curated logs in journal/)
 .claude/
 .codex/

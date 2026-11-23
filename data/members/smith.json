@@ -2,6 +2,7 @@
   "id": "smith",
   "name": "Chris Smith",
   "title": "Rep.",
+  "honorific": "Congressman",
   "party": "R",
   "district": "NJ-4",
   "congress": "119th",

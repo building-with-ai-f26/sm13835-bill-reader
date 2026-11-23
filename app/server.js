@@ -77,7 +77,7 @@ async function handle(req, res) {
   // The setup screen: every member and the district each one represents.
   if (req.method === 'GET' && url.pathname === '/api/members') {
     const list = members()
-      .map((m) => ({ id: m.id, name: m.name, title: m.title, party: m.party, district: m.district, note: m.note }))
+      .map((m) => ({ id: m.id, name: m.name, title: m.title, honorific: m.honorific, party: m.party, district: m.district, note: m.note }))
       .sort((a, b) => Number(a.district.split('-')[1]) - Number(b.district.split('-')[1]));
     return send(res, 200, { members: list });
   }
@@ -85,6 +85,45 @@ async function handle(req, res) {
   // District boundaries for the background map on the bill picker (public Census data).
   if (req.method === 'GET' && url.pathname === '/api/map') {
     return send(res, 200, readJson(path.join(DATA, 'nj-map.json')));
+  }
+
+  // U.S. map for the setup screen: every state, plus district lines for states with members
+  // (built by scripts/build-us-map.js from Census boundary files).
+  if (req.method === 'GET' && url.pathname === '/api/usmap') {
+    return send(res, 200, readJson(path.join(DATA, 'us-map.json')));
+  }
+
+  // TEMPORARY "Data model" page: each promise, where it came from, how H.R. 1 tested it, the
+  // member's votes, and the TV-appearance pipeline. Read-only; sends transcript summaries, never
+  // the transcript text (network transcripts stay on this computer, Git-ignored).
+  if (req.method === 'GET' && url.pathname === '/api/datamodel') {
+    const member = members().find((m) => m.id === url.searchParams.get('member'));
+    if (!member) return send(res, 404, { error: 'Unknown member' });
+    const hr1 = getBill('hr1');
+    const brief = hr1 ? readJson(hr1.briefFile(member.id)) : null;
+    const dir = path.join(DATA, 'media', 'transcripts', member.id);
+    const transcripts = fs.existsSync(dir)
+      ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => {
+          const t = readJson(path.join(dir, f));
+          const own = t.turns.filter((turn) => turn.speaker !== 'HOST' && turn.speaker !== 'OTHER');
+          return {
+            id: f.replace(/\.json$/, ''),
+            duration: t.duration,
+            turns: t.turns.length,
+            member_turns: own.length,
+            member_words: own.reduce((n, turn) => n + String(turn.text || '').split(/\s+/).filter(Boolean).length, 0),
+            model: t.source?.model,
+            cost_usd: t.source?.cost_usd,
+          };
+        })
+      : [];
+    return send(res, 200, {
+      member: { id: member.id, name: member.name, promises: member.promises || [], record_claims: member.record_claims || [], votes_on_bill: member.votes_on_bill || [], sources: member.sources || [] },
+      alerts: brief ? brief.promise_alerts || [] : [],
+      media: readJson(path.join(DATA, 'media', `${member.id}.json`)),
+      transcripts,
+      candidates: readJson(path.join(DATA, 'media', `${member.id}-candidates.json`)),
+    });
   }
 
   // The bill picker: H.R. 1 and every uploaded bill, with whether this member has a brief.
@@ -145,6 +184,36 @@ async function handle(req, res) {
   if (req.method === 'GET' && url.pathname === '/api/analyze/status') {
     const matches = job && job.member === url.searchParams.get('member') && job.bill === url.searchParams.get('bill');
     return send(res, 200, { job: matches ? job : null, busy: Boolean(job && job.status === 'running') });
+  }
+
+  // Review of TV statements: approve, reject or reset one candidate. An approved promise is copied
+  // into the member's promises (an approved record claim into record_claims), marked as coming from
+  // a TV interview; un-approving removes it again. Nothing reaches a brief until a person approves it.
+  if (req.method === 'POST' && url.pathname === '/api/candidates/review') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, { error: 'Bad request' }); }
+    const member = members().find((m) => m.id === body.member);
+    if (!member || !['approved', 'rejected', 'pending'].includes(body.status)) return send(res, 400, { error: 'Unknown member or status' });
+    const candFile = path.join(DATA, 'media', `${member.id}-candidates.json`);
+    const cands = readJson(candFile);
+    const c = cands && cands.candidates.find((x) => x.id === body.id);
+    if (!c) return send(res, 404, { error: 'Unknown statement' });
+    c.status = body.status;
+    c.reviewed_at = new Date().toISOString();
+
+    const memberFile = path.join(DATA, 'members', `${member.id}.json`);
+    const listName = c.kind === 'promise' ? 'promises' : 'record_claims';
+    member[listName] = (member[listName] || []).filter((p) => p.id !== c.id);
+    if (c.status === 'approved') {
+      member[listName].push({
+        id: c.id, topic: c.topic, strength: c.strength, date: c.date, scope: c.scope,
+        source_type: `TV interview (${c.network}${c.show && c.show !== 'news' && c.show !== 'unknown' ? `, ${c.show}` : ''})`,
+        quote: c.quote, url: c.youtube, appearance_id: c.appearance_id, timestamp: c.timestamp,
+      });
+    }
+    fs.writeFileSync(memberFile, JSON.stringify(member, null, 2) + '\n');
+    fs.writeFileSync(candFile, JSON.stringify(cands, null, 2) + '\n');
+    return send(res, 200, { candidate: c });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/bills') {
