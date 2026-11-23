@@ -122,6 +122,11 @@
     .bills { max-width: 860px; margin: 32px auto; }
     .map-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
     .map-backdrop { position: absolute; top: 40%; left: 70%; transform: translate(-50%, -50%); height: 46vh; width: auto; opacity: 0.6; }
+    /* Same geometry and line style as the setup map, so the map can fly from one page to the other. */
+    .map-backdrop path { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+    .map-backdrop .state { stroke-width: 0.8px; }
+    .map-backdrop .district { stroke-width: 0.6px; }
+    .map-backdrop .district.current { stroke-width: 1px; }
     /* Cards on this page let the map show through faintly. */
     .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; }
     @media (max-width: 760px) { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
@@ -750,6 +755,62 @@
         { strokeDasharray: `${px} ${px}`, strokeDashoffset: 0 },
       ], { duration: 3000, easing: 'ease-out' }); // moving from the first frame, easing into the close
     }
+    // The U.S. map (states and district lines) is fetched once and shared by setup and the home page.
+    let usMapRequest = null;
+    const getUsMap = () => (usMapRequest ||= fetch('/api/usmap').then((r) => (r.ok ? r.json() : null)).catch(() => null));
+
+    // ---- Map hand-off from setup to the member's home: one map, never disappearing.
+    // On Continue we freeze a copy of the setup map where it sits (takeOffMap). The home page's faint
+    // backdrop is drawn from the same U.S. map data, so when it has rendered, landMap() flies that copy
+    // onto it: the copy moves and grows until the state covers the backdrop's state exactly, while each
+    // line and fill changes to the backdrop's own style (read from the backdrop itself) and the other
+    // states fade away. The last frame matches the real backdrop, which then takes over unseen.
+    let mapFlight = null;
+    function takeOffMap(svg, stateAbbr) {
+      const state = svg && svg.querySelector(`.us-state[data-state="${CSS.escape(stateAbbr)}"]`);
+      if (!state || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const box = svg.getBoundingClientRect();
+      const layer = document.createElement('div');
+      layer.className = 'map-layer map-flight';
+      layer.setAttribute('aria-hidden', 'true');
+      const copy = svg.cloneNode(true);
+      copy.removeAttribute('id');
+      copy.style.cssText = `position:absolute;left:${box.left}px;top:${box.top}px;width:${box.width}px;height:${box.height}px;transform-origin:0 0;`;
+      // Keep the district outline exactly as drawn so far, if Continue comes before it finishes.
+      const live = svg.querySelector('.us-district.selected'), twin = copy.querySelector('.us-district.selected');
+      if (live && twin) { const cs = getComputedStyle(live); twin.style.strokeDasharray = cs.strokeDasharray; twin.style.strokeDashoffset = cs.strokeDashoffset; }
+      layer.appendChild(copy);
+      document.body.appendChild(layer);
+      const flight = { layer, copy, box, from: state.getBoundingClientRect(), stateAbbr };
+      mapFlight = flight;
+      // If the home page never shows (an error, or the person goes elsewhere), drop the copy.
+      setTimeout(() => { if (mapFlight === flight) { mapFlight = null; layer.remove(); } }, 5000);
+    }
+    function landMap() {
+      const flight = mapFlight;
+      mapFlight = null;
+      if (!flight) return;
+      const real = document.querySelector('.map-backdrop');
+      const realState = real && real.querySelector('.state');
+      if (!realState) { flight.layer.remove(); return; }
+      real.style.visibility = 'hidden';
+      const timing = { duration: 1200, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' };
+      const from = flight.from, to = realState.getBoundingClientRect(), o = flight.box;
+      const sx = to.width / from.width, sy = to.height / from.height;
+      const move = `translate(${to.left - o.left - sx * (from.left - o.left)}px, ${to.top - o.top - sy * (from.top - o.top)}px) scale(${sx}, ${sy})`;
+      const done = flight.copy.animate([{ transform: 'translate(0px, 0px) scale(1, 1)', opacity: 1 }, { transform: move, opacity: getComputedStyle(real).opacity }], timing);
+      // Each line and fill eases from its setup style to the matching backdrop path's style.
+      const look = (el) => { const cs = getComputedStyle(el); return { fill: cs.fill === 'none' ? 'rgba(255, 255, 255, 0)' : cs.fill, stroke: cs.stroke, strokeWidth: cs.strokeWidth, opacity: cs.opacity }; };
+      flight.copy.querySelectorAll('path').forEach((path) => {
+        const match = path.dataset.district ? real.querySelector(`[data-district="${CSS.escape(path.dataset.district)}"]`)
+          : path.dataset.state === flight.stateAbbr ? realState : null;
+        const start = look(path);
+        if (start.opacity === '0') return;
+        if (match) path.animate([{ ...start, strokeDashoffset: getComputedStyle(path).strokeDashoffset }, { ...look(match), opacity: 1, strokeDashoffset: '0px' }], timing);
+        else path.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, duration: 700 }); // other states fade out
+      });
+      done.finished.then(() => { real.style.visibility = ''; flight.layer.remove(); });
+    }
     // A state's box with room around it, so the zoomed state never touches the edge.
     const boxAround = ([x0, y0, x1, y1]) => {
       const w = x1 - x0, h = y1 - y0, pad = Math.max(w, h) * 0.18 + 2;
@@ -759,7 +820,7 @@
     async function setupView() {
       const [{ members }, usmap] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
-        fetch('/api/usmap').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        getUsMap(),
       ]);
       const stateOf = (m) => m.district.split('-')[0];
       const perState = members.reduce((n, m) => ({ ...n, [stateOf(m)]: (n[stateOf(m)] || 0) + 1 }), {});
@@ -837,6 +898,7 @@
       });
       document.getElementById('setup').addEventListener('submit', (event) => {
         event.preventDefault();
+        takeOffMap(svg, stateSelect.value);
         go(`#/bills/${encodeURIComponent(memberSelect.value)}/${encodeURIComponent(districtSelect.value)}`);
       });
     }
@@ -861,17 +923,23 @@
         + ` <span class="name-district" aria-hidden="true" style="--delay:${after.toFixed(3)}s">${esc(district)}</span>`;
     }
 
-    // A large, faint map of New Jersey fixed behind the bill list, with this member's district
-    // filled in their party color. Decorative only: screen readers skip it and it can't be clicked.
-    function mapBackdrop(map, member) {
-      const current = map && map.districts.find((d) => d.id === member.district);
-      if (!current) return '';
+    // A large, faint map of the member's state fixed behind the home page, with their district filled
+    // in their party color. Drawn from the same U.S. map data as the setup page (same shapes, same
+    // projection), so the setup map can turn into this one without a visible swap. Decorative only:
+    // screen readers skip it and it can't be clicked.
+    function mapBackdrop(usmap, member) {
+      const abbr = member.district.split('-')[0];
+      const state = usmap && usmap.states.find((st) => st.abbr === abbr);
+      const districts = usmap ? usmap.districts.filter((d) => d.state === abbr) : [];
+      const current = districts.find((d) => d.id === member.district);
+      if (!state || !current) return '';
       const party = { D: 'dem', R: 'rep' }[member.party] || 'ind';
+      const [x0, y0, x1, y1] = state.bbox, pad = 0.5;
       // The screen-sized layer clips the map, so it can never make the page scroll sideways on a phone.
-      return `<div class="map-layer" aria-hidden="true"><svg class="map-backdrop" viewBox="${esc(map.viewBox)}" focusable="false">
-        <path class="state" d="${esc(map.state_path)}" />
-        ${map.districts.filter((d) => d !== current).map((d) => `<path class="district" d="${esc(d.path)}" />`).join('')}
-        <path class="district current ${party}" d="${esc(current.path)}" />
+      return `<div class="map-layer" aria-hidden="true"><svg class="map-backdrop" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" focusable="false">
+        <path class="state" data-state="${esc(abbr)}" d="${esc(state.path)}" />
+        ${districts.filter((d) => d !== current).map((d) => `<path class="district" data-district="${esc(d.id)}" d="${esc(d.path)}" />`).join('')}
+        <path class="district current ${party}" data-district="${esc(current.id)}" d="${esc(current.path)}" />
       </svg></div>`;
     }
 
@@ -1105,10 +1173,10 @@
     // ---- The member's home: three boxes (upload a bill, review bills, district info), each
     // opening its own page at #/bills/<member>/<district>/upload, /list or /district.
     async function billsView(memberId, districtId, page) {
-      const [{ members }, { bills }, map, { read_only: readOnly }] = await Promise.all([
+      const [{ members }, { bills }, usmap, { read_only: readOnly }] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
         fetch(`/api/bills?member=${encodeURIComponent(memberId)}`).then((r) => r.json()),
-        fetch('/api/map').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        getUsMap(),
         config,
       ]);
       const member = members.find((m) => m.id === memberId && m.district === districtId);
@@ -1124,7 +1192,7 @@
           ${icon ? `<span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span>` : ''}
           <span class="tile-title">${esc(title)}</span><span class="tile-stat">${esc(stat)}</span>
           <span class="tile-desc">${esc(desc)}</span><span class="tile-go">Open →</span></a>`;
-        app.innerHTML = `${mapBackdrop(map, member)}<div class="bills">${kicker}
+        app.innerHTML = `${mapBackdrop(usmap, member)}<div class="bills">${kicker}
           <h1 class="member-name ${{ R: 'rep', D: 'dem' }[member.party] || 'ind'}" aria-label="${esc(member.name)}, ${esc(member.district)}">${nameWords(member.name, member.district)}</h1>
           ${member.honorific ? `<p class="member-welcome" style="--delay:${(nameTiming(member.name).after + 1.2).toFixed(3)}s">Welcome, ${esc(member.honorific)}</p>` : ''}
           <div class="tiles home-tiles">
@@ -1135,6 +1203,7 @@
               .replace('<a ', `<a style="--photo:url(${MEDIA_PHOTO})" `)
               .replace('</a>', '<span class="media-credit">Photo: Vini6305 (edited) · Wikimedia Commons · CC BY-SA 4.0</span></a>')}
           </div></div>`;
+        landMap();
         return;
       }
 
