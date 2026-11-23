@@ -84,7 +84,7 @@ To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 nod
 ## 5. Commands
 - **Install dependencies:** None. Requires Node 24. For model runs: `cp .env.example .env`, then add your key.
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
-- **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.8.0, loaded from public CDNs with integrity hashes.
+- **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.13.0, loaded from public CDNs with integrity hashes.
 - **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Data Model page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
 - **Rebuild the U.S. map:** `node scripts/build-us-map.js` (free). Add state codes to `DISTRICT_STATES` to draw more states' districts.
 - **Run locally:** `node app/server.js`, then open http://localhost:3000 (prototype sign-in accepts anything)
@@ -98,3 +98,11 @@ To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 nod
 4. **Verify changes:** Run relevant checks. For a reproducible logic bug, use a failing test to demonstrate the fix when practical. Record manual checks and known limitations; follow the selected Build 4 evaluation track.
 5. **Zero secrets in code:** Never hardcode API keys, tokens, or credentials. Always read from environment variables (`.env`) and update `.env.example` when new variables are needed.
 6. **Stop when looping:** If a fix fails twice in a row, stop, summarize what failed, and ask the human before trying a third approach.
+7. **Ask me first:** Never do any of the following without the human's explicit "yes" for that specific action, even if an earlier, similar action was approved:
+   - **Git history:** `git push --force`, `git reset --hard`, rebasing or amending pushed commits, deleting branches, or any commit or push the human did not ask for.
+   - **Deleting data:** `rm -rf`, or deleting or overwriting anything in `data/members/`, `data/districts/`, `data/briefs/`, `data/media/` (including transcripts and reviewed candidates) or `data/uploads/`. Back up a file before rewriting it.
+   - **Secrets:** opening, printing, copying or editing `.env`, or putting any key in code, chat, logs or a host's settings. The OpenRouter key must never be added to Render.
+   - **Production (Render):** deleting or changing the Render service, its environment variables (especially removing `READ_ONLY`), or turning off read-only mode.
+   - **Spending:** any paid model run (`app/analyze.js`, `app/media.js`, transcription, the Analyze button) without showing the estimate and cap first; raising a cap; turning on OpenRouter Auto Top-Up.
+   - **Dependencies:** adding a package, changing a CDN library or its integrity hash, or `npm audit fix --force`.
+   There is no database, so there is nothing to back up beyond the Git repository (which GitHub keeps) and the Git-ignored local folders (`data/uploads/`, `data/media/transcripts/`), which should be copied before any risky change.

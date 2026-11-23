@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getBill, listBills, saveUpload, MAX_FILE_BYTES } = require('./bills.js');
 const { estimateFor, runAnalysis, loadKey, checkAvailableCredits } = require('./analyze.js');
+const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 
 // Public demo mode. On a public host (Render sets RENDER automatically) or with READ_ONLY=1, the app
 // is read-only: no paid runs, no uploads, no approvals, even if a key were added there by mistake.
@@ -11,6 +12,11 @@ const { estimateFor, runAnalysis, loadKey, checkAvailableCredits } = require('./
 const READ_ONLY = process.env.READ_ONLY === '1' || Boolean(process.env.RENDER);
 const READ_ONLY_MESSAGE = 'This public demo is read-only. Uploading, analyzing and approving work in the local app.';
 const hasKey = !READ_ONLY && loadKey(); // Reads OPENROUTER_API_KEY from the Git-ignored .env file.
+
+// Per-visitor rate limits (app/rate-limit.js): AI routes 10 per 10 minutes, writes 60 a minute,
+// everything 300 a minute. Checked before anything else, including the read-only refusal.
+const limiter = createLimiter();
+setInterval(() => limiter.prune(), 60 * 1000).unref();
 
 // One paid run at a time, kept in memory. Restarting the server forgets it.
 let job = null;
@@ -29,6 +35,14 @@ const listJson = (dir) => fs.readdirSync(path.join(DATA, dir)).filter((f) => f.e
 // never used to build a path directly.
 const members = () => listJson('members').map((f) => readJson(path.join(DATA, 'members', f)));
 const districts = () => listJson('districts').map((f) => readJson(path.join(DATA, 'districts', f)));
+
+// Sent with every response: browsers must not guess file types, must not show the app inside
+// another site's frame (clickjacking), and should not pass full addresses to other sites.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
 
 function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -72,6 +86,16 @@ async function handle(req, res) {
   // drafts and accepts no changes, so it answers on its public address.
   if (!READ_ONLY && !ALLOWED_HOSTS.has(req.headers.host)) return send(res, 403, { error: 'Forbidden host' });
   const url = new URL(req.url, `http://localhost:${PORT}`);
+
+  const visitor = visitorOf(req, READ_ONLY);
+  for (const bucket of bucketsFor(req.method, url.pathname)) {
+    const { allowed, retryAfter } = limiter.check(bucket, visitor);
+    if (!allowed) {
+      res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': String(retryAfter) });
+      res.end(JSON.stringify({ error: `Too many requests. Try again in ${retryAfter} seconds.`, retry_after: retryAfter }));
+      return;
+    }
+  }
 
   if (req.method === 'GET' && PUBLIC_FILES[url.pathname]) {
     const file = PUBLIC_FILES[url.pathname];
@@ -278,6 +302,7 @@ async function handle(req, res) {
 }
 
 const server = http.createServer((req, res) => {
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) res.setHeader(name, value);
   handle(req, res).catch((error) => {
     console.error(error);
     if (!res.headersSent) send(res, 500, { error: 'Server error' });

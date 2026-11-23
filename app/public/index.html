@@ -602,7 +602,8 @@
         // Loading the worker as a script lets pdf.js run on this page, so it too is hash-checked.
         ['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js', 'sha384-SnzOobpRMLXZ52iJvZm/C0fYw0OQemTXzTjIsdsfMcrCtCEe9qgzxTd3RSklO5x2'],
       ],
-      docx: [['https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js', 'sha384-/cXAMbzovUIKbBERjPmR3SnPTh8siWr5lsvFYj1Uq4XP0yaJUZJmsh0YXyGv5P0y']],
+      // 1.13.0: fixes a directory-traversal advisory in versions up to 1.10.0 (GHSA-rmjr-87wv-gf87).
+      docx: [['https://cdn.jsdelivr.net/npm/mammoth@1.13.0/mammoth.browser.min.js', 'sha384-8NWE3bZDrmRI4IePMoQaEoLhAQ1MmRMJkdNgnGiHRFanTqsFKr0TmK6aSZvFJ/PO']],
     };
     const loadedScripts = {};
     function loadScript([src, integrity]) {
@@ -620,7 +621,9 @@
 
     async function pdfPages(buffer) {
       for (const lib of LIBS.pdf) await loadScript(lib);
-      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise;
+      // isEvalSupported: false blocks the malicious-PDF code path in pdf.js 3.x (GHSA-wgrm-67xf-hhpq,
+      // high severity); it is the fix the advisory gives for versions before 4.2.67.
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)), isEvalSupported: false }).promise;
       const pages = [];
       for (let n = 1; n <= pdf.numPages; n++) {
         const content = await (await pdf.getPage(n)).getTextContent();
@@ -1181,7 +1184,9 @@
       const money = (n) => `$${Number(n).toFixed(2)}`;
       const status = await (await fetch(`/api/analyze/status?${query}`)).json();
       if (status.job && status.job.status === 'running') return watch();
-      const est = await (await fetch(`/api/estimate?${query}`)).json();
+      const estResponse = await fetch(`/api/estimate?${query}`);
+      const est = await estResponse.json();
+      if (!estResponse.ok) { panel.innerHTML = `<p class="error">${esc(est.error || 'Could not get a cost estimate.')}</p>`; return; }
       const blocked = est.read_only ? 'This public demo is read-only, so it cannot run new AI analyses. Saved briefs are shown; analyzing works in the local app.'
         : !est.has_key ? 'There is no OpenRouter key in .env. Add one and restart the server.'
         : est.busy ? 'Another analysis is running. Wait for it to finish, then reload this page.'
