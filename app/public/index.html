@@ -728,6 +728,28 @@
       };
       svg._zoom = requestAnimationFrame(step);
     }
+    // The chosen district's black outline draws itself in 3 seconds, travelling counterclockwise on screen.
+    // How: the line is one long dash with an equally long gap; sliding the dash offset to 0 reveals it
+    // along the path. Census rings can run either way, so we measure which way this one turns (signed
+    // area from points along it) and slide from the matching side. The dash is measured in screen pixels,
+    // because the outline keeps the same thickness at any zoom (non-scaling stroke).
+    function drawOutline(path) {
+      path.getAnimations().forEach((a) => a.cancel());
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const length = path.getTotalLength();
+      let area = 0, prev = path.getPointAtLength(0);
+      for (let i = 1; i <= 200; i++) {
+        const p = path.getPointAtLength((length * i) / 200);
+        area += prev.x * p.y - p.x * prev.y;
+        prev = p;
+      }
+      const clockwise = area > 0; // screen y points down, so a positive area turns clockwise
+      const px = length * path.getScreenCTM().a + 2; // a little extra so no gap shows at the end
+      path.animate([
+        { strokeDasharray: `${px} ${px}`, strokeDashoffset: clockwise ? -px : px },
+        { strokeDasharray: `${px} ${px}`, strokeDashoffset: 0 },
+      ], { duration: 3000, easing: 'ease-out' }); // moving from the first frame, easing into the close
+    }
     // A state's box with room around it, so the zoomed state never touches the edge.
     const boxAround = ([x0, y0, x1, y1]) => {
       const w = x1 - x0, h = y1 - y0, pad = Math.max(w, h) * 0.18 + 2;
@@ -811,7 +833,7 @@
         button.disabled = !districtSelect.value;
         mark('.us-district', 'selected', (el) => el.dataset.district === districtSelect.value);
         const outline = svg && svg.querySelector('.us-district.selected');
-        if (outline) outline.parentNode.appendChild(outline); // drawn last, so its black line sits on top
+        if (outline) { outline.parentNode.appendChild(outline); drawOutline(outline); } // drawn last, so its black line sits on top
       });
       document.getElementById('setup').addEventListener('submit', (event) => {
         event.preventDefault();
