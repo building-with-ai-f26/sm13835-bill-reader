@@ -2,7 +2,7 @@
 name: bill-reader-ux
 description: >-
   UX and visual rules for Bill Reader's app screens (sign-in, setup map, member home, bill list,
-  upload, brief tabs, Data Model page): plain copy, one consistent system, honest states, hover and
+  upload, brief tabs, Media Panel page): plain copy, one consistent system, honest states, hover and
   press feedback, accessibility and phone layout, plus how to check a change before calling it done.
   Use whenever you design, restyle, add or review any screen or component in app/public/index.html,
   or when the user says something looks off, bland, cluttered or hard to use.

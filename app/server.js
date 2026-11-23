@@ -128,7 +128,7 @@ async function handle(req, res) {
     return send(res, 200, readJson(path.join(DATA, 'us-map.json')));
   }
 
-  // TEMPORARY "Data model" page: each promise, where it came from, how H.R. 1 tested it, the
+  // TEMPORARY "Media Panel" page (/api/datamodel): each promise, where it came from, how H.R. 1 tested it, the
   // member's votes, and the TV-appearance pipeline. Read-only; sends transcript summaries, never
   // the transcript text (network transcripts stay on this computer, Git-ignored).
   if (req.method === 'GET' && url.pathname === '/api/datamodel') {

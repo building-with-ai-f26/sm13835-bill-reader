@@ -16,7 +16,7 @@ app/
   bills.js           Finds H.R. 1 and uploaded bills; validates and saves uploads
   public/
     index.html       The whole app UI (sign-in, setup with U.S. map, member home, bill list, upload, brief,
-                     Analyze panel, temporary Data Model page with the TV review list) and PostHog
+                     Analyze panel, temporary Media Panel page with the TV review list) and PostHog
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
 scripts/
   build-us-map.js    Builds data/us-map.json from Census boundary files (read in memory; nothing else saved)
@@ -57,7 +57,7 @@ journal/             Optional weekly working notes
 The public app is a **read-only demo**: visitors sign in with anything, choose New Jersey, a member and their district, and read that member's saved H.R. 1 brief, district info and promises. It never spends money and never saves anything:
 - **No OpenRouter key on Render, ever.** The server also refuses paid runs, uploads and approvals whenever it detects Render (`RENDER` is set automatically) or `READ_ONLY=1`, and it ignores any key it finds there.
 - **No database is needed:** the demo stores nothing. Uploads and approvals stay in the local app, because Render wipes saved files on every restart and uploads may be unreleased drafts.
-- **Full TV transcripts are not deployed** (Git-ignored); the Data Model page uses the committed counts in `data/media/<id>-transcripts.json`.
+- **Full TV transcripts are not deployed** (Git-ignored); the Media Panel page uses the committed counts in `data/media/<id>-transcripts.json`.
 
 Steps (first time):
 1. Push the latest code to GitHub (`main`). Run `node --test` first; all tests must pass.
@@ -85,7 +85,7 @@ To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 nod
 - **Install dependencies:** None. Requires Node 24. For model runs: `cp .env.example .env`, then add your key.
 - **Generate a brief (paid model calls):** use the Analyze button on a bill's page, or `node app/analyze.js --member <id> [--bill <bill id>]`, where `<id>` is a file name in `data/members` (e.g. `kean`) and the bill defaults to H.R. 1. Each run shows an estimate and stops at its own cap (never above $3). Member data (votes, commitments) is in `data/members/`, district data (Census, elections) in `data/districts/`, H.R. 1 briefs in `data/briefs/`.
 - **Uploaded bills:** saved in `data/uploads/<id>/` (original file, sections, briefs). Git ignores this folder because uploads may be unreleased drafts. The page reads PDF and Word files in the browser with pdf.js 3.11.174 and mammoth 1.13.0, loaded from public CDNs with integrity hashes.
-- **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Data Model page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
+- **TV statements (paid, about $0.60 per member):** `node app/media.js --member <id>` reads that member's transcripts, keeps only statements quoted word for word from the member's own lines, checks official transcripts where they exist, and writes `data/media/<id>-candidates.json` as pending. Review them on the member's Media Panel page; only approved items join the member's file. A re-run refuses to overwrite reviewed items. Cap $1, balance floor $1.
 - **Rebuild the U.S. map:** `node scripts/build-us-map.js` (free). Add state codes to `DISTRICT_STATES` to draw more states' districts.
 - **Run locally:** `node app/server.js`, then open http://localhost:3000 (prototype sign-in accepts anything)
 - **Run deterministic tests:** `node --test`
