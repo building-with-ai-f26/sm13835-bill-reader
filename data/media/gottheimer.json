@@ -778,7 +778,8 @@
       "id": "fox-2026-08-28",
       "date": "2026-08-28",
       "network": "Fox News",
-      "show": "unknown (tagged Fox & Friends)",
+      "show": "Fox & Friends",
+      "note": "Show confirmed by the project owner after watching the video (2026-11-23); Fox's page only tagged it Fox & Friends.",
       "type": "interview",
       "topics": [
         "Hasan Piker",
