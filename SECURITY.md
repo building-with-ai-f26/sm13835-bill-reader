@@ -1,7 +1,7 @@
 # SECURITY.md — Bill Reader
 
 Security review for Assignment 3 (beginner lane), done 2026-11-22 with my coding agent (Claude Code).
-Live app: https://sm13835-bill-reader.onrender.com · Repo: https://github.com/sm13835/sm13835-bill-reader
+Live app: https://sm13835-bill-reader.onrender.com · Repo: https://github.com/building-with-ai-f26/sm13835-bill-reader
 
 ## 1. What kind of app this is
 

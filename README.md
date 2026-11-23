@@ -4,7 +4,7 @@
 
 - **Builder:** Scott Mueller (`sm13835`)
 - **Pod:** Scott Mueller, Julia Simon, Sajan Patel, Jordan Steinroeder
-- **Product Page & Living PRD:** https://sm13835.github.io/sm13835-bill-reader/
+- **Product Page & Living PRD:** https://building-with-ai-f26.github.io/sm13835-bill-reader/
 - **App:** runs locally through Week 4; add a cloud URL in Build 5.
 
 ## Start here: Build 1
@@ -38,7 +38,7 @@ Create your PostHog account in Week 1. Install it on the Product Page and local 
 Requires Node 24. There are no packages to install.
 
 ```bash
-git clone https://github.com/sm13835/sm13835-bill-reader.git
+git clone https://github.com/building-with-ai-f26/sm13835-bill-reader.git
 cd sm13835-bill-reader
 cp .env.example .env        # then add your OpenRouter key to .env
 node app/analyze.js         # generates the brief (paid model calls)

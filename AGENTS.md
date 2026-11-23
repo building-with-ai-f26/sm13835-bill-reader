@@ -68,7 +68,7 @@ The public app is a **read-only demo**: visitors sign in with anything, choose N
 Steps (first time):
 1. Push the latest code to GitHub (`main`). Run `node --test` first; all tests must pass.
 2. Sign in at https://render.com (free account, no card needed for the free plan).
-3. **New → Web Services.** Under the source options, choose **Public Git Repository** and paste `https://github.com/sm13835/sm13835-bill-reader` (the repo is public), then **Connect**. This is how the live demo was deployed.
+3. **New → Web Services.** Under the source options, choose **Public Git Repository** and paste `https://github.com/building-with-ai-f26/sm13835-bill-reader` (the repo is public), then **Connect**. This is how the live demo was deployed.
    - Optional upgrade: if Render shows a GitHub list with this repo (after granting Render access to it on GitHub), pick it there instead; then every push to `main` redeploys automatically.
 4. Fill in:
    - **Name:** `sm13835-bill-reader` (this becomes the address `https://<name>.onrender.com`)
