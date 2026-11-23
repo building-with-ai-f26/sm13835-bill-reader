@@ -140,7 +140,34 @@
     .us-map-card { margin: 0; padding: 16px; }
     /* Setup: a state picker, then one square box per member (district, round portrait, name), tinted
        by party. Light party tints: the name text stays dark, so contrast is the same as on white. */
-    .setup-state { max-width: 320px; padding: 0; margin-top: 20px; }
+    .setup-state { max-width: 440px; padding: 0; margin-top: 20px; }
+    /* State picker: the name in the welcome page's heavy all-caps Inter, in navy; the open list is a
+       column of large rectangles. */
+    .state-label { font-weight: 600; font-size: 14px; margin-top: 8px; }
+    .state-picker { position: relative; }
+    .setup-state + #member-status { margin-top: 12px; }
+    .state-button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; padding: 10px 14px 10px 20px;
+      font: inherit; text-align: left; color: var(--accent); background: #fff; border: 1px solid #d0d5dd; border-radius: 12px; cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+    .state-button:hover { border-color: #98a2b3; }
+    .state-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .state-picker .state-name { flex: 1; min-width: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; line-height: 1.05; }
+    .state-button .state-name { font-size: 30px; }
+    .state-button.empty .state-name { color: var(--muted); }
+    .state-picker .state-count { flex: none; font-size: 14px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .state-chevron { flex: none; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s ease; }
+    .state-button[aria-expanded="true"] .state-chevron { transform: rotate(180deg); }
+    .state-list { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0; display: grid; gap: 6px; margin: 0; padding: 6px;
+      max-height: min(440px, 60vh); overflow-y: auto; overscroll-behavior: contain; list-style: none;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16); }
+    .state-list[hidden] { display: none; }
+    .state-list [role="option"] { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 18px; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+    .state-list .state-name { font-size: 22px; }
+    .state-list [role="option"].active { background: var(--accent-soft); border-color: #9fb4d3; }
+    .state-list [role="option"][aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    @media (max-width: 480px) { .state-button .state-name { font-size: 24px; } .state-list .state-name { font-size: 19px; } }
+    @media (prefers-reduced-motion: reduce) { .state-chevron, .state-button { transition: none; } }
     .member-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
     @media (max-width: 480px) { .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .member-grid .member-box img, .member-grid .member-box-photo { width: 84px; height: 84px; } .member-grid .member-box-name { font-size: 14px; } }
     .member-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; aspect-ratio: 1;
@@ -841,6 +868,62 @@
       return [x0 - pad, y0 - pad, w + pad * 2, h + pad * 2];
     };
 
+    // State picker: a large button that opens a list of big rectangular choices (a native select's
+    // list can't be styled on a Mac). It follows the ARIA "select-only combobox" pattern: focus stays
+    // on the button, arrow keys move through the list, Enter or Space chooses, Escape closes, and
+    // typing letters jumps to a matching state. Choosing writes to the hidden select and fires its
+    // change event, so the rest of the page reacts exactly as before.
+    function wireStatePicker(select, perState) {
+      const button = document.getElementById('state-button');
+      const list = document.getElementById('state-list');
+      const options = [...list.querySelectorAll('[role="option"]')];
+      let active = -1, typed = '', typedAt = 0;
+      const isOpen = () => !list.hidden;
+      const setActive = (i) => {
+        options.forEach((o, n) => o.classList.toggle('active', n === i));
+        active = i;
+        if (i >= 0) { button.setAttribute('aria-activedescendant', options[i].id); options[i].scrollIntoView({ block: 'nearest' }); }
+        else button.removeAttribute('aria-activedescendant');
+      };
+      const open = () => {
+        list.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+        const chosen = options.findIndex((o) => o.dataset.value === select.value);
+        setActive(chosen >= 0 ? chosen : 0);
+        if (chosen >= 0) options[chosen].scrollIntoView({ block: 'center' });
+      };
+      const close = () => { list.hidden = true; button.setAttribute('aria-expanded', 'false'); setActive(-1); };
+      const choose = (i) => {
+        const o = options[i];
+        options.forEach((x) => x.setAttribute('aria-selected', String(x === o)));
+        button.querySelector('.state-name').textContent = o.querySelector('.state-name').textContent;
+        button.querySelector('.state-count').textContent = plural(perState[o.dataset.value] || 0, 'member');
+        button.classList.remove('empty');
+        close();
+        button.focus();
+        if (select.value !== o.dataset.value) { select.value = o.dataset.value; select.dispatchEvent(new Event('change')); }
+      };
+      button.addEventListener('click', () => (isOpen() ? close() : open()));
+      button.addEventListener('keydown', (event) => {
+        const last = options.length - 1;
+        const move = { ArrowDown: Math.min(active + 1, last), ArrowUp: Math.max(active - 1, 0), Home: 0, End: last, PageDown: Math.min(active + 8, last), PageUp: Math.max(active - 8, 0) }[event.key];
+        if (move !== undefined) { event.preventDefault(); if (!isOpen()) open(); else setActive(move); return; }
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (isOpen() && active >= 0) choose(active); else open(); return; }
+        if (event.key === 'Escape' && isOpen()) { event.preventDefault(); close(); return; }
+        if (event.key === 'Tab' && isOpen()) { close(); return; }
+        if (event.key.length === 1 && /\S/.test(event.key) && !event.metaKey && !event.ctrlKey) {
+          const now = Date.now();
+          typed = (now - typedAt < 700 ? typed : '') + event.key.toLowerCase();
+          typedAt = now;
+          const match = options.findIndex((o) => o.querySelector('.state-name').textContent.toLowerCase().startsWith(typed));
+          if (match >= 0) { if (!isOpen()) open(); setActive(match); }
+        }
+      });
+      list.addEventListener('pointermove', (event) => { const o = event.target.closest('[role="option"]'); if (o) setActive(options.indexOf(o)); });
+      list.addEventListener('click', (event) => { const o = event.target.closest('[role="option"]'); if (o) choose(options.indexOf(o)); });
+      document.addEventListener('pointerdown', (event) => { if (isOpen() && !event.target.closest('.state-picker')) close(); });
+    }
+
     async function setupView() {
       const [{ members }, usmap, { members: house }] = await Promise.all([
         fetch('/api/members').then((r) => r.json()),
@@ -860,9 +943,21 @@
           <h1>Set up your office</h1>
           <p class="meta">Choose your state, then the member you work for.</p>
           <div class="form setup-state">
-            <label for="state">State</label>
-            <select id="state"><option value="">Choose a state…</option>
-              ${states.map((s) => `<option value="${esc(s.abbr)}">${esc(s.name)}${perState[s.abbr] ? ` (${plural(perState[s.abbr], 'member')})` : ''}</option>`).join('')}</select>
+            <span class="state-label" id="state-label">State</span>
+            <!-- The hidden select holds the chosen state for the rest of the page; people use the picker below. -->
+            <select id="state" hidden aria-hidden="true" tabindex="-1"><option value=""></option>
+              ${states.map((s) => `<option value="${esc(s.abbr)}">${esc(s.name)}</option>`).join('')}</select>
+            <div class="state-picker">
+              <button type="button" class="state-button empty" id="state-button" role="combobox" aria-haspopup="listbox" aria-expanded="false"
+                aria-controls="state-list" aria-labelledby="state-label state-button-name">
+                <span class="state-name" id="state-button-name">Choose a state</span><span class="state-count"></span>
+                <svg class="state-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+              <ul class="state-list" id="state-list" role="listbox" aria-labelledby="state-label" hidden>
+                ${states.map((s) => `<li role="option" id="state-opt-${esc(s.abbr)}" data-value="${esc(s.abbr)}" aria-selected="false"
+                  aria-label="${esc(s.name)}, ${plural(perState[s.abbr] || 0, 'member')}"><span class="state-name">${esc(s.name)}</span><span class="state-count">${perState[s.abbr] || 0}</span></li>`).join('')}
+              </ul>
+            </div>
           </div>
           <p id="member-status" class="meta" aria-live="polite"></p>
           <div id="member-grid" class="member-grid"></div>
@@ -877,6 +972,7 @@
         </figure>` : ''}
       </div>`;
       const stateSelect = document.getElementById('state');
+      wireStatePicker(stateSelect, perState);
       const grid = document.getElementById('member-grid');
       const status = document.getElementById('member-status');
       const svg = document.getElementById('us-map');
