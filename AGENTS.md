@@ -52,6 +52,8 @@ journal/             Optional weekly working notes
 7. TV appearances (optional, paid): transcripts are made by Gemini watching each appearance's YouTube link through OpenRouter, so no video or audio is ever downloaded. Only the member's own quoted words and links are committed; full transcripts stay in the Git-ignored `data/media/transcripts/`.
 
 ## 4. Deploy (public read-only demo on Render)
+**Live:** https://sm13835-bill-reader.onrender.com (Render web service `sm13835-bill-reader`, free plan, deployed 2026-11-22).
+
 The public app is a **read-only demo**: visitors sign in with anything, choose New Jersey, a member and their district, and read that member's saved H.R. 1 brief, district info and promises. It never spends money and never saves anything:
 - **No OpenRouter key on Render, ever.** The server also refuses paid runs, uploads and approvals whenever it detects Render (`RENDER` is set automatically) or `READ_ONLY=1`, and it ignores any key it finds there.
 - **No database is needed:** the demo stores nothing. Uploads and approvals stay in the local app, because Render wipes saved files on every restart and uploads may be unreleased drafts.
@@ -59,10 +61,11 @@ The public app is a **read-only demo**: visitors sign in with anything, choose N
 
 Steps (first time):
 1. Push the latest code to GitHub (`main`). Run `node --test` first; all tests must pass.
-2. Sign in at https://render.com with GitHub (free account, no card needed for the free plan).
-3. **New + → Web Service →** pick the `sm13835-bill-reader` repository.
+2. Sign in at https://render.com (free account, no card needed for the free plan).
+3. **New → Web Services.** Under the source options, choose **Public Git Repository** and paste `https://github.com/sm13835/sm13835-bill-reader` (the repo is public), then **Connect**. This is how the live demo was deployed.
+   - Optional upgrade: if Render shows a GitHub list with this repo (after granting Render access to it on GitHub), pick it there instead; then every push to `main` redeploys automatically.
 4. Fill in:
-   - **Name:** `bill-reader` (this becomes the address `https://bill-reader.onrender.com`, or similar if taken)
+   - **Name:** `sm13835-bill-reader` (this becomes the address `https://<name>.onrender.com`)
    - **Branch:** `main` · **Runtime/Language:** Node · **Region:** any US region
    - **Build command:** `npm install` (installs nothing; there are no dependencies)
    - **Start command:** `npm start` (runs `node app/server.js`)
@@ -72,7 +75,9 @@ Steps (first time):
 5. **Create Web Service.** Wait for the log to say `Bill Reader public demo (read-only) on port …`, then open the URL Render shows.
 6. Check it on a phone: sign in → New Jersey → a member → their district → Continue → Review Uploaded Bills → H.R. 1 → each tab. The Analyze panel and Upload page should say the demo is read-only.
 
-After that, every push to `main` redeploys automatically. Free instances sleep after about 15 minutes without visitors, so the first visit after a break takes up to a minute to load.
+**Updating the live demo:** a service created from a public repository link does **not** redeploy on its own. After pushing app changes to `main`, open the service in Render and click **Manual Deploy → Deploy latest commit**, then repeat the phone check in step 6. (Changes to `docs/` or `AGENTS.md` alone don't need a redeploy.)
+
+Free instances sleep after about 15 minutes without visitors, so the first visit after a break takes up to a minute to load. Open the link shortly before sharing or presenting it.
 
 To check the read-only mode locally before deploying: `READ_ONLY=1 PORT=3100 node app/server.js`, then open http://localhost:3100.
 
