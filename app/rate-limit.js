@@ -49,11 +49,13 @@ function bucketsFor(method, pathname) {
 // The visitor's address. Locally, the connection's own address (forwarding headers are ignored,
 // because any browser could fake them). Behind a host's proxy (Render), a visitor can send their
 // own X-Forwarded-For, and the proxy adds the real address after it, so the FIRST entry can be
-// forged (tested on the live site: it was). Use the edge network's client header when present
-// (it overwrites whatever the visitor sends), otherwise the LAST X-Forwarded-For entry.
+// forged (tested on the live site: it was). Use True-Client-IP when present, otherwise the LAST
+// X-Forwarded-For entry. Live tests on Render (2026-11-22): forged first X-Forwarded-For entries
+// and forged True-Client-IP headers were both overridden, but a forged CF-Connecting-IP was passed
+// through untouched, so that header is deliberately not trusted.
 function visitorOf(req, behindProxy) {
   if (behindProxy) {
-    const edge = req.headers['cf-connecting-ip'] || req.headers['true-client-ip'];
+    const edge = req.headers['true-client-ip'];
     if (edge) return String(edge).trim();
     const chain = String(req.headers['x-forwarded-for'] || '').split(',').map((s) => s.trim()).filter(Boolean);
     if (chain.length) return chain[chain.length - 1];

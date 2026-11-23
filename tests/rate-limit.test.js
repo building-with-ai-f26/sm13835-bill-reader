@@ -69,9 +69,14 @@ test('behind a proxy, a forged first X-Forwarded-For entry is ignored; the proxy
   assert.strictEqual(visitorOf(forged, true), '203.0.113.5');
 });
 
-test('the edge network client header wins over X-Forwarded-For', () => {
-  const req = { headers: { 'cf-connecting-ip': '203.0.113.9', 'x-forwarded-for': '198.51.100.7, 10.0.0.2' }, socket: { remoteAddress: '10.0.0.1' } };
+test('True-Client-IP (set by the host) wins over X-Forwarded-For', () => {
+  const req = { headers: { 'true-client-ip': '203.0.113.9', 'x-forwarded-for': '198.51.100.7, 10.0.0.2' }, socket: { remoteAddress: '10.0.0.1' } };
   assert.strictEqual(visitorOf(req, true), '203.0.113.9');
+});
+
+test('CF-Connecting-IP is not trusted (Render passes a forged one through)', () => {
+  const req = { headers: { 'cf-connecting-ip': '198.51.100.20', 'x-forwarded-for': '203.0.113.5' }, socket: { remoteAddress: '10.0.0.1' } };
+  assert.strictEqual(visitorOf(req, true), '203.0.113.5');
 });
 
 test('locally, forwarding headers are ignored entirely', () => {
