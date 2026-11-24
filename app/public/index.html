@@ -104,10 +104,11 @@
     .tile.locked .tile-stat { font-size: 15px; font-weight: 500; }
     .tile-desc { font-size: 13px; color: var(--muted); }
     .tile-go { margin-top: auto; padding-top: 8px; /* pinned to the bottom, so "Open" lines up across boxes */ font-size: 13px; font-weight: 600; color: var(--accent); }
-    .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 4px; margin-bottom: 8px; background: #f2f4f7; border-radius: 12px; width: fit-content; max-width: 100%; }
-    .tab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; font-size: 14px; font-weight: 500;
+    /* Brief tabs: centered on the page, roomy, with larger text. */
+    .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 5px; margin: 0 auto 12px; background: #f2f4f7; border-radius: 14px; width: fit-content; max-width: 100%; }
+    .tab { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 10px; font-size: 16px; font-weight: 500;
       color: var(--muted); text-decoration: none; white-space: nowrap; }
-    .tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     a.tab:hover { color: var(--text); }
     .tab[aria-current="page"] { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
     .tab.locked { color: #98a2b3; }
@@ -119,7 +120,7 @@
     .tabs.glass-on { position: relative; isolation: isolate; }
     .tabs.glass-on .tab { position: relative; z-index: 1; }
     .tabs.glass-on .tab[aria-current="page"] { background: transparent; box-shadow: none; }
-    .tab-glass { position: absolute; z-index: 0; box-sizing: border-box; top: 4px; left: 0; height: calc(100% - 8px); width: 0; border-radius: 9px;
+    .tab-glass { position: absolute; z-index: 0; box-sizing: border-box; top: 5px; left: 0; height: calc(100% - 10px); width: 0; border-radius: 10px;
       pointer-events: none; transform-origin: center; will-change: transform, width;
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0.72) 100%);
       -webkit-backdrop-filter: blur(10px) saturate(180%); backdrop-filter: blur(10px) saturate(180%);
