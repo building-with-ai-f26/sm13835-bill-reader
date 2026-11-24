@@ -7,7 +7,7 @@
 //      line on what the section does.
 //   2. Analyze: a stronger model reads only the sections flagged in step 1.
 //   3. Verify: plain code drops anything whose citations do not check out.
-//   4. Overview: "What this bill does" outlines the whole bill from step 1's one-line summaries (so
+//   4. Overview: "Bill Summary" outlines the whole bill from step 1's one-line summaries (so
 //      every bill gets one, even with no district effect); the district line uses only step 3's results.
 //   If OpenRouter refuses the key (spending limit, no credits), the run stops at once and saves nothing.
 //   5. Issues: a cheap model sorts every section by issue once per bill (data/hr1-issues.json),
@@ -398,7 +398,7 @@ function estimateFor(memberId, billId) {
   });
 }
 
-// "What this bill does" covers the whole bill, from screening's one-line summary of every section it
+// "Bill Summary" covers the whole bill, from screening's one-line summary of every section it
 // read, so even a bill with no effect on the district gets an outline. The district bottom line
 // comes from the verified findings; with none, code writes it from what was actually read.
 async function writeOverview(bill, sections, items, pages, spendLimit, summaries = {}, district = null) {

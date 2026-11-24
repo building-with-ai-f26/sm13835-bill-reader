@@ -548,11 +548,11 @@
     const tabIcon = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[id]}</svg>`;
 
     const TABS = [
-      { id: 'overview', title: 'Bill overview', needsBrief: true, desc: () => 'What the bill does, in plain English, with links to the exact page of the bill.' },
-      { id: 'impact', title: 'District impact', needsBrief: true, desc: () => 'The provisions that most help or hurt this district, with evidence. Filter by issue.' },
-      { id: 'promises', title: 'Promise alerts', needsBrief: true, desc: () => "Where a yes vote may conflict with the member's public commitments." },
-      { id: 'district', title: 'District profile', desc: () => 'Census facts, a district map and House election results since 2006.' },
-      { id: 'votes', title: 'Votes & bill text', desc: (bill) => (bill.kind === 'official'
+      { id: 'overview', title: 'Bill Overview', needsBrief: true, desc: () => 'What the bill does, in plain English, with links to the exact page of the bill.' },
+      { id: 'impact', title: 'District Impact', needsBrief: true, desc: () => 'The provisions that most help or hurt this district, with evidence. Filter by issue.' },
+      { id: 'promises', title: 'Promise Alerts', needsBrief: true, desc: () => "Where a yes vote may conflict with the member's public commitments." },
+      { id: 'district', title: 'District Profile', desc: () => 'Census facts, a district map and House election results since 2006.' },
+      { id: 'votes', title: 'Votes & Bill Text', desc: (bill) => (bill.kind === 'official'
         ? "The member's recorded votes on this bill, with links to the official text."
         : 'Not yet voted on. Read the uploaded bill section by section.') },
     ];
@@ -616,12 +616,12 @@
       const c = brief.coverage;
       const incomplete = c.screen_failures.length + c.deep_failures.length + c.not_analyzed_due_to_cap;
       return `${incompleteHtml(brief)}
-        <h2>What this bill does</h2>
+        <h2>Bill Summary</h2>
         <div class="card"><ul>${brief.overview.what_it_does.map((b) => `<li>${esc(b.text)}
           <span class="sources">${b.sources.map((s) => sectionRef(s.section_id, s.page)).join(' ')}</span></li>`).join('')}</ul>
           <p class="meta">${bill.kind === 'official' ? 'Links open the official bill text on GovInfo at the page where each section begins.'
-            : bill.pdf_url ? 'Links open your uploaded PDF at the page where each section begins.' : 'Links open each section\'s text under Votes & bill text.'}</p></div>
-        <h2>What it means for ${esc(district.id)}</h2>
+            : bill.pdf_url ? 'Links open your uploaded PDF at the page where each section begins.' : 'Links open each section\'s text under Votes & Bill Text.'}</p></div>
+        <h2>Constituent Impact: ${esc(district.id)}</h2>
         <div class="card"><p>${esc(brief.overview.district_bottom_line)}</p></div>
         <h2>What was reviewed</h2>
         <div class="card"><p>${c.sections_screened} of ${c.sections_total} sections screened; ${c.flagged} flagged; ${c.analyzed} analyzed in depth.
