@@ -202,3 +202,40 @@ test('a section number echoed as 1 or "Section 1" still matches its section', ()
   assert.deepStrictEqual(Object.keys(bySection), ['1', '2', '3']);
   assert.deepStrictEqual(untagged, []);
 });
+
+// --- Bill-wide outline and honest failures (2026-11-24) ---
+const { fatalModelError, FatalModelError, mapLimit, noImpactLine } = require('../app/analyze.js');
+
+test('a summary bullet may cite a section screening read, even with no district finding', () => {
+  const overview = { what_it_does: [{ text: 'Funds chip factories', section_ids: ['102', '99999'] }] };
+  const result = verifyOverview(overview, { items: [], pages: { 102: 4 }, summarized: ['102', '103'] });
+  assert.strictEqual(result.what_it_does.length, 1);
+  assert.deepStrictEqual(result.what_it_does[0].sources, [{ section_id: '102', page: 4 }]);
+});
+
+test('the key\'s spending limit, no credits or a bad key stop the run; other errors are retried', () => {
+  const limit = '{"error":{"message":"Key limit exceeded (monthly limit). Manage it using ..."}}';
+  assert.ok(fatalModelError(403, limit) instanceof FatalModelError);
+  assert.match(fatalModelError(403, limit).message, /spending limit/);
+  assert.ok(fatalModelError(402, 'Insufficient credits') instanceof FatalModelError);
+  assert.ok(fatalModelError(401, 'No auth') instanceof FatalModelError);
+  assert.strictEqual(fatalModelError(429, 'Rate limited'), null);
+  assert.strictEqual(fatalModelError(500, 'Server error'), null);
+});
+
+test('a refused key stops all remaining work at once instead of failing every section', async () => {
+  let calls = 0;
+  const items = Array.from({ length: 266 }, (_, i) => ({ id: String(i) }));
+  await assert.rejects(
+    mapLimit(items, async () => { calls++; throw new FatalModelError('limit'); }),
+    FatalModelError
+  );
+  assert.ok(calls <= 10, `${calls} calls were made after the key was refused`);
+});
+
+test('"no effect" only claims what was actually read', () => {
+  assert.strictEqual(noImpactLine({ id: 'NJ-5' }, 266, 266), 'None of this bill\'s 266 sections was found to materially affect NJ-5.');
+  const partial = noImpactLine({ id: 'NJ-5' }, 266, 200);
+  assert.match(partial, /200 were read/);
+  assert.match(partial, /other 66 could not be read/);
+});

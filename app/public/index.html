@@ -112,6 +112,25 @@
     .tab[aria-current="page"] { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
     .tab.locked { color: #98a2b3; }
     .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    /* Glass lens on the brief tabs: a frosted, glossy pill that glides under the pointer while it is
+       over the tab bar (only there), stretches a little as it moves, and carries a soft highlight at
+       the pointer. Off the bar it flows back and rests on the current tab as its selected look.
+       Without JavaScript, the current tab keeps its plain white highlight. */
+    .tabs.glass-on { position: relative; isolation: isolate; }
+    .tabs.glass-on .tab { position: relative; z-index: 1; }
+    .tabs.glass-on .tab[aria-current="page"] { background: transparent; box-shadow: none; }
+    .tab-glass { position: absolute; z-index: 0; box-sizing: border-box; top: 4px; left: 0; height: calc(100% - 8px); width: 0; border-radius: 9px;
+      pointer-events: none; transform-origin: center; will-change: transform, width;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0.72) 100%);
+      -webkit-backdrop-filter: blur(10px) saturate(180%); backdrop-filter: blur(10px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(31, 58, 95, 0.10), inset 0 0 0 0.5px rgba(31, 58, 95, 0.10),
+        0 6px 16px rgba(16, 24, 40, 0.12), 0 1px 3px rgba(16, 24, 40, 0.10); }
+    /* The light inside the glass: a bright spot at the pointer and a cool rim along the bottom edge. */
+    .tab-glass::before { content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: var(--glow, 0); transition: opacity 0.2s ease;
+      background: radial-gradient(90px 60px at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%); }
+    .tab-glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0) 60%, rgba(120, 160, 220, 0.18) 100%); }
 
     .filter { margin-top: 8px; }
     .filter-label { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
@@ -1529,7 +1548,7 @@
       // A section that needs the analysis is not reachable before it exists; show the bill's page instead.
       if (tab && (!current || (current.needsBrief && !data.brief))) { go(base); return; }
       const source = data.bill.kind === 'official' ? 'enrolled bill text' : `uploaded ${data.bill.file_type === 'pdf' ? 'PDF' : 'Word document'}, not yet voted on`;
-      const tabs = `<nav class="tabs" aria-label="Brief sections">${TABS.map((t) => {
+      const tabs = `<nav class="tabs" aria-label="Brief sections"><span class="tab-glass" aria-hidden="true"></span>${TABS.map((t) => {
         const label = `${tabIcon(t.id)}<span>${esc(t.title)}</span>`;
         if (t.needsBrief && !data.brief) return `<span class="tab locked" title="Analyze this bill first">${label}</span>`;
         return `<a class="tab" href="${base}/${t.id}"${t.id === tab ? ' aria-current="page"' : ''}>${label}</a>`;
@@ -1545,12 +1564,70 @@
         </header>
         ${current ? `${tabs}${sectionHtml(tab, data)}` : hubHtml(data, base)}`;
       if (!current && !data.brief) wireAnalyze(data);
+      wireTabGlass(document.querySelector('.tabs'));
       if (tab === 'impact' || tab === 'promises') wireFilter(data);
       if (pendingSection) { const id = pendingSection; pendingSection = null; openSection(id); }
     }
 
     // ---- The paid Analyze step. Shows the estimate and a hard cap, says where the text goes,
     // and needs an explicit "I agree" before the button works. The server re-checks the cap.
+    // Glass lens on the brief tabs. While a mouse is over the tab bar, the lens eases toward the tab
+    // under the pointer (taking its width), stretching slightly with its speed like a drop of liquid,
+    // and a highlight follows the pointer inside it. Off the bar, or on touch screens, it rests on the
+    // current tab. Keyboard focus moves it too. Reduced motion: it jumps, with no stretch.
+    function wireTabGlass(bar) {
+      const glass = bar && bar.querySelector('.tab-glass');
+      const tabs = bar ? [...bar.querySelectorAll('a.tab')] : [];
+      if (!glass || !tabs.length) return;
+      bar.classList.add('glass-on');
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const home = () => bar.querySelector('.tab[aria-current="page"]') || tabs[0];
+      const pos = { x: 0, w: 0 }, target = { x: 0, w: 0 };
+      let frame = 0, last = null;
+      const aim = (tab) => { target.x = tab.offsetLeft; target.w = tab.offsetWidth; if (!frame) frame = requestAnimationFrame(step); };
+      const paint = (stretch) => {
+        glass.style.width = `${pos.w}px`;
+        glass.style.transform = `translateX(${pos.x}px) scale(${stretch}, ${1 - (stretch - 1) * 0.6})`;
+      };
+      function step(now) {
+        const dt = last === null ? 16 : Math.min(48, now - last);
+        last = now;
+        const k = still ? 1 : 1 - Math.pow(0.0009, dt / 1000 * 1.6); // eases out; frame-rate independent
+        const dx = (target.x - pos.x) * k;
+        pos.x += dx;
+        pos.w += (target.w - pos.w) * k;
+        const done = Math.abs(target.x - pos.x) < 0.3 && Math.abs(target.w - pos.w) < 0.3;
+        if (done) { pos.x = target.x; pos.w = target.w; }
+        paint(still || done ? 1 : 1 + Math.min(0.12, Math.abs(dx) / Math.max(1, pos.w) * 0.9));
+        if (done) { frame = 0; last = null; } else frame = requestAnimationFrame(step);
+      }
+      // Start on the current tab with no movement.
+      const start = home();
+      pos.x = target.x = start.offsetLeft; pos.w = target.w = start.offsetWidth; paint(1);
+      // Tab widths change once the web font arrives; settle on the current tab again then.
+      if (document.fonts) document.fonts.ready.then(() => { if (bar.isConnected && !bar.matches(':hover')) aim(home()); });
+      // The tab nearest the pointer: gaps and padding count toward their closest tab.
+      const nearest = (clientX) => tabs.reduce((best, t) => {
+        const r = t.getBoundingClientRect();
+        const d = clientX < r.left ? r.left - clientX : clientX > r.right ? clientX - r.right : 0;
+        return d < best.d ? { t, d } : best;
+      }, { t: tabs[0], d: Infinity }).t;
+      bar.addEventListener('pointermove', (event) => {
+        if (event.pointerType !== 'mouse') return;
+        aim(nearest(event.clientX));
+        const r = glass.getBoundingClientRect();
+        glass.style.setProperty('--mx', `${event.clientX - r.left}px`);
+        glass.style.setProperty('--my', `${event.clientY - r.top}px`);
+        glass.style.setProperty('--glow', '1');
+      });
+      bar.addEventListener('pointerleave', () => { glass.style.setProperty('--glow', '0'); aim(home()); });
+      bar.addEventListener('focusin', (event) => { if (event.target.matches('a.tab')) aim(event.target); });
+      bar.addEventListener('focusout', (event) => { if (!bar.contains(event.relatedTarget)) aim(home()); });
+      // Tabs move when the window is resized; this listener removes itself once the page changes.
+      const onResize = () => (bar.isConnected ? aim(home()) : window.removeEventListener('resize', onResize));
+      window.addEventListener('resize', onResize);
+    }
+
     async function wireAnalyze({ member, district, bill }) {
       const panel = document.getElementById('analyze-panel');
       const query = `member=${encodeURIComponent(member.id)}&bill=${encodeURIComponent(bill.id)}`;
@@ -1563,12 +1640,14 @@
       const blocked = est.read_only ? 'This public demo is read-only, so it cannot run new AI analyses. Saved briefs are shown; analyzing works in the local app.'
         : !est.has_key ? 'There is no OpenRouter key in .env. Add one and restart the server.'
         : est.busy ? 'Another analysis is running. Wait for it to finish, then reload this page.'
+        : est.key_remaining !== null && est.key_remaining < est.cap
+          ? `Your OpenRouter key's spending limit has ${money(Math.max(0, est.key_remaining))} left, and this run is allowed to spend up to ${money(est.cap)}. The limit resets on the schedule set for the key in OpenRouter (for example monthly); the key owner can also change it there.`
         : est.available !== null && est.available < est.cap
           ? `Not enough credits: your balance is ${money(est.available)}, and this run is allowed to spend up to ${money(est.cap)}. Add credits on OpenRouter or analyze a shorter bill.`
           : '';
       panel.innerHTML = `<h3>Analyze this bill for ${esc(member.name)}</h3>
         <p>Estimated cost: <strong>about ${money(est.estimate)}</strong>. The run stops itself at <strong>${money(est.cap)}</strong>, so it cannot cost more than that.
-          ${est.available !== null ? `Your OpenRouter balance is ${money(est.available)}.` : ''}</p>
+          ${est.available !== null ? `Your OpenRouter balance is ${money(est.available)}.` : ''}${est.key_remaining !== null ? ` This key may spend ${money(Math.max(0, est.key_remaining))} more before its limit.` : ''}</p>
         <p class="meta">A short bill takes about a minute; a bill as long as H.R. 1 takes about five.</p>
         <div class="notice"><strong>Before you analyze:</strong> the bill text, this district's facts and the member's public commitments are sent to OpenRouter and Anthropic, where AI models read them. Do not analyze a confidential draft unless your office allows it.</div>
         ${status.job && status.job.status === 'error' ? `<p class="error">The last attempt stopped: ${esc(status.job.error)}</p>` : ''}

@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { getBill, listBills, saveUpload, MAX_FILE_BYTES } = require('./bills.js');
-const { estimateFor, runAnalysis, loadKey, checkAvailableCredits } = require('./analyze.js');
+const { estimateFor, runAnalysis, loadKey, checkAvailableCredits, checkKeyLimitRemaining } = require('./analyze.js');
 const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 
 // Public demo mode. On a public host (Render sets RENDER automatically) or with READ_ONLY=1, the app
@@ -201,15 +201,15 @@ async function handle(req, res) {
     const bill = getBill(url.searchParams.get('bill'));
     if (!member || !bill) return send(res, 404, { error: 'Unknown member or bill' });
     const { estimate, cap } = estimateFor(member.id, bill.id);
-    let available = null;
+    // The account balance, and what the key itself may still spend (its own monthly limit, if set).
+    let available = null, keyRemaining = null;
     if (hasKey) {
-      try {
-        available = await checkAvailableCredits();
-      } catch {
-        available = null;
-      }
+      [available, keyRemaining] = await Promise.all([
+        checkAvailableCredits().catch(() => null),
+        checkKeyLimitRemaining().catch(() => null),
+      ]);
     }
-    return send(res, 200, { estimate, cap, has_key: hasKey, read_only: READ_ONLY, available, busy: Boolean(job && job.status === 'running') });
+    return send(res, 200, { estimate, cap, has_key: hasKey, read_only: READ_ONLY, available, key_remaining: keyRemaining, busy: Boolean(job && job.status === 'running') });
   }
 
   // Starts a paid run. The page must send back the cap it showed, so a person agreed to it.
