@@ -126,6 +126,16 @@ async function handle(req, res) {
     return;
   }
 
+  // Page photos (public domain), e.g. /images/capitol-dome.jpg on the Upload page. Same narrow pattern as above.
+  const image = url.pathname.match(/^\/images\/([a-z0-9-]+)\.jpg$/);
+  if (req.method === 'GET' && image) {
+    const file = path.join(__dirname, 'public', 'images', `${image[1]}.jpg`);
+    if (!fs.existsSync(file)) return send(res, 404, { error: 'No such image' });
+    res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=86400' });
+    res.end(fs.readFileSync(file));
+    return;
+  }
+
   // What the page should offer: the public demo hides uploading, analyzing and approving.
   if (req.method === 'GET' && url.pathname === '/api/config') {
     return send(res, 200, { read_only: READ_ONLY, message: READ_ONLY ? READ_ONLY_MESSAGE : null });

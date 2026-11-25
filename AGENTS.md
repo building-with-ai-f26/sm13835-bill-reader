@@ -18,6 +18,8 @@ app/
     index.html       The whole app UI (landing page, prototype sign-up that saves nothing (its form is switched off for demos with SIGNUP_FORM = false, so
                      choosing Member of Congress or Congressional Staff opens setup directly), sign-in, setup with state picker, member boxes and U.S. map, member home, bill list, upload, brief,
                      Analyze panel, Media Panel page: the member's public commitments, TV appearances and the TV review list) and PostHog
+    images/          Page photos, served at /images/<name>.jpg: capitol-dome.jpg on the Upload page ("The United States
+                     Capitol Dome", Architect of the Capitol, public domain; resized and trimmed to drop the watermark)
     logos/           TV network logos for the Media Panel's network boxes (public-domain text logos from Wikimedia
                      Commons; the two CBS logos are cropped to the eye), served at /logos/<name>.svg; a new
                      network needs a file here and an entry in NETWORK_LOGOS in index.html
