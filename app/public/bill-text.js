@@ -172,15 +172,53 @@
     return { sections: sections.filter((s) => s.text.trim()), method: 'chunks', skipped_chars: 0 };
   }
 
+  // ---- Is this a bill? Official bill text carries standard wording that other documents almost
+  // never have. The enacting clause is required by law (1 U.S.C. 101) in every bill; resolutions
+  // use a resolving clause instead. This is a format check, not proof: it keeps ordinary
+  // documents (memos, articles, résumés) out of the paid analysis.
+  const MARKERS = [
+    { key: 'clause', label: 'enacting clause ("Be it enacted by the Senate and House of Representatives…")',
+      test: (t) => /\bbe it enacted by the senate and house of representatives\b/i.test(t) // bills
+        || /\bresolved by the (senate|house of representatives)\b/i.test(t) // joint and concurrent resolutions
+        || /\bresolved, that\b/i.test(t) }, // simple resolutions
+    { key: 'number', label: 'bill number (like "H. R. 9626" or "S. 1260")',
+      test: (t) => /(?<![\w.])(H\.\s?R\.|S\.|H\.\s?J\.\s?RES\.|S\.\s?J\.\s?RES\.|H\.\s?CON\.\s?RES\.|S\.\s?CON\.\s?RES\.|H\.\s?RES\.|S\.\s?RES\.)\s?\d{1,5}\b/.test(t) },
+    { key: 'congress', label: 'Congress and chamber line (like "118TH CONGRESS 2D SESSION" or "IN THE HOUSE OF REPRESENTATIVES")',
+      test: (t) => /\b\d{2,3}(st|nd|rd|th)\s+congress\b/i.test(t) || /\bIN THE (HOUSE OF REPRESENTATIVES|SENATE OF THE UNITED STATES)\b/.test(t) },
+    { key: 'title', label: 'title line ("A BILL To…", "AN ACT To…" or "JOINT RESOLUTION")',
+      test: (t) => /(^|\n)\s*(A BILL|AN ACT|JOINT RESOLUTION|CONCURRENT RESOLUTION|RESOLUTION)\b/.test(t) },
+    { key: 'public_law', label: 'public law header (like "Public Law 117–167")',
+      test: (t) => /\bPublic Law \d{2,3}\s?[–—-]\s?\d+/.test(t) },
+  ];
+
+  // Passes with the enacting (or resolving) clause plus one more marker. Without the clause (some
+  // printed laws and excerpts), it needs a bill number, a Congress line, numbered sections and a
+  // title line or public law header all together: a memo that mentions "H.R. 1", the "119th
+  // Congress" and has "Section 1." headings is still refused.
+  function billCheck(text, hasSectionHeadings) {
+    const flat = text.replace(/\s+/g, ' ');
+    const found = MARKERS.filter((m) => m.test(m.key === 'title' ? text : flat)).map((m) => m.key);
+    if (hasSectionHeadings) found.push('sections');
+    const has = (k) => found.includes(k);
+    const ok = (has('clause') && found.length >= 2)
+      || (has('number') && has('congress') && has('sections') && (has('title') || has('public_law')));
+    const missing = MARKERS.filter((m) => !has(m.key)).map((m) => m.label);
+    const message = ok ? '' : `This doesn't look like a bill, so it can't be uploaded for analysis. Official bill text has the enacting clause plus a bill number, Congress line or title line. Not found in this file: ${missing.join('; ')}. Download the bill's text from congress.gov (the Text tab, then PDF) and upload that file.`;
+    return { ok, found, message };
+  }
+
   // Full path from extracted pages to sections, with the limits the server enforces.
+  // Anything that is not a bill stops here, in the browser's preview and again on the server.
   function fromPages(pages) {
     const { text, pageStarts } = joinPages(pages.map(cleanPage));
     if (!text.trim()) throw new Error('No text found. A scanned PDF (an image of text) cannot be read.');
     if (text.length > MAX_CHARS) throw new Error('This bill is too long for the prototype (over 3 million characters).');
     const result = splitSections(text, pageStarts);
+    const check = billCheck(text, result.method === 'headings');
+    if (!check.ok) throw new Error(check.message);
     if (result.sections.length > MAX_SECTIONS) throw new Error(`Found ${result.sections.length} sections; the limit is ${MAX_SECTIONS}.`);
-    return { ...result, chars: text.length };
+    return { ...result, chars: text.length, markers: check.found };
   }
 
-  return { pageLines, cleanPage, joinPages, splitSections, fromPages, MAX_SECTIONS, MAX_CHARS };
+  return { pageLines, cleanPage, joinPages, splitSections, billCheck, fromPages, MAX_SECTIONS, MAX_CHARS };
 });

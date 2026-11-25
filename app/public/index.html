@@ -65,6 +65,39 @@
     .fact-row dt { font-size: 14px; color: var(--text); }
     .fact-row dd { margin: 0; text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .fact-row dd small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+    /* House election results, rolled up into a box of their own. */
+    .fact-groups + .elections-group { margin-top: 16px; }
+    .elections-body { padding: 14px 20px 12px; border-top: 1px solid var(--border); }
+    .elections-body .scroll { box-shadow: none; margin-bottom: 10px; }
+    /* District Info page: a large map on the left that stays in view while the boxes scroll, and the
+       boxes stacked one per row on the right, each larger than on the brief's tab. */
+    .district-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; align-items: start; }
+    .district-map-col { position: sticky; top: 24px; }
+    .district-map-card { margin: 0; } /* no box: the map sits straight on the page */
+    .district-map { display: block; width: 100%; height: calc(100vh - 320px); min-height: 360px; max-height: 760px; margin-bottom: 16px; }
+    .district-map path { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+    .district-map .state { stroke-width: 2px; }
+    .district-map .district { stroke-width: 1.2px; }
+    .district-map .district.current { stroke-width: 2.5px; }
+    .district-stack > h2 { margin-top: 0; }
+    .district-stack .fact-groups { grid-template-columns: minmax(0, 1fr); }
+    .district-stack .fact-group summary { min-height: 72px; padding: 20px 24px; }
+    .district-stack .fact-group h3 { font-size: 18px; gap: 14px; }
+    .district-stack .fact-group h3 svg { width: 40px; height: 40px; padding: 9px; border-radius: 10px; }
+    .district-stack .fact-group .fact-rows { padding: 0 24px 12px; }
+    .district-stack .fact-row { padding: 12px 0; }
+    .district-stack .fact-row dt { font-size: 15px; }
+    .district-stack .fact-row dd { font-size: 17px; }
+    .district-stack .elections-body { padding: 16px 24px 14px; }
+    .district-stack .fact-group { animation: slide-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: calc(0.35s + var(--i, 0) * 0.06s); }
+    @keyframes slide-in { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @media (max-width: 900px) {
+      .district-page { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+      .district-map-col { position: static; }
+      .district-map { height: 320px; min-height: 0; }
+    }
+    @media (max-width: 600px) { .district-map { height: 260px; } }
+    @media (prefers-reduced-motion: reduce) { .district-stack .fact-group { animation: none; } }
     .chips { margin-top: 8px; font-size: 13px; color: var(--muted); }
     .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); background: var(--card); }
     table { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -215,6 +248,7 @@
     .primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .bills { max-width: 860px; margin: 32px auto; }
     .map-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
+    .map-layer.above { z-index: 20; }
     /* Home page state map, to the right of the member's name: in the margin beside the content column
        when the screen has room for it; otherwise smaller, at the right end of the name row, behind it. */
     .bills.home { position: relative; }
@@ -773,7 +807,7 @@
       }).join('')}</div>`;
     }
 
-    function districtProfileHtml({ map, member, district }) {
+    function districtProfileHtml({ map, member, district }, usmap = null) {
       const rows = district.elections.map((e, i, all) => {
         const prev = all[i - 1];
         const change = prev ? (e.margin_pts - prev.margin_pts).toFixed(1) : '';
@@ -783,14 +817,26 @@
           <td>${esc(e.rep || 'No candidate')}</td><td class="num">${e.rep ? e.rep_pct + '%' : '—'}</td><td class="num">${e.total_votes.toLocaleString()}</td>
           <td class="num">D ${sign(e.margin_pts)}</td><td class="num">${change === '' ? '' : (e.new_lines ? 'n/a' : sign(Number(change)))}</td></tr>`;
       }).join('');
-      return `${mapHtml(map, member, district)}
-        <h2>District profile: ${esc(district.id)}</h2>
-        ${factGroupsHtml(district.facts)}
-        <h2>House elections, 2006–2024</h2>
-        <div class="scroll"><table><thead><tr><th>Year</th><th>Democrat</th><th class="num">%</th><th>Republican</th><th class="num">%</th>
+      // The election results are one more closed box, like the fact topics.
+      const elections = `<details class="card fact-group elections-group"><summary><h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18" /><path d="M6 20v-6" /><path d="M11 20V8" /><path d="M16 20v-9" /><path d="M21 20V5" /></svg>House elections, 2006–2024</h3>
+          <svg class="fact-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary>
+        <div class="elections-body"><div class="scroll"><table><thead><tr><th>Year</th><th>Democrat</th><th class="num">%</th><th>Republican</th><th class="num">%</th>
           <th class="num">Total votes</th><th class="num">Margin</th><th class="num">Change</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="meta">District lines were redrawn for 2012 and 2022, so changes across those years are not like-for-like and are not calculated.</p>
+        <p class="meta">District lines were redrawn for 2012 and 2022, so changes across those years are not like-for-like and are not calculated.</p></div></details>`;
+      const profile = `<h2>District profile: ${esc(district.id)}</h2>
+        ${factGroupsHtml(district.facts)}
+        ${elections}
         <p class="meta">Sources: ${district.sources.map((s) => link(s.url, s.name)).join(' · ')}</p>`;
+      // District Info page: a large map on the left (from the U.S. map data, so the home map can fly
+      // onto it), the boxes stacked one per row on the right. The brief's tab keeps the small map on top.
+      const bigMap = usmap && mapBackdrop(usmap, member, 'district-map', `Map of ${member.district.split('-')[0]} with ${district.id} highlighted`);
+      if (!bigMap) return `${mapHtml(map, member, district)}${profile}`;
+      return `<div class="district-page">
+        <div class="district-map-col"><div class="district-map-card">${bigMap}
+          <div class="map-text"><strong>${esc(district.id)}</strong><p>${esc(memberLabel(member))}</p>
+            ${member.note ? `<p class="meta">${esc(member.note)}</p>` : ''}
+            <p class="meta">Boundaries: ${link(usmap.source_url, 'U.S. Census Bureau')}, 119th Congress.</p></div></div></div>
+        <div class="district-stack">${profile}</div></div>`;
     }
 
     function votesHtml({ member, bill }) {
@@ -1150,13 +1196,15 @@
     // onto it: the copy moves and grows until the state covers the backdrop's state exactly, while each
     // line and fill changes to the backdrop's own style (read from the backdrop itself) and the other
     // states fade away. The last frame matches the real backdrop, which then takes over unseen.
+    // The same flight takes the home map to the District Info page's large map ('above': that map
+    // sits on a card, so the copy flies in front of the page instead of behind it).
     let mapFlight = null;
-    function takeOffMap(svg, stateAbbr) {
-      const state = svg && svg.querySelector(`.us-state[data-state="${CSS.escape(stateAbbr)}"]`);
+    function takeOffMap(svg, stateAbbr, { from = `.us-state[data-state="${CSS.escape(stateAbbr)}"]`, above = false } = {}) {
+      const state = svg && svg.querySelector(from);
       if (!state || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       const box = svg.getBoundingClientRect();
       const layer = document.createElement('div');
-      layer.className = 'map-layer map-flight';
+      layer.className = `map-layer map-flight${above ? ' above' : ''}`;
       layer.setAttribute('aria-hidden', 'true');
       const copy = svg.cloneNode(true);
       copy.removeAttribute('id');
@@ -1171,11 +1219,11 @@
       // If the home page never shows (an error, or the person goes elsewhere), drop the copy.
       setTimeout(() => { if (mapFlight === flight) { mapFlight = null; layer.remove(); } }, 5000);
     }
-    function landMap() {
+    function landMap(target = '.home-map') {
       const flight = mapFlight;
       mapFlight = null;
       if (!flight) return;
-      const real = document.querySelector('.home-map');
+      const real = document.querySelector(target);
       const realState = real && real.querySelector('.state');
       if (!realState) { flight.layer.remove(); return; }
       real.style.visibility = 'hidden';
@@ -1407,7 +1455,9 @@
     // their party color. Drawn from the same U.S. map data as the setup page (same shapes, same
     // projection), so the setup map can turn into this one without a visible swap. Decorative only:
     // screen readers skip it and it can't be clicked.
-    function mapBackdrop(usmap, member) {
+    // The District Info page draws its large map with this too (cls 'district-map', with a label for
+    // screen readers), so the home map can fly onto it with every shape lining up.
+    function mapBackdrop(usmap, member, cls = 'home-map', label = '') {
       const abbr = member.district.split('-')[0];
       const state = usmap && usmap.states.find((st) => st.abbr === abbr);
       const districts = usmap ? usmap.districts.filter((d) => d.state === abbr) : [];
@@ -1415,7 +1465,7 @@
       if (!state || !current) return '';
       const party = { D: 'dem', R: 'rep' }[member.party] || 'ind';
       const [x0, y0, x1, y1] = state.bbox, pad = 0.5;
-      return `<svg class="home-map" aria-hidden="true" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" focusable="false">
+      return `<svg class="${cls}" ${label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true"'} viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" focusable="false">
         <path class="state" data-state="${esc(abbr)}" d="${esc(state.path)}" />
         ${districts.filter((d) => d !== current).map((d) => `<path class="district" data-district="${esc(d.id)}" d="${esc(d.path)}" />`).join('')}
         <path class="district current ${party}" data-district="${esc(current.id)}" d="${esc(current.path)}" />
@@ -1677,12 +1727,15 @@
           <div class="tiles home-tiles">
             ${tile(`${home}/upload`, HOME_ICONS.upload, 'Upload New Bill', readOnly ? 'Local app only' : 'PDF or Word', 'Drop in a new bill, preview its sections, then analyze it for this district.')}
             ${tile(`${home}/list`, HOME_ICONS.list, 'Review Uploaded Bills', `${plural(bills.length, 'bill')} · ${ready} ready`, `H.R. 1 and your uploads, and whether each brief is ready for ${member.name.replace(/\.$/, '')}.`)}
-            ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.')}
+            ${tile(`${home}/district`, HOME_ICONS.district, 'District Info', member.district, 'Census facts, a district map and House election results since 2006.', 'district-tile')}
             <a class="tile dm-tile media-tile" href="${home}/model" style="--photo:url(${MEDIA_PHOTO})">
               <span class="tile-title">Media Panel</span>
               <span class="media-credit">Photo: Vini6305 (edited) · Wikimedia Commons · CC BY-SA 4.0</span></a>
           </div></div>`;
         landMap();
+        // Opening District Info: the state map flies from here to that page's large map.
+        app.querySelector('.district-tile').addEventListener('click', () =>
+          takeOffMap(app.querySelector('.home-map'), member.district.split('-')[0], { from: '.state', above: true }));
         return;
       }
 
@@ -1699,7 +1752,9 @@
         const response = await fetch(`/api/brief?member=${encodeURIComponent(memberId)}&district=${encodeURIComponent(districtId)}&bill=hr1`);
         const data = await response.json();
         if (!response.ok) { app.innerHTML = `<div class="auth"><div class="card alert possible">${esc(data.error)}</div></div>`; return; }
-        app.innerHTML = `<header class="page-head">${head('District Info')}</header>${districtProfileHtml(data)}`;
+        app.innerHTML = `<header class="page-head">${head('District Info')}</header>${districtProfileHtml(data, usmap)}`;
+        app.querySelectorAll('.district-stack .fact-group').forEach((box, i) => box.style.setProperty('--i', i));
+        landMap('.district-map');
         return;
       }
 
@@ -1756,15 +1811,18 @@
           pages = type === 'pdf' ? await pdfPages(buffer) : await docxPages(buffer);
           result = BillText.fromPages(pages);
         } catch (error) {
-          return fail(`Could not read this file: ${error.message}`);
+          // "Not a bill" explains itself; other problems are about reading the file.
+          return fail(/^This doesn't look like a bill/.test(error.message) ? error.message : `Could not read this file: ${error.message}`);
         }
         const s = result.sections;
+        const MARKER_WORDS = { clause: 'enacting clause', number: 'bill number', congress: 'Congress line', title: 'title line', public_law: 'public law header', sections: 'numbered sections' };
         preview.innerHTML = `<form class="card form" id="save">
           <h3>${esc(file.name)}</h3>
           <p>${result.method === 'headings'
             ? `Found <strong>${s.length} section${s.length === 1 ? '' : 's'}</strong> by their headings${type === 'pdf' ? ` across ${pages.length} page${pages.length === 1 ? '' : 's'}` : ''}.`
             : `<strong>No section headings found</strong> (like "SEC. 2."), so the text was cut into ${s.length} numbered part${s.length === 1 ? '' : 's'}. Findings will cite parts instead of sections.`}
             ${result.skipped_chars ? ' The title page and enacting clause before the first section are not included.' : ''}</p>
+          <p class="meta">Recognized as bill text: ${result.markers.map((k) => esc(MARKER_WORDS[k] || k)).join(', ')}.</p>
           <ul class="section-preview">${s.slice(0, 8).map((x) => `<li>Sec. ${esc(x.id)}. ${esc(x.header)}</li>`).join('')}${s.length > 8 ? `<li class="meta">…and ${s.length - 8} more</li>` : ''}</ul>
           <label for="title">Name this bill</label>
           <input id="title" maxlength="120" required autocomplete="off" />

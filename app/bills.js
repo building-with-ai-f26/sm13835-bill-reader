@@ -22,6 +22,7 @@ const HR1 = {
   kind: 'official',
   status: 'Enacted July 4, 2025',
   file_type: 'pdf',
+  verified_bill: true, // the official enrolled text, built in
 };
 
 function hr1() {
@@ -45,6 +46,9 @@ function upload(id) {
   return {
     ...meta,
     kind: 'upload',
+    // Uploads saved since the bill check record the markers found. Earlier uploads were split on real
+    // "SEC." headings, which only bill text has in that form here, so they count as bills too.
+    verified_bill: Array.isArray(meta.bill_markers) || meta.split_method === 'headings',
     pdf_url: meta.file_type === 'pdf' ? `/api/bills/${id}/file` : null,
     loadSections: sections,
     get pages() {
@@ -87,7 +91,7 @@ function saveUpload({ title, file_type, file_name, file_base64, pages }) {
     throw new Error('The extracted text was not in the expected format.');
   }
 
-  const result = BillText.fromPages(pages);
+  const result = BillText.fromPages(pages); // throws, with the reason, for anything that is not a bill
   // A Word file has no fixed pages, so its sections have none.
   const sections = result.sections.map((s) => ({ ...s, page: file_type === 'pdf' ? s.page : null }));
 
@@ -105,6 +109,7 @@ function saveUpload({ title, file_type, file_name, file_base64, pages }) {
     created_at: new Date().toISOString(),
     section_count: sections.length,
     split_method: result.method,
+    bill_markers: result.markers, // which standard bill wording was found, e.g. ["clause", "number"]
     skipped_chars: result.skipped_chars,
     chars: result.chars,
   };

@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { getBill, listBills, saveUpload, deleteBrief, MAX_FILE_BYTES } = require('./bills.js');
-const { estimateFor, runAnalysis, loadKey, checkAvailableCredits, checkKeyLimitRemaining } = require('./analyze.js');
+const { estimateFor, runAnalysis, loadKey, checkAvailableCredits, checkKeyLimitRemaining, NOT_A_BILL } = require('./analyze.js');
 const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 
 // Public demo mode. On a public host (Render sets RENDER automatically) or with READ_ONLY=1, the app
@@ -12,7 +12,6 @@ const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 const READ_ONLY = process.env.READ_ONLY === '1' || Boolean(process.env.RENDER);
 const READ_ONLY_MESSAGE = 'This public demo is read-only. Uploading, analyzing and approving work in the local app.';
 const hasKey = !READ_ONLY && loadKey(); // Reads OPENROUTER_API_KEY from the Git-ignored .env file.
-
 // Per-visitor rate limits (app/rate-limit.js): AI routes 10 per 10 minutes, writes 60 a minute,
 // everything 300 a minute. Checked before anything else, including the read-only refusal.
 const limiter = createLimiter();
@@ -200,6 +199,7 @@ async function handle(req, res) {
     const member = members().find((m) => m.id === url.searchParams.get('member'));
     const bill = getBill(url.searchParams.get('bill'));
     if (!member || !bill) return send(res, 404, { error: 'Unknown member or bill' });
+    if (!bill.verified_bill) return send(res, 400, { error: NOT_A_BILL });
     const { estimate, cap } = estimateFor(member.id, bill.id);
     // The account balance, and what the key itself may still spend (its own monthly limit, if set).
     let available = null, keyRemaining = null;
@@ -223,6 +223,7 @@ async function handle(req, res) {
     const member = members().find((m) => m.id === body.member);
     const bill = getBill(body.bill);
     if (!member || !bill || member.district !== body.district) return send(res, 400, { error: 'Unknown member, district or bill' });
+    if (!bill.verified_bill) return send(res, 400, { error: NOT_A_BILL });
     if (!hasKey) return send(res, 400, { error: 'No OpenRouter key in .env' });
     if (job && job.status === 'running') return send(res, 409, { error: 'Another analysis is already running. Try again when it finishes.' });
     const { estimate, cap } = estimateFor(member.id, bill.id);

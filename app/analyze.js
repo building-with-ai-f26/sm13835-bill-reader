@@ -346,10 +346,14 @@ function loadMember(memberId) {
   return readData(`members/${memberId}.json`);
 }
 
+// Only bill text is analyzed (see billCheck in public/bill-text.js); this is the last stop before any spending.
+const NOT_A_BILL = "This upload doesn't look like a bill, so it can't be analyzed. Upload the bill's official text from congress.gov.";
+
 function loadInputs(memberId, billId = 'hr1') {
   const member = loadMember(memberId);
   const bill = getBill(billId);
   if (!bill) throw new Error(`Unknown bill "${billId}"`);
+  if (!bill.verified_bill) throw new Error(NOT_A_BILL);
   return {
     bill,
     sections: bill.loadSections(),
@@ -699,6 +703,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  NOT_A_BILL,
   normalize,
   verifyItems,
   verifyAlerts,
