@@ -1828,6 +1828,9 @@
         app.innerHTML = `<header class="page-head">${head('District Info')}</header>${districtProfileHtml(data, usmap)}`;
         app.querySelectorAll('.district-stack .fact-group').forEach((box, i) => box.style.setProperty('--i', i));
         landMap('.district-map');
+        // Going back Home: the same flight in reverse, from this large map to the home page's small one.
+        app.querySelector('a.back').addEventListener('click', () =>
+          takeOffMap(app.querySelector('.district-map'), member.district.split('-')[0], { from: '.state', above: true }));
         return;
       }
 
