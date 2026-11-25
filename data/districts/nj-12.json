@@ -262,6 +262,83 @@
       "source": "Estimate: Urban Institute Debt in America (credit records, Aug. 2026), county figures weighted by population"
     },
     {
+      "key": "reg_total",
+      "label": "Registered voters",
+      "value": 548288,
+      "display": "548,288",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_dem_pct",
+      "label": "Democratic",
+      "value": 43.2,
+      "display": "43.2% (237,132 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_rep_pct",
+      "label": "Republican",
+      "value": 17.9,
+      "display": "17.9% (98,055 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_una_pct",
+      "label": "Unaffiliated (no party)",
+      "value": 37.8,
+      "display": "37.8% (207,105 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_lib_pct",
+      "label": "Libertarian",
+      "value": 0.3,
+      "display": "0.3% (1,662 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_cnv_pct",
+      "label": "Conservative Party",
+      "value": 0.2,
+      "display": "0.2% (1,087 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_gre_pct",
+      "label": "Green Party",
+      "value": 0.2,
+      "display": "0.2% (1,057 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_con_pct",
+      "label": "Constitution Party",
+      "value": 0.2,
+      "display": "0.2% (964 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_ssp_pct",
+      "label": "Socialist Party",
+      "value": 0.1,
+      "display": "0.1% (677 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_nat_pct",
+      "label": "Natural Law Party",
+      "value": 0.1,
+      "display": "0.1% (444 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
+      "key": "reg_rfp_pct",
+      "label": "Reform Party",
+      "value": 0,
+      "display": "0.0% (105 voters)",
+      "source": "NJ Division of Elections voter registration, Nov. 1, 2026"
+    },
+    {
       "key": "margin_2024",
       "label": "2024 House race margin",
       "value": 24.8,
@@ -421,6 +498,10 @@
     {
       "name": "Urban Institute, Debt in America (student debt, credit data Aug. 2026), weighted to the district with Census tract populations",
       "url": "https://apps.urban.org/features/debt-interactive-map/"
+    },
+    {
+      "name": "NJ Division of Elections, Statewide Voter Registration Summary by congressional district (Nov. 1, 2026)",
+      "url": "https://www.nj.gov/state/elections/assets/pdf/svrs-reports/2026/2026-11-voter-registration-by-congressional-district.pdf"
     }
   ]
 }

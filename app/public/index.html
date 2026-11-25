@@ -791,7 +791,10 @@
         ['population', 'median_age', 'avg_household_size', 'race_white_pct', 'race_hispanic_pct', 'race_asian_pct', 'race_black_pct']],
       ['Seniors & veterans', '<circle cx="12" cy="9" r="5" /><path d="m9 13.5-2 7.5 5-3 5 3-2-7.5" />',
         ['seniors_voting_age_pct', 'veterans_pct']],
-      ['2024 election', '<path d="m9 12 2 2 4-4" /><rect x="3" y="4" width="18" height="16" rx="2" />',
+      // Official registration counts (scripts/add-party-registration.js); neutral colours, parties largest first.
+      ['Party Affiliation', '<path d="M4 21V4" /><path d="M4 4h13l-2 4 2 4H4" />',
+        ['reg_total', 'reg_dem_pct', 'reg_rep_pct', 'reg_una_pct', 'reg_lib_pct', 'reg_cnv_pct', 'reg_gre_pct', 'reg_con_pct', 'reg_ssp_pct', 'reg_nat_pct', 'reg_rfp_pct']],
+      ['2024 election','<path d="m9 12 2 2 4-4" /><rect x="3" y="4" width="18" height="16" rx="2" />',
         ['margin_2024', 'turnout_2024']],
     ];
     function factGroupsHtml(facts) {
@@ -998,6 +1001,10 @@
     // is saved or sent. Only the chosen state, district and first name are kept in memory, so the
     // setup page can open on the person's own office; reloading the page clears them.
     let signedUp = null;
+    // Demo switch: while false, choosing Member of Congress or Congressional Staff goes straight to the
+    // state picker and the sign-up form (name, office, address, password) is skipped. Its code below is
+    // kept for later; set this to true to bring the form back.
+    const SIGNUP_FORM = false;
     const TERRITORIES = { PR: 'Puerto Rico', GU: 'Guam', VI: 'U.S. Virgin Islands', AS: 'American Samoa', MP: 'Northern Mariana Islands' };
     const ROLES = {
       member: { title: 'Member of Congress', desc: 'You represent a congressional district.', office: 'District you represent' },
@@ -1012,12 +1019,13 @@
         app.innerHTML = `<div class="auth roles">${back('#/', 'Back')}
           <h1>Create your account</h1>
           <p class="meta">Which describes you?</p>
-          <div class="role-choices">${Object.entries(ROLES).map(([id, r]) => `<a class="card role-choice ${id}" href="#/signup/${id}" style="--photo:url(${ROLE_PHOTOS[id]})">
+          <div class="role-choices">${Object.entries(ROLES).map(([id, r]) => `<a class="card role-choice ${id}" href="${SIGNUP_FORM ? `#/signup/${id}` : '#/setup'}" style="--photo:url(${ROLE_PHOTOS[id]})">
             <span class="role-photo" aria-hidden="true"></span>
             <span class="role-text"><strong>${esc(r.title)}</strong><span class="meta">${esc(r.desc)}</span></span></a>`).join('')}</div>
           <p class="meta">Already have an account? <a href="#/login">Sign in</a></p></div>`;
         return;
       }
+      if (!SIGNUP_FORM) { go('#/setup'); return; } // an old #/signup/member link lands on the state picker
       const r = ROLES[role];
       const [usmap, { members: house }] = await Promise.all([
         getUsMap(),
