@@ -241,6 +241,27 @@
       "source": "ACS 2024 1-year estimates"
     },
     {
+      "key": "student_debt_pct",
+      "label": "Residents with student loan debt (estimate)",
+      "value": 14.5,
+      "display": "14.5%",
+      "source": "Estimate: Urban Institute Debt in America (credit records, Aug. 2026), county figures weighted by population"
+    },
+    {
+      "key": "student_debt_median",
+      "label": "Typical student loan balance, among borrowers (estimate)",
+      "value": 21100,
+      "display": "$21,100",
+      "source": "Estimate: Urban Institute Debt in America (credit records, Aug. 2026), county figures weighted by population"
+    },
+    {
+      "key": "student_debt_behind_pct",
+      "label": "Student loan borrowers behind on payments (estimate)",
+      "value": 16.2,
+      "display": "16.2%",
+      "source": "Estimate: Urban Institute Debt in America (credit records, Aug. 2026), county figures weighted by population"
+    },
+    {
       "key": "margin_2024",
       "label": "2024 House race margin",
       "value": -16.9,
@@ -396,6 +417,10 @@
     {
       "name": "Clerk of the House, Statistics of the Congressional Election (2006-2024)",
       "url": "https://history.house.gov/Institution/Election-Statistics/"
+    },
+    {
+      "name": "Urban Institute, Debt in America (student debt, credit data Aug. 2026), weighted to the district with Census tract populations",
+      "url": "https://apps.urban.org/features/debt-interactive-map/"
     }
   ]
 }

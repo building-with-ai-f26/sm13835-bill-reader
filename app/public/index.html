@@ -774,8 +774,11 @@
 
     // District facts grouped by topic. Any fact not listed here still shows, under "Other".
     const FACT_GROUPS = [
-      ['Economy & education', '<path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 6-6" />',
-        ['median_household_income', 'poverty_pct', 'unemployment_pct', 'bachelors_pct']],
+      ['Economy', '<path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 6-6" />',
+        ['median_household_income', 'poverty_pct', 'unemployment_pct']],
+      // The student loan facts are estimates from county credit data (scripts/add-student-debt.js); the labels say so.
+      ['Education', '<path d="M22 10 12 5 2 10l10 5 10-5z" /><path d="M6 12v5c3 2 9 2 12 0v-5" />',
+        ['bachelors_pct', 'student_debt_pct', 'student_debt_median', 'student_debt_behind_pct']],
       ['Immigration', '<circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18" />',
         ['foreign_born_pct', 'noncitizen_pct', 'other_language_pct', 'limited_english_pct']],
       ['Entitlements & health coverage', '<path d="M12 21s-7-4.4-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6c-2.3 4.6-9.3 9-9.3 9z" />',
