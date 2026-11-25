@@ -53,6 +53,7 @@ test('paid and write routes get their own limits on top of the overall one', () 
   assert.deepStrictEqual(bucketsFor('GET', '/api/estimate'), ['all', 'ai']);
   assert.deepStrictEqual(bucketsFor('POST', '/api/bills'), ['all', 'write']);
   assert.deepStrictEqual(bucketsFor('POST', '/api/candidates/review'), ['all', 'write']);
+  assert.deepStrictEqual(bucketsFor('POST', '/api/brief/delete'), ['all', 'write']);
   assert.deepStrictEqual(bucketsFor('GET', '/api/members'), ['all']);
 });
 

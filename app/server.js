@@ -2,7 +2,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { getBill, listBills, saveUpload, MAX_FILE_BYTES } = require('./bills.js');
+const { getBill, listBills, saveUpload, deleteBrief, MAX_FILE_BYTES } = require('./bills.js');
 const { estimateFor, runAnalysis, loadKey, checkAvailableCredits, checkKeyLimitRemaining } = require('./analyze.js');
 const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 
@@ -269,6 +269,22 @@ async function handle(req, res) {
     fs.writeFileSync(memberFile, JSON.stringify(member, null, 2) + '\n');
     fs.writeFileSync(candFile, JSON.stringify(cands, null, 2) + '\n');
     return send(res, 200, { candidate: c });
+  }
+
+  // Deletes one member's brief on one bill (after the page's "Are you sure?" pop-up). The file moves
+  // to the Git-ignored data/deleted/ folder rather than being erased. Like every POST, it is refused
+  // on the read-only public demo and from other sites (checked above).
+  if (req.method === 'POST' && url.pathname === '/api/brief/delete') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, { error: 'Bad request' }); }
+    const member = members().find((m) => m.id === body.member);
+    const bill = getBill(body.bill);
+    if (!member || !bill || !body.bill) return send(res, 400, { error: 'Unknown member or bill' });
+    if (job && job.status === 'running' && job.member === member.id && job.bill === bill.id) {
+      return send(res, 409, { error: 'This bill is being analyzed for this member right now. Wait for it to finish, then delete.' });
+    }
+    if (!deleteBrief(bill, member.id)) return send(res, 404, { error: 'There is no analysis to delete.' });
+    return send(res, 200, { deleted: true });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/bills') {

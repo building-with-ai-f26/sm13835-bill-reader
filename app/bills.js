@@ -112,4 +112,17 @@ function saveUpload({ title, file_type, file_name, file_base64, pages }) {
   return meta;
 }
 
-module.exports = { getBill, listBills, saveUpload, UPLOADS, MAX_FILE_BYTES };
+// Removes one member's brief on one bill from the app. Nothing is erased: the file moves to the
+// Git-ignored data/deleted/ folder (named by time, bill and member), so a brief deleted by mistake
+// can be copied back by hand instead of paying for a new run. Returns where it went, or null.
+function deleteBrief(bill, memberId, deletedDir = path.join(DATA, 'deleted')) {
+  const file = bill.briefFile(memberId);
+  if (!fs.existsSync(file)) return null;
+  fs.mkdirSync(deletedDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const target = path.join(deletedDir, `${stamp}-${bill.id}-${memberId}.json`);
+  fs.renameSync(file, target);
+  return target;
+}
+
+module.exports = { getBill, listBills, saveUpload, deleteBrief, UPLOADS, MAX_FILE_BYTES };

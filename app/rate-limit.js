@@ -46,7 +46,7 @@ function bucketsFor(method, pathname) {
   if (method === 'GET' && pathname.startsWith('/photos/')) return ['photos'];
   const buckets = ['all'];
   if ((method === 'POST' && pathname === '/api/analyze') || (method === 'GET' && pathname === '/api/estimate')) buckets.push('ai');
-  if (method === 'POST' && (pathname === '/api/bills' || pathname === '/api/candidates/review')) buckets.push('write');
+  if (method === 'POST' && (pathname === '/api/bills' || pathname === '/api/candidates/review' || pathname === '/api/brief/delete')) buckets.push('write');
   return buckets;
 }
 

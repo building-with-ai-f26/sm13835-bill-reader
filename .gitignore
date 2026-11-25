@@ -10,6 +10,9 @@ credentials.json
 # Uploaded bills and their briefs: possibly unreleased drafts, kept on this computer only
 data/uploads/
 
+# Briefs a member deleted in the app, kept on this computer so a mistaken delete can be recovered
+data/deleted/
+
 # Full TV-interview transcripts (network content): kept on this computer; only the member's quoted words go in the repo
 data/media/transcripts/
 
