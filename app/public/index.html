@@ -342,10 +342,51 @@
     .secondary { font: inherit; font-weight: 500; padding: 8px 14px; min-height: 40px; border-radius: 8px; cursor: pointer;
       background: var(--card); color: var(--accent); border: 1px solid #d0d5dd; box-shadow: var(--shadow); }
     .secondary:focus-visible, .linklike:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    /* Delete an analysis: a quiet red button under the brief, and an "Are you sure?" pop-up. */
-    #delete-area { margin-top: 28px; display: flex; justify-content: flex-end; }
-    .secondary.danger { color: var(--bad); }
-    .secondary.danger:hover { background: var(--bad-bg); border-color: var(--bad); }
+    /* ⋮ menu on analyzed bill cards: Download, Share, Delete. */
+    .bill-row { position: relative; }
+    .bill-row.has-menu .bill-card { padding-right: 64px; }
+    .kebab { position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; display: grid; place-items: center;
+      border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer;
+      transition: background-color .15s cubic-bezier(.2,.8,.2,1), color .15s cubic-bezier(.2,.8,.2,1); }
+    .kebab svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
+    .kebab:hover, .menu-open .kebab { background: var(--accent-soft); color: var(--accent); }
+    .kebab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .kebab-menu { position: absolute; top: 56px; right: 10px; z-index: 5; min-width: 180px; padding: 6px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 32px rgba(16, 24, 40, .16); }
+    .kebab-menu [role="menuitem"] { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px;
+      font: inherit; font-size: 15px; color: var(--text); background: none; border: 0; border-radius: 6px; cursor: pointer; text-align: left; }
+    .kebab-menu [role="menuitem"] svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .kebab-menu [role="menuitem"]:hover, .kebab-menu [role="menuitem"]:focus-visible { background: var(--accent-soft); outline: none; }
+    .kebab-menu [role="menuitem"].danger { color: var(--bad); }
+    .kebab-menu [role="menuitem"].danger:hover, .kebab-menu [role="menuitem"].danger:focus-visible { background: var(--bad-bg); }
+    /* Share pop-up: three choices, shown but not connected yet. */
+    .share-options { display: grid; gap: 8px; margin: 4px 0 12px; }
+    .share-option { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 12px; font: inherit;
+      text-align: left; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 10px; cursor: not-allowed; }
+    .share-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .share-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; background: var(--accent-soft); color: var(--accent); flex: none; }
+    .share-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .x-mark { font-weight: 800; font-size: 17px; }
+    .share-label { flex: 1; font-weight: 600; }
+    .share-option .tag { margin: 0; }
+    /* Download: only the print-ready copy prints. */
+    #print-root { display: none; }
+    @media print {
+      body.printing > *:not(#print-root) { display: none !important; }
+      body.printing { background: #fff; }
+      body.printing #print-root { display: block; font-size: 11pt; line-height: 1.45; color: #000; }
+      #print-root h1 { font-size: 20pt; margin: 2px 0 4px; }
+      #print-root h2 { font-size: 14pt; margin: 18px 0 6px; padding-bottom: 3px; border-bottom: 1px solid #999; break-after: avoid; }
+      #print-root h3 { font-size: 12pt; margin: 12px 0 4px; break-after: avoid; }
+      #print-root p { margin: 0 0 6px; }
+      #print-root ul { margin: 0 0 6px; padding-left: 18px; }
+      #print-root li { margin-bottom: 4px; }
+      .p-item { margin: 0 0 10px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; break-inside: avoid; }
+      .p-kicker, .p-meta { color: #444; font-size: 9.5pt; }
+      .p-quote { font-style: italic; }
+      .p-note { padding: 6px 10px; border: 1px solid #c99a2e; border-radius: 6px; }
+      @page { margin: 16mm; }
+    }
     .primary.danger-fill { background: var(--bad); margin-top: 0; }
     .primary.danger-fill:hover:not(:disabled) { background: #912018; }
     dialog.confirm { max-width: 440px; width: calc(100% - 32px); border: 1px solid var(--border); border-radius: 12px;
@@ -617,7 +658,7 @@
           ${locked ? '' : '<span class="tile-go">Open →</span>'}`;
         return locked ? `<div class="tile locked" aria-disabled="true">${inner}</div>` : `<a class="tile" href="${base}/${t.id}">${inner}</a>`;
       }).join('');
-      if (brief) return `${incompleteHtml(brief)}<div class="tiles">${tiles}</div><div id="delete-area"></div>`;
+      if (brief) return `${incompleteHtml(brief)}<div class="tiles">${tiles}</div>`;
       const what = bill.kind === 'upload'
         ? `This bill is saved, with ${plural(bill.section_count, 'section')} found. Analyze it to unlock the overview, district impact and promise alerts for ${esc(member.name)} and ${esc(district.id)}.`
         : `Analyze it to unlock the overview, district impact and promise alerts for ${esc(member.name)} and ${esc(district.id)}. The district profile and votes are ready now.`;
@@ -1433,11 +1474,9 @@
 
       if (page === 'list') {
         app.innerHTML = `<div class="bills">${head('Review Uploaded Bills')}
-          <div class="bill-list">${bills.map((b) => `<a class="card bill-card${b.kind === 'upload' ? ' ph-no-capture' : ''}" href="${base}/${esc(b.id)}">
-            <strong>${esc(b.title)}</strong>
-            <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
-            <span class="meta">${b.has_brief ? `Brief ready for ${esc(member.name)}` : `Not analyzed for ${esc(member.name)} yet`}</span></a>`).join('')}</div>
+          <div class="bill-list">${bills.map((b) => billRowHtml(b, member, base, readOnly)).join('')}</div>
           <p class="meta">New bill? <a href="${home}/upload">Upload it</a>.</p></div>`;
+        wireBillMenus(app.querySelector('.bill-list'), member, bills);
         return;
       }
 
@@ -1579,7 +1618,6 @@
         </header>
         ${current ? `${tabs}${sectionHtml(tab, data)}` : hubHtml(data, base)}`;
       if (!current && !data.brief) wireAnalyze(data);
-      if (!current && data.brief) wireDelete(data);
       wireTabGlass(document.querySelector('.tabs'));
       if (tab === 'impact' || tab === 'promises') wireFilter(data);
       if (pendingSection) { const id = pendingSection; pendingSection = null; openSection(id); }
@@ -1705,37 +1743,204 @@
       }
     }
 
-    // ---- Delete this member's analysis of this bill, after an "Are you sure?" pop-up. The server
-    // moves the brief to data/deleted/ (recoverable by hand), and Analyze becomes available again.
-    // Not offered on the read-only public demo.
-    async function wireDelete({ member, bill, brief }) {
-      const area = document.getElementById('delete-area');
-      const { read_only: readOnly } = await config;
-      if (readOnly || !area) return;
-      area.innerHTML = `<button type="button" class="secondary danger" id="delete-open">Delete this analysis</button>`;
-      const made = brief.generated_at ? new Date(brief.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
-      const cost = typeof brief.cost_usd === 'number' ? `$${brief.cost_usd.toFixed(2)}` : null;
+    // ---- The ⋮ menu on each analyzed bill in "Review Uploaded Bills": Download, Share, Delete.
+    const MENU_ICONS = {
+      more: '<circle cx="12" cy="5" r="1" /> <circle cx="12" cy="12" r="1" /> <circle cx="12" cy="19" r="1" />', // ellipsis-vertical
+      download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <polyline points="7 10 12 15 17 10" /> <line x1="12" x2="12" y1="15" y2="3" />',
+      share: '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /> <polyline points="16 6 12 2 8 6" /> <line x1="12" x2="12" y1="2" y2="15" />',
+      delete: '<path d="M3 6h18" /> <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /> <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />', // trash-2
+      email: '<rect width="20" height="16" x="2" y="4" rx="2" /> <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />', // mail
+      text: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />', // message-square
+    };
+    const menuIcon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${MENU_ICONS[name]}</svg>`;
+
+    // One bill card. An analyzed bill gets a ⋮ button in its top-right corner (a button cannot sit
+    // inside the card's link, so both sit side by side in a row box).
+    function billRowHtml(b, member, base, readOnly) {
+      const card = `<a class="card bill-card" href="${base}/${esc(b.id)}">
+        <strong>${esc(b.title)}</strong>
+        <span class="meta">${esc(b.status)}${b.section_count ? ` · ${b.section_count} section${b.section_count === 1 ? '' : 's'}` : ''}${b.created_at ? ` · uploaded ${esc(b.created_at.slice(0, 10))}` : ''}</span>
+        <span class="meta">${b.has_brief ? `Brief ready for ${esc(member.name)}` : `Not analyzed for ${esc(member.name)} yet`}</span></a>`;
+      const menu = b.has_brief ? `
+        <button type="button" class="kebab" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${esc(b.title)}">${menuIcon('more')}</button>
+        <div class="kebab-menu" role="menu" aria-label="Actions for ${esc(b.title)}" hidden>
+          <button type="button" role="menuitem" data-action="download">${menuIcon('download')}Download</button>
+          <button type="button" role="menuitem" data-action="share">${menuIcon('share')}Share</button>
+          ${readOnly ? '' : `<button type="button" role="menuitem" class="danger" data-action="delete">${menuIcon('delete')}Delete</button>`}
+        </div>` : '';
+      return `<div class="bill-row${b.has_brief ? ' has-menu' : ''}${b.kind === 'upload' ? ' ph-no-capture' : ''}" data-bill="${esc(b.id)}">${card}${menu}</div>`;
+    }
+
+    // Opening, closing and keyboard use of the ⋮ menus (one open at a time), and what each item does.
+    function wireBillMenus(list, member, bills) {
+      let openRow = null;
+      const close = (focusButton) => {
+        if (!openRow) return;
+        const button = openRow.querySelector('.kebab');
+        openRow.querySelector('.kebab-menu').hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+        openRow.classList.remove('menu-open');
+        if (focusButton) button.focus();
+        openRow = null;
+      };
+      const open = (row) => {
+        close(false);
+        openRow = row;
+        row.classList.add('menu-open');
+        row.querySelector('.kebab').setAttribute('aria-expanded', 'true');
+        const menu = row.querySelector('.kebab-menu');
+        menu.hidden = false;
+        menu.querySelector('[role="menuitem"]').focus();
+      };
+      list.addEventListener('click', (event) => {
+        const kebab = event.target.closest('.kebab');
+        if (kebab) {
+          const row = kebab.closest('.bill-row');
+          if (openRow === row) close(true); else open(row);
+          return;
+        }
+        const item = event.target.closest('[role="menuitem"]');
+        if (!item) return;
+        const row = item.closest('.bill-row');
+        const bill = bills.find((b) => b.id === row.dataset.bill);
+        close(true);
+        if (item.dataset.action === 'download') downloadAnalysis(member, bill);
+        if (item.dataset.action === 'share') openShareDialog(member, bill);
+        if (item.dataset.action === 'delete') openDeleteDialog(member, bill, row.querySelector('.kebab'));
+      });
+      list.addEventListener('keydown', (event) => {
+        if (!openRow) return;
+        const items = [...openRow.querySelectorAll('[role="menuitem"]')];
+        const at = items.indexOf(document.activeElement);
+        if (event.key === 'Escape') { event.preventDefault(); close(true); }
+        else if (event.key === 'ArrowDown') { event.preventDefault(); items[(at + 1) % items.length].focus(); }
+        else if (event.key === 'ArrowUp') { event.preventDefault(); items[(at - 1 + items.length) % items.length].focus(); }
+        else if (event.key === 'Home') { event.preventDefault(); items[0].focus(); }
+        else if (event.key === 'End') { event.preventDefault(); items[items.length - 1].focus(); }
+        else if (event.key === 'Tab') close(false);
+      });
+      // A click anywhere else closes it. This listener removes itself once the page changes.
+      const outside = (event) => {
+        if (!list.isConnected) { document.removeEventListener('pointerdown', outside); return; }
+        if (openRow && !openRow.contains(event.target)) close(false);
+      };
+      document.addEventListener('pointerdown', outside);
+    }
+
+    async function loadBrief(member, bill) {
+      const response = await fetch(`/api/brief?member=${encodeURIComponent(member.id)}&district=${encodeURIComponent(member.district)}&bill=${encodeURIComponent(bill.id)}`);
+      const data = await response.json();
+      if (!response.ok || !data.brief) throw new Error(data.error || 'This analysis could not be found. Reload the page.');
+      return data;
+    }
+
+    // A pop-up built fresh each time and removed when it closes. Escape and a click on the dimmed
+    // backdrop close it; focus goes back to whatever opened it.
+    function showDialog(html, returnFocus) {
       const dialog = document.createElement('dialog');
       dialog.className = 'confirm';
-      dialog.setAttribute('aria-labelledby', 'delete-title');
-      dialog.innerHTML = `<h2 id="delete-title">Delete this analysis?</h2>
+      dialog.setAttribute('aria-labelledby', 'dialog-title');
+      dialog.innerHTML = html;
+      document.body.append(dialog);
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      dialog.addEventListener('close', () => { dialog.remove(); if (returnFocus && returnFocus.isConnected) returnFocus.focus(); });
+      dialog.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => dialog.close()));
+      dialog.showModal();
+      return dialog;
+    }
+    const dateLabel = (iso) => (iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
+
+    // ---- Download: a print-ready copy of the whole analysis. The browser's print window opens
+    // with "Save as PDF"; the suggested file name is the bill, member and district.
+    async function downloadAnalysis(member, bill) {
+      let data;
+      try { data = await loadBrief(member, bill); } catch (error) { showDialog(`<h2 id="dialog-title">Could not download</h2><p>${esc(error.message)}</p><div class="confirm-actions"><button type="button" class="secondary" data-close autofocus>Close</button></div>`); return; }
+      const { brief, district } = data;
+      const c = brief.coverage;
+      const ref = (id, page) => `Sec. ${esc(id)}${page ? ` (p. ${esc(page)})` : ''}`;
+      const facts = (keys) => keys.map((k) => district.facts.find((f) => f.key === k)).filter(Boolean).map((f) => `${esc(f.label)}: ${esc(f.display)}`).join(' · ');
+      const findings = findingsFor(brief);
+      const group = (effect, title) => {
+        const items = findings.filter((i) => i.effect === effect);
+        return items.length ? `<h3>${title} (${items.length})</h3>${items.map((i) => `<div class="p-item">
+          <strong>${esc(i.headline)}</strong><p>${esc(i.plain_english)}</p><p>${esc(i.who_in_district)}</p>
+          <p class="p-quote">“${esc(i.bill_quote)}” <span class="p-meta">${ref(i.section_id, i.page)}, ${esc(i.section_header)}</span></p>
+          ${i.district_facts.length ? `<p class="p-meta">District evidence: ${facts(i.district_facts)}</p>` : ''}</div>`).join('')}` : '';
+      };
+      const alerts = brief.promise_alerts || [];
+      const promiseHtml = !c.promises_reviewed
+        ? '<p>No public commitments have been collected for this member yet, so the bill was not checked against any. This does not mean no conflict exists.</p>'
+        : alerts.length ? alerts.map((a) => {
+          const p = (member.promises || []).find((x) => x.id === a.promise_id) || {};
+          return `<div class="p-item"><strong>${a.severity === 'direct' ? 'Direct conflict' : 'Possible tension'}${p.topic ? `: ${esc(p.topic)}` : ''}</strong>
+            <p>${esc(a.explanation)}</p>${p.quote ? `<p class="p-quote">“${esc(p.quote)}” <span class="p-meta">${esc(p.source_type)}, ${esc(p.date)} · ${esc(p.url)}</span></p>` : ''}
+            <p class="p-meta">Cites ${a.section_ids.map((id) => `Sec. ${esc(id)}`).join(', ')}</p></div>`;
+        }).join('') : `<p>None found among the ${c.promises_checked} commitments reviewed. This does not mean no conflict exists.</p>`;
+      const notCovered = c.not_covered_headers || [];
+      const root = document.createElement('div');
+      root.id = 'print-root';
+      if (bill.kind === 'upload') root.className = 'ph-no-capture';
+      root.innerHTML = `<p class="p-kicker">Bill Reader · Bill analysis</p>
+        <h1>${esc(bill.title)}</h1>
+        <p class="p-meta">Prepared for ${esc(memberLabel(member))}, ${esc(district.id)} · ${esc(bill.status)} · Analyzed ${esc(dateLabel(brief.generated_at))}</p>
+        ${notCovered.length ? `<p class="p-note"><strong>This brief is not complete.</strong> ${notCovered.length} sections flagged as relevant to this district were not analyzed in depth, so findings may leave out important effects.</p>` : ''}
+        <h2>Bill Summary</h2>
+        <ul>${brief.overview.what_it_does.map((b) => `<li>${esc(b.text)} <span class="p-meta">${b.sources.map((s) => ref(s.section_id, s.page)).join(', ')}</span></li>`).join('')}</ul>
+        <h2>Constituent Impact: ${esc(district.id)}</h2>
+        <p>${esc(brief.overview.district_bottom_line)}</p>
+        <h2>District Impact</h2>
+        ${group('hurts', 'Harmful to the district') + group('helps', 'Helpful to the district') + group('mixed', 'Mixed effects') || '<p>No district findings.</p>'}
+        <h2>Promise Alerts if the member votes yes</h2>
+        ${promiseHtml}
+        <h2>What was reviewed</h2>
+        <p>${c.sections_screened} of ${c.sections_total} sections screened; ${c.flagged} flagged; ${c.analyzed} analyzed in depth. ${c.dropped_by_verification.length} findings removed because their citations failed verification.</p>
+        <p class="p-meta">AI-generated with ${esc(brief.models.screen)} and ${esc(brief.models.deep)}. Check the cited bill sections before relying on a finding.</p>`;
+      document.getElementById('print-root')?.remove();
+      document.body.append(root);
+      document.body.classList.add('printing');
+      const title = document.title;
+      document.title = `Bill analysis - ${bill.title} - ${member.name} ${district.id}`.replace(/[\\/:*?"<>|]/g, '');
+      const done = () => { document.body.classList.remove('printing'); root.remove(); document.title = title; window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done);
+      window.print();
+    }
+
+    // ---- Share: a preview of the choices only. Sending is not connected yet.
+    function openShareDialog(member, bill) {
+      const option = (icon, label) => `<button type="button" class="share-option" aria-disabled="true" data-label="${esc(label)}">
+        <span class="share-icon">${icon}</span><span class="share-label">${esc(label)}</span><span class="tag neutral">Coming soon</span></button>`;
+      const dialog = showDialog(`<h2 id="dialog-title">Share this analysis</h2>
+        <p>Send a PDF of ${esc(member.name)}'s analysis of <strong>${esc(bill.title)}</strong>.</p>
+        <div class="share-options">
+          ${option(menuIcon('email'), 'Email')}
+          ${option(menuIcon('text'), 'Text message')}
+          ${option('<span class="x-mark" aria-hidden="true">X</span>', 'Post on X')}
+        </div>
+        <p class="meta" id="share-msg" aria-live="polite">Sharing is not connected yet. For now, use Download and attach the PDF yourself.</p>
+        <div class="confirm-actions"><button type="button" class="secondary" data-close autofocus>Close</button></div>`, document.activeElement);
+      dialog.querySelectorAll('.share-option').forEach((b) => b.addEventListener('click', () => {
+        dialog.querySelector('#share-msg').textContent = `${b.dataset.label} sharing is coming soon. For now, use Download and attach the PDF yourself.`;
+      }));
+    }
+
+    // ---- Delete this member's analysis of one bill, after an "Are you sure?" pop-up. The server
+    // moves the brief to data/deleted/ (recoverable by hand); the bill stays, as "Not analyzed yet".
+    async function openDeleteDialog(member, bill, returnFocus) {
+      let brief = {};
+      try { ({ brief } = await loadBrief(member, bill)); } catch { /* the pop-up still works without the date and cost */ }
+      const made = dateLabel(brief.generated_at);
+      const cost = typeof brief.cost_usd === 'number' ? `$${brief.cost_usd.toFixed(2)}` : null;
+      const dialog = showDialog(`<h2 id="dialog-title">Delete this analysis?</h2>
         <p>This removes ${esc(member.name)}'s analysis of <strong>${esc(bill.title)}</strong>${made ? `, made ${esc(made)}` : ''}.
           The bill itself stays, and other members' analyses are not affected.</p>
         <p class="meta">To see it again you would run Analyze again${cost ? `, which cost ${esc(cost)} last time` : ', which costs money'}.
           A copy is kept on this computer in data/deleted/.</p>
         <p id="delete-msg" class="error" role="alert"></p>
         <div class="confirm-actions">
-          <button type="button" class="secondary" id="delete-cancel" autofocus>Cancel</button>
+          <button type="button" class="secondary" data-close autofocus>Cancel</button>
           <button type="button" class="primary danger-fill" id="delete-confirm">Delete analysis</button>
-        </div>`;
-      area.append(dialog);
-      const open = document.getElementById('delete-open');
+        </div>`, returnFocus);
       const confirmBtn = dialog.querySelector('#delete-confirm');
-      open.addEventListener('click', () => { dialog.querySelector('#delete-msg').textContent = ''; dialog.showModal(); });
-      dialog.querySelector('#delete-cancel').addEventListener('click', () => dialog.close());
-      // A click on the dimmed backdrop (outside the box) cancels too.
-      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
-      dialog.addEventListener('close', () => open.focus());
       confirmBtn.addEventListener('click', async () => {
         confirmBtn.disabled = true;
         const response = await fetch('/api/brief/delete', {
@@ -1750,7 +1955,7 @@
           return;
         }
         dialog.close();
-        route(); // reload the bill's page: it now offers Analyze
+        route(); // redraw the list: this bill now says "Not analyzed yet"
       });
     }
 
