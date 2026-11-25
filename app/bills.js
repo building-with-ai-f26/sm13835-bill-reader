@@ -57,7 +57,17 @@ function upload(id) {
     filePath: path.join(dir, `original.${meta.file_type}`),
     issuesFile: path.join(dir, 'issues.json'),
     briefFile: (memberId) => path.join(dir, 'briefs', `${memberId}.json`),
+    // Whose bill list this upload belongs to: the member it was uploaded for. Uploads saved before
+    // uploads were tied to a member don't record one, so they belong to the members who already have
+    // an analysis of them (their files are left as they are).
+    owners: meta.member ? [meta.member]
+      : fs.existsSync(path.join(dir, 'briefs')) ? fs.readdirSync(path.join(dir, 'briefs')).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : [],
   };
+}
+
+// H.R. 1 is shown to every member; an upload only to its owners.
+function visibleTo(bill, memberId) {
+  return bill.kind !== 'upload' || bill.owners.includes(memberId);
 }
 
 // Ids come from the browser, so they only ever select a bill that exists.
@@ -66,16 +76,20 @@ function getBill(id) {
   return upload(id);
 }
 
-function listBills() {
+// The bills one member sees: H.R. 1, then that member's own uploads, newest first.
+function listBills(memberId) {
   const uploads = fs.existsSync(UPLOADS)
-    ? fs.readdirSync(UPLOADS).map(upload).filter(Boolean).sort((a, b) => b.created_at.localeCompare(a.created_at))
+    ? fs.readdirSync(UPLOADS).map(upload).filter((b) => b && visibleTo(b, memberId)).sort((a, b) => b.created_at.localeCompare(a.created_at))
     : [];
   return [hr1(), ...uploads];
 }
 
 // Checks an upload and saves it. The browser extracted the text (the server has no PDF or
 // Word reader); the server re-splits that text itself and keeps the original file.
-function saveUpload({ title, file_type, file_name, file_base64, pages }) {
+// `member` is the member the bill is uploaded for (the server checks it is a real member id); only
+// that member's bill list shows it.
+function saveUpload({ title, file_type, file_name, file_base64, pages, member }) {
+  if (!/^[a-z0-9-]{1,60}$/.test(String(member || ''))) throw new Error('Choose the member this bill is for, then upload it again.');
   const name = String(title || '').replace(/[\u0000-\u001f]/g, '').trim();
   if (!name) throw new Error('Give the bill a name.');
   if (name.length > 120) throw new Error('Keep the name under 120 characters.');
@@ -103,6 +117,7 @@ function saveUpload({ title, file_type, file_name, file_base64, pages }) {
   const meta = {
     id,
     title: name,
+    member, // whose bill list it appears in
     status: 'Uploaded; not yet voted on',
     file_type,
     file_name: path.basename(String(file_name || `bill.${file_type}`)).slice(0, 200),
@@ -130,4 +145,4 @@ function deleteBrief(bill, memberId, deletedDir = path.join(DATA, 'deleted')) {
   return target;
 }
 
-module.exports = { getBill, listBills, saveUpload, deleteBrief, UPLOADS, MAX_FILE_BYTES };
+module.exports = { getBill, listBills, visibleTo, saveUpload, deleteBrief, UPLOADS, MAX_FILE_BYTES };

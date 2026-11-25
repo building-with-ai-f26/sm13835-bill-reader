@@ -2,7 +2,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { getBill, listBills, saveUpload, deleteBrief, MAX_FILE_BYTES } = require('./bills.js');
+const { getBill, listBills, visibleTo, saveUpload, deleteBrief, MAX_FILE_BYTES } = require('./bills.js');
 const { estimateFor, runAnalysis, loadKey, checkAvailableCredits, checkKeyLimitRemaining, NOT_A_BILL } = require('./analyze.js');
 const { createLimiter, bucketsFor, visitorOf } = require('./rate-limit.js');
 
@@ -189,10 +189,11 @@ async function handle(req, res) {
     });
   }
 
-  // The bill picker: H.R. 1 and every uploaded bill, with whether this member has a brief.
+  // The bill picker: H.R. 1 and this member's own uploads, with whether the member has a brief.
+  // Each upload belongs to the member it was uploaded for, so other members never see it.
   if (req.method === 'GET' && url.pathname === '/api/bills') {
     const member = members().find((m) => m.id === url.searchParams.get('member'));
-    return send(res, 200, { bills: listBills().map((b) => billSummary(b, member && member.id)) });
+    return send(res, 200, { bills: listBills(member && member.id).map((b) => billSummary(b, member && member.id)) });
   }
 
   // Changes (uploads, paid runs) must come from this app's own page, as JSON. A JSON request
@@ -208,7 +209,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && url.pathname === '/api/estimate') {
     const member = members().find((m) => m.id === url.searchParams.get('member'));
     const bill = getBill(url.searchParams.get('bill'));
-    if (!member || !bill) return send(res, 404, { error: 'Unknown member or bill' });
+    if (!member || !bill || !visibleTo(bill, member.id)) return send(res, 404, { error: 'Unknown member or bill' });
     if (!bill.verified_bill) return send(res, 400, { error: NOT_A_BILL });
     const { estimate, cap } = estimateFor(member.id, bill.id);
     // The account balance, and what the key itself may still spend (its own monthly limit, if set).
@@ -232,7 +233,7 @@ async function handle(req, res) {
     }
     const member = members().find((m) => m.id === body.member);
     const bill = getBill(body.bill);
-    if (!member || !bill || member.district !== body.district) return send(res, 400, { error: 'Unknown member, district or bill' });
+    if (!member || !bill || member.district !== body.district || !visibleTo(bill, member.id)) return send(res, 400, { error: 'Unknown member, district or bill' });
     if (!bill.verified_bill) return send(res, 400, { error: NOT_A_BILL });
     if (!hasKey) return send(res, 400, { error: 'No OpenRouter key in .env' });
     if (job && job.status === 'running') return send(res, 409, { error: 'Another analysis is already running. Try again when it finishes.' });
@@ -290,7 +291,7 @@ async function handle(req, res) {
     try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, { error: 'Bad request' }); }
     const member = members().find((m) => m.id === body.member);
     const bill = getBill(body.bill);
-    if (!member || !bill || !body.bill) return send(res, 400, { error: 'Unknown member or bill' });
+    if (!member || !bill || !body.bill || !visibleTo(bill, member.id)) return send(res, 400, { error: 'Unknown member or bill' });
     if (job && job.status === 'running' && job.member === member.id && job.bill === bill.id) {
       return send(res, 409, { error: 'This bill is being analyzed for this member right now. Wait for it to finish, then delete.' });
     }
@@ -300,7 +301,9 @@ async function handle(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/bills') {
     try {
-      const meta = saveUpload(JSON.parse(await readBody(req)));
+      const body = JSON.parse(await readBody(req));
+      if (!members().some((m) => m.id === body.member)) return send(res, 400, { error: 'Choose the member this bill is for, then upload it again.' });
+      const meta = saveUpload(body);
       return send(res, 201, { bill: meta });
     } catch (error) {
       return send(res, 400, { error: error.message });
@@ -327,7 +330,7 @@ async function handle(req, res) {
       return send(res, 400, { error: `${member.name} represents ${member.district}, not ${district.id}` });
     }
     const bill = getBill(url.searchParams.get('bill') || 'hr1');
-    if (!bill) return send(res, 404, { error: 'Unknown bill' });
+    if (!bill || !visibleTo(bill, member.id)) return send(res, 404, { error: 'This bill is not in this member\'s list.' });
     return send(res, 200, {
       member,
       district,

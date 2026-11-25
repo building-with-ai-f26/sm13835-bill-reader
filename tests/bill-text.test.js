@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const BillText = require('../app/public/bill-text.js');
-const { saveUpload } = require('../app/bills.js');
+const { saveUpload, visibleTo } = require('../app/bills.js');
 const { normalize } = require('../app/analyze.js');
 
 // Text pieces pdf.js read from the real H.R. 9626 PDF (GovInfo, introduced version).
@@ -59,7 +59,7 @@ test('an empty or image-only PDF is refused with a clear reason', () => {
 });
 
 const pdfBase64 = Buffer.from('%PDF-1.4 test').toString('base64');
-const goodUpload = { title: 'Test bill', file_type: 'pdf', file_name: 'a.pdf', file_base64: pdfBase64, pages: [['A BILL', ENACT, 'SEC. 1. TEST.', 'Text.']] };
+const goodUpload = { title: 'Test bill', file_type: 'pdf', file_name: 'a.pdf', file_base64: pdfBase64, pages: [['A BILL', ENACT, 'SEC. 1. TEST.', 'Text.']], member: 'gottheimer' };
 
 test('uploads are refused before anything is saved when they fail a check', () => {
   assert.throws(() => saveUpload({ ...goodUpload, title: '  ' }), /name/);
@@ -68,6 +68,18 @@ test('uploads are refused before anything is saved when they fail a check', () =
   assert.throws(() => saveUpload({ ...goodUpload, file_type: 'docx' }), /not a valid Word/);
   assert.throws(() => saveUpload({ ...goodUpload, pages: 'SEC. 1.' }), /expected format/);
   assert.throws(() => saveUpload({ ...goodUpload, pages: [['MEMORANDUM', 'Talking points.']] }), /doesn't look like a bill/);
+  assert.throws(() => saveUpload({ ...goodUpload, member: undefined }), /member this bill is for/);
+  assert.throws(() => saveUpload({ ...goodUpload, member: '../kean' }), /member this bill is for/);
+});
+
+test('an upload shows only in its own member\'s bill list; H.R. 1 shows for everyone', () => {
+  const upload = (owners) => ({ kind: 'upload', owners });
+  assert.ok(visibleTo(upload(['gottheimer']), 'gottheimer'));
+  assert.ok(!visibleTo(upload(['gottheimer']), 'van-drew'));
+  assert.ok(visibleTo(upload(['gottheimer', 'kean']), 'kean')); // an older upload both members analyzed
+  assert.ok(!visibleTo(upload([]), 'gottheimer'));
+  assert.ok(!visibleTo(upload(['gottheimer']), undefined));
+  assert.ok(visibleTo({ kind: 'official' }, 'van-drew'));
 });
 
 test('quote checks ignore nested quote marks and line-break hyphens', () => {

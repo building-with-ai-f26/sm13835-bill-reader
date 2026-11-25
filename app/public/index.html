@@ -1896,7 +1896,8 @@
             const response = await fetch('/api/bills', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title, file_type: type, file_name: file.name, file_base64: await readAsBase64(file), pages }),
+              // The upload belongs to this member: only their bill list shows it.
+              body: JSON.stringify({ title, file_type: type, file_name: file.name, file_base64: await readAsBase64(file), pages, member: memberId }),
             });
             const body = await response.json();
             if (!response.ok) throw new Error(body.error);
