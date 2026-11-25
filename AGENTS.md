@@ -44,7 +44,7 @@ data/
   house-119.json         Every current House member: name, party, state, district, Bioguide ID (setup page boxes;
                          only states with files in members/ open briefs)
   nj-map.json            New Jersey district map used on briefs and the member home page
-  us-map.json            U.S. states (Alaska and Hawaii inset) and district lines for DISTRICT_STATES (NJ)
+  us-map.json            U.S. states (Alaska and Hawaii inset) and district lines for DISTRICT_STATES (NJ, NY)
   media/<id>.json        A member's TV appearances: date, network, show, YouTube link, notes
   media/<id>-candidates.json  Statements pulled from those appearances, each pending/approved/rejected
   media/transcripts/     Full TV transcripts (network content). Git-ignored: stays on this computer

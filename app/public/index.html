@@ -1166,17 +1166,19 @@
     // ---- Setup: state, member, then district on the left; a U.S. map on the right that zooms to
     // the chosen state (shaded light gray) and outlines the chosen district in black.
     const parseBox = (v) => (typeof v === 'string' ? v.split(/\s+/).map(Number) : v);
-    function zoomMap(svg, target) {
+    // `done` runs once the zoom has finished (never, if another zoom replaces this one first).
+    function zoomMap(svg, target, done) {
       const from = parseBox(svg.getAttribute('viewBox'));
       const to = parseBox(target);
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { svg.setAttribute('viewBox', to.join(' ')); return; }
       cancelAnimationFrame(svg._zoom);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { svg.setAttribute('viewBox', to.join(' ')); if (done) done(); return; }
       const start = performance.now(), ms = 700;
       const step = (now) => {
         const t = Math.min(1, (now - start) / ms);
         const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; // ease in and out
         svg.setAttribute('viewBox', from.map((v, i) => (v + (to[i] - v) * e).toFixed(3)).join(' '));
         if (t < 1) svg._zoom = requestAnimationFrame(step);
+        else if (done) done();
       };
       svg._zoom = requestAnimationFrame(step);
     }
@@ -1379,12 +1381,41 @@
       const mark = (selector, cls, test) => svg && svg.querySelectorAll(selector).forEach((el) => el.classList.toggle(cls, test(el)));
       const PARTY = { D: ['dem', 'Democrat'], R: ['rep', 'Republican'] };
       // Outline one district on the map (drawn counterclockwise), or clear the outline with null.
+      // Small districts (under 6% of their state's size, e.g. New York City's) would be a dot at the
+      // whole-state view, so the map zooms to the area around them first. It stays put while the next
+      // district is still well inside the view, so moving between neighbouring boxes doesn't jitter, and
+      // zooms back out to the state for a large district or when the pointer leaves the boxes.
+      let closeUp = null; // the zoomed-in view box, or null when showing the whole state
+      const viewFor = (id) => {
+        const d = id && usmap && usmap.districts.find((x) => x.id === id);
+        const state = d && usmap.states.find((s) => s.abbr === d.state);
+        if (!state) return null;
+        const side = ([x0, y0, x1, y1]) => Math.max(x1 - x0, y1 - y0);
+        if (side(d.bbox) / side(state.bbox) >= 0.06) return null;
+        const cx = (d.bbox[0] + d.bbox[2]) / 2, cy = (d.bbox[1] + d.bbox[3]) / 2;
+        if (closeUp) {
+          const [x, y, w, h] = closeUp;
+          if (cx > x + w * 0.2 && cx < x + w * 0.8 && cy > y + h * 0.2 && cy < y + h * 0.8) return closeUp;
+        }
+        const size = Math.max(side(state.bbox) * 0.08, side(d.bbox) * 3); // about 50 km across in New York City
+        return [cx - size / 2, cy - size / 2, size, size];
+      };
       const outlineDistrict = (id) => {
         const current = svg && svg.querySelector('.us-district.selected');
         if (current && current.dataset.district === id) return;
+        if (current) current.style.visibility = ''; // in case it was hidden waiting for a zoom that was cut short
         mark('.us-district', 'selected', (el) => el.dataset.district === id);
         const outline = svg && svg.querySelector('.us-district.selected');
-        if (outline) { outline.parentNode.appendChild(outline); drawOutline(outline); } // drawn last, so its black line sits on top
+        if (outline) outline.parentNode.appendChild(outline); // drawn last, so its black line sits on top
+        if (!svg) return;
+        const view = viewFor(id);
+        const state = usmap.states.find((s) => s.abbr === stateSelect.value);
+        // The outline is measured in screen pixels, so it starts drawing once any zoom has finished.
+        const draw = () => { if (outline && outline.classList.contains('selected')) { outline.style.visibility = ''; drawOutline(outline); } };
+        if (view === closeUp) { draw(); return; }
+        closeUp = view;
+        if (outline) outline.style.visibility = 'hidden';
+        zoomMap(svg, view ? view.join(' ') : state ? boxAround(state.bbox) : usmap.viewBox, draw);
       };
 
       // One square box per member, in district order: district, round official portrait, name, tinted
@@ -1395,6 +1426,7 @@
       stateSelect.addEventListener('change', () => {
         const abbr = stateSelect.value;
         const linked = covered.has(abbr);
+        const drawn = new Set(usmap ? usmap.district_states || [] : []);
         const here = (linked ? members.filter((m) => stateOf(m) === abbr) : house.filter((m) => m.state === abbr)).sort((a, b) => seatOf(a) - seatOf(b));
         const parties = new Set(here.map((m) => m.party));
         grid.innerHTML = here.map((m) => {
@@ -1406,6 +1438,10 @@
             <span class="member-box-name${m.name.length > 19 ? ' long' : ''}">${esc(m.name)}</span>`;
           return linked
             ? `<a class="member-box ${cls}${yours ? ' yours' : ''}" href="#/bills/${encodeURIComponent(m.id)}/${encodeURIComponent(m.district)}" data-district="${esc(m.district)}" aria-label="${esc(label)}"${m.note ? ` title="${esc(m.note)}"` : ''}>${inner}</a>`
+            // A state with district lines on the map (DISTRICT_STATES in scripts/build-us-map.js) but no briefs yet:
+            // the box still outlines its district when pointed at or focused, but doesn't open anything.
+            : drawn.has(abbr)
+            ? `<div class="member-box static ${cls}${yours ? ' yours' : ''}" role="group" tabindex="0" data-district="${esc(m.district)}" aria-label="${esc(label)}">${inner}</div>`
             : `<div class="member-box static ${cls}${yours ? ' yours' : ''}" role="group" aria-label="${esc(label)}">${inner}</div>`;
         }).join('') + (here.length ? `<p class="meta member-key">${[['D', 'Blue: Democrat'], ['R', 'Red: Republican'], ['I', 'Gray: Independent']].filter(([p]) => parties.has(p)).map(([, t]) => t).join(' · ')}</p>` : '');
         const welcome = signedUp && here.some((m) => m.district === signedUp.district) ? `Welcome, ${signedUp.first}. Your office is outlined. ` : '';
@@ -1413,17 +1449,20 @@
           : !here.length ? 'No House members listed for this state.'
           : welcome ? `${welcome}${linked ? 'Choose it to open its briefs.' : 'Briefs cover New Jersey for now, so these boxes don\'t open yet.'}`
           : linked ? `${plural(here.length, 'member')}. Choose one to open their briefs; pointing at one outlines their district on the map.`
+          : drawn.has(abbr) ? `${plural(here.length, 'member')} of the 119th Congress. Pointing at one outlines their district on the map. Briefs cover New Jersey for now, so these boxes don't open yet.`
           : `${plural(here.length, 'member')} of the 119th Congress. Briefs cover New Jersey for now, so these boxes don't open yet.`;
         if (!svg) return;
         mark('.us-district', 'selected', () => false);
         mark('.us-state', 'selected', (el) => el.dataset.state === abbr);
         mark('.us-district', 'visible', (el) => el.dataset.state === abbr);
         const state = usmap.states.find((s) => s.abbr === abbr);
+        closeUp = null;
+        svg.querySelectorAll('.us-district[style]').forEach((p) => { p.style.visibility = ''; });
         zoomMap(svg, state ? boxAround(state.bbox) : usmap.viewBox);
       });
       // Pointing at or tabbing to a box outlines that district; leaving the boxes clears it.
-      grid.addEventListener('pointerover', (event) => { const box = event.target.closest('a.member-box'); if (box) outlineDistrict(box.dataset.district); });
-      grid.addEventListener('focusin', (event) => { const box = event.target.closest('a.member-box'); if (box) outlineDistrict(box.dataset.district); });
+      grid.addEventListener('pointerover', (event) => { const box = event.target.closest('.member-box[data-district]'); if (box) outlineDistrict(box.dataset.district); });
+      grid.addEventListener('focusin', (event) => { const box = event.target.closest('.member-box[data-district]'); if (box) outlineDistrict(box.dataset.district); });
       grid.addEventListener('pointerleave', () => { if (!grid.contains(document.activeElement)) outlineDistrict(null); });
       grid.addEventListener('focusout', (event) => { if (!grid.contains(event.relatedTarget)) outlineDistrict(null); });
       grid.addEventListener('click', (event) => {
@@ -1516,7 +1555,12 @@
     // ---- TV appearances table: one row per appearance, and filters by month or year, network and topic.
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const topicKey = (t) => String(t).trim().toLowerCase();
-    const topicLabel = (t) => { const s = String(t).trim(); return s.charAt(0).toUpperCase() + s.slice(1); };
+    // Topics are stored as written ("rising costs", "IRGC terror designation"); shown in title case: the first
+    // letter of each word goes up, letters already capitalized stay (IRGC, NJ), and short joining words stay
+    // lowercase unless they come first ("Bipartisan Cooperation after the Midterms").
+    const SMALL_WORDS = new Set(['a', 'an', 'and', 'the', 'of', 'in', 'on', 'for', 'to', 'at', 'by', 'or', 'with', 'after', 'against']);
+    const topicLabel = (t) => String(t).trim().split(/\s+/)
+      .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
 
     function tvRow(a, done) {
       const t = done.get(a.id);
@@ -1524,7 +1568,7 @@
         : a.youtube ? 'Not transcribed' : 'Not on YouTube';
       const labels = `${a.local ? ' <span class="tag neutral dm-mini">Local</span>' : ''}${a.with ? ` <span class="tag neutral dm-mini" title="With ${esc(a.with)}">Joint</span>` : ''}`;
       return `<tr><td>${esc(shortDate(a.date))}</td><td>${esc(a.network)}${a.show && a.show !== 'unknown' && a.show !== 'news' ? ` · ${esc(a.show)}` : ''}${labels}</td>
-        <td>${esc((a.topics || []).join(', '))}</td>
+        <td>${esc((a.topics || []).map(topicLabel).join(', '))}</td>
         <td>${a.youtube ? link(a.youtube, 'YouTube ↗') : a.url ? link(a.url, `${host(a.url)} ↗`) : ''}</td><td>${status}</td></tr>`;
     }
 

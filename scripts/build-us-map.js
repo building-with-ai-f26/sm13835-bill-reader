@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const DISTRICT_STATES = ['NJ'];
+const DISTRICT_STATES = ['NJ', 'NY'];
 const BASE = 'https://www2.census.gov/geo/tiger/GENZ2024/shp/';
 const STATES_ZIP = 'cb_2024_us_state_5m.zip'; // 1:5,000,000: enough detail to zoom to one state
 const DISTRICTS_ZIP = 'cb_2024_us_cd119_500k.zip'; // 1:500,000, the same detail as the NJ map
