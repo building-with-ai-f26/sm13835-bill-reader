@@ -150,6 +150,42 @@
     .filter-note li { margin-bottom: 4px; }
 
     .auth { max-width: 520px; margin: 48px auto; }
+    /* Landing page: one large line, centered on the dotted background, and two ways in. */
+    .landing { min-height: calc(100svh - 112px); display: grid; place-content: center; justify-items: center; text-align: center; gap: 0; }
+    .landing-brand { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .landing-title { max-width: 14ch; margin: 14px 0 36px; font-size: clamp(42px, 8.4vw, 92px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; color: var(--text); text-wrap: balance; }
+    .landing-title span { color: var(--accent); }
+    .landing-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .landing-actions a { display: inline-flex; align-items: center; justify-content: center; min-width: 168px; min-height: 52px; margin: 0;
+      padding: 0 24px; font-size: 17px; font-weight: 600; text-decoration: none; border-radius: 10px;
+      transition: transform .15s cubic-bezier(.2,.8,.2,1), background-color .15s cubic-bezier(.2,.8,.2,1), border-color .15s cubic-bezier(.2,.8,.2,1); }
+    .landing-actions a:hover { transform: translateY(-1px); }
+    .landing-actions a:active { transform: translateY(1px) scale(.985); transition-duration: 90ms; }
+    .landing-actions .secondary:hover { border-color: var(--accent); }
+    .landing-actions a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    @media (max-width: 480px) { .landing-actions { flex-direction: column; width: 100%; max-width: 320px; } }
+    /* Sign up: the role choice, then the form. */
+    .role-choices { display: grid; gap: 12px; margin: 16px 0; }
+    .role-choice { display: flex; align-items: center; gap: 16px; margin: 0; padding: 20px; text-decoration: none; color: var(--text);
+      transition: transform .15s cubic-bezier(.2,.8,.2,1), border-color .15s cubic-bezier(.2,.8,.2,1), box-shadow .15s cubic-bezier(.2,.8,.2,1); }
+    .role-choice strong { display: block; font-size: 18px; }
+    .role-choice .tile-icon { flex: none; margin: 0; }
+    .role-choice:hover { transform: translateY(-2px); border-color: #c7d2e3; box-shadow: var(--shadow-hover); }
+    .role-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .auth.signup { max-width: 640px; }
+    .signup-form fieldset { border: 0; padding: 0; margin: 0 0 18px; min-width: 0; }
+    .signup-form legend { font-size: 16px; font-weight: 700; padding: 0; margin-bottom: 2px; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; align-items: start; }
+    .field-row.three { grid-template-columns: 2fr 1.4fr 1fr; }
+    @media (max-width: 560px) { .field-row, .field-row.three { grid-template-columns: 1fr; } }
+    .field-hint { margin: 0; }
+    .field-error { margin: 0; min-height: 0; color: var(--bad); font-size: 13px; }
+    .field-error:empty { display: none; }
+    .form [aria-invalid="true"] { border-color: var(--bad); }
+    #signup-msg:empty { display: none; }
+    /* The office someone just signed up for, on the setup page. */
+    .member-box.yours { outline: 3px solid var(--accent); outline-offset: 3px; }
     .form { display: grid; gap: 6px; padding: 24px; }
     .form label { font-weight: 600; font-size: 14px; margin-top: 8px; }
     .form input, .form select { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid #d0d5dd;
@@ -879,9 +915,154 @@
     // Read-only public demo or the full local app; asked once, used by any screen that writes.
     const config = fetch('/api/config').then((r) => r.json()).catch(() => ({ read_only: false }));
 
+    // ---- Landing page: the product line and two ways in.
+    function landingView() {
+      signedUp = null; // back at the front door: forget any sign-up from this visit
+      app.innerHTML = `<section class="landing">
+        <p class="landing-brand">Bill Reader</p>
+        <h1 class="landing-title">The intelligence system for <span>Congress</span></h1>
+        <div class="landing-actions">
+          <a class="primary" href="#/signup">Sign up</a>
+          <a class="secondary" href="#/login">Sign in</a>
+        </div>
+      </section>`;
+    }
+
+    // ---- Sign up. Prototype only: answers are checked here in the browser, then forgotten. Nothing
+    // is saved or sent. Only the chosen state, district and first name are kept in memory, so the
+    // setup page can open on the person's own office; reloading the page clears them.
+    let signedUp = null;
+    const TERRITORIES = { PR: 'Puerto Rico', GU: 'Guam', VI: 'U.S. Virgin Islands', AS: 'American Samoa', MP: 'Northern Mariana Islands' };
+    const ROLES = {
+      member: { title: 'Member of Congress', desc: 'You represent a congressional district.', office: 'District you represent',
+        icon: '<line x1="3" x2="21" y1="22" y2="22" /><line x1="6" x2="6" y1="18" y2="11" /><line x1="10" x2="10" y1="18" y2="11" /><line x1="14" x2="14" y1="18" y2="11" /><line x1="18" x2="18" y1="18" y2="11" /><polygon points="12 2 20 7 4 7" />' }, // landmark
+      staff: { title: 'Congressional Staff', desc: "You work in a member's office.", office: 'Office you work for',
+        icon: '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /><rect width="20" height="14" x="2" y="6" rx="2" />' }, // briefcase
+    };
+
+    async function signupView(role) {
+      const back = (href, label) => `<a class="back" href="${href}">← ${label}</a>`;
+      const notice = `<div class="card alert possible"><strong>Prototype only.</strong> There are no real accounts yet. What you type is checked on this page, then forgotten: it is not saved or sent anywhere.</div>`;
+      if (!ROLES[role]) {
+        app.innerHTML = `<div class="auth">${back('#/', 'Back')}
+          <h1>Create your account</h1>
+          <p class="meta">Which describes you?</p>
+          <div class="role-choices">${Object.entries(ROLES).map(([id, r]) => `<a class="card role-choice" href="#/signup/${id}">
+            <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${r.icon}</svg></span>
+            <span><strong>${esc(r.title)}</strong><span class="meta">${esc(r.desc)}</span></span></a>`).join('')}</div>
+          <p class="meta">Already have an account? <a href="#/login">Sign in</a></p></div>`;
+        return;
+      }
+      const r = ROLES[role];
+      const [usmap, { members: house }] = await Promise.all([
+        getUsMap(),
+        fetch('/api/house').then((res) => (res.ok ? res.json() : { members: [] })).catch(() => ({ members: [] })),
+      ]);
+      const names = Object.fromEntries([...(usmap ? usmap.states : []).map((s) => [s.abbr, s.name]), ...Object.entries(TERRITORIES)]);
+      const officeStates = [...new Set(house.map((m) => m.state))].filter((s) => names[s]).sort((a, b) => names[a].localeCompare(names[b]));
+      const addressStates = Object.keys(names).sort((a, b) => names[a].localeCompare(names[b]));
+      const options = (list) => list.map((s) => `<option value="${esc(s)}">${esc(names[s])}</option>`).join('');
+      // One labelled field with a place for its error message right under it.
+      const field = (id, label, input, hint = '') => `<div class="field"><label for="${id}">${label}</label>${hint ? `<p class="meta field-hint" id="${id}-hint">${hint}</p>` : ''}${input}<p class="field-error" id="${id}-error"></p></div>`;
+      const text = (id, type, auto, extra = '') => `<input id="${id}" name="${id}" type="${type}" autocomplete="${auto}" ${extra} />`;
+      app.innerHTML = `<div class="auth signup">${back('#/signup', 'Back')}
+        <div class="kicker">Sign up · ${esc(r.title)}</div>
+        <h1>Create your account</h1>
+        ${notice}
+        <form id="signup" class="card form signup-form" novalidate>
+          <fieldset><legend>Your name</legend>
+            <div class="field-row">${field('first', 'First name', text('first', 'text', 'given-name'))}${field('last', 'Last name', text('last', 'text', 'family-name'))}</div>
+            ${role === 'staff' ? field('job', 'Job title', text('job', 'text', 'organization-title', 'placeholder="e.g. Legislative Director"')) : ''}
+          </fieldset>
+          <fieldset><legend>${esc(r.office)}</legend>
+            <div class="field-row">
+              ${field('office-state', 'State', `<select id="office-state" name="office-state"><option value="">Choose a state</option>${options(officeStates)}</select>`)}
+              ${field('district', 'District', '<select id="district" name="district" disabled><option value="">Choose a state first</option></select>')}
+            </div>
+          </fieldset>
+          <fieldset><legend>Office address and contact</legend>
+            ${field('street', 'Street address', text('street', 'text', 'street-address'), 'Your Washington or district office.')}
+            <div class="field-row three">
+              ${field('city', 'City', text('city', 'text', 'address-level2'))}
+              ${field('addr-state', 'State', `<select id="addr-state" name="addr-state" autocomplete="address-level1"><option value="">Choose</option>${options(addressStates)}</select>`)}
+              ${field('zip', 'ZIP code', text('zip', 'text', 'postal-code', 'inputmode="numeric"'))}
+            </div>
+            ${field('phone', 'Office phone', text('phone', 'tel', 'tel'))}
+          </fieldset>
+          <fieldset><legend>Sign-in details</legend>
+            ${field('email', 'Office email', text('email', 'email', 'email', 'placeholder="name@mail.house.gov"'))}
+            ${field('password', 'Password', text('password', 'password', 'new-password', 'aria-describedby="password-hint"'), 'At least 8 characters.')}
+            ${field('confirm', 'Confirm password', text('confirm', 'password', 'new-password'))}
+          </fieldset>
+          <p class="error" id="signup-msg" role="alert"></p>
+          <button type="submit" class="primary">Create account</button>
+        </form>
+        <p class="meta">Already have an account? <a href="#/login">Sign in</a></p></div>`;
+
+      const form = document.getElementById('signup');
+      const officeState = document.getElementById('office-state');
+      const district = document.getElementById('district');
+      const seat = (m) => { const n = Number(m.district.split('-')[1]); return Number.isNaN(n) ? 0 : n; };
+      const districtLabel = (d) => d.replace(/-AL$/, ' (at large)').replace(/-Del$/, ' (delegate)');
+      // Districts come from the current House roster; staff see whose office each one is.
+      officeState.addEventListener('change', () => {
+        const here = house.filter((m) => m.state === officeState.value).sort((a, b) => seat(a) - seat(b));
+        district.disabled = !here.length;
+        district.innerHTML = here.length
+          ? `<option value="">Choose a district</option>${here.map((m) => `<option value="${esc(m.district)}">${esc(districtLabel(m.district))}${role === 'staff' ? ` · ${esc(m.title)} ${esc(m.name)}` : ''}</option>`).join('')}`
+          : '<option value="">Choose a state first</option>';
+        // A new office state is a good guess for the address state too, if that is still empty.
+        const addr = document.getElementById('addr-state');
+        if (!addr.value && officeState.value in names && [...addr.options].some((o) => o.value === officeState.value)) addr.value = officeState.value;
+      });
+
+      const value = (id) => document.getElementById(id).value.trim();
+      const checks = [
+        ['first', () => value('first') ? '' : 'Enter your first name.'],
+        ['last', () => value('last') ? '' : 'Enter your last name.'],
+        ...(role === 'staff' ? [['job', () => value('job') ? '' : 'Enter your job title.']] : []),
+        ['office-state', () => value('office-state') ? '' : `Choose the state of the ${role === 'staff' ? 'office you work for' : 'district you represent'}.`],
+        ['district', () => !value('office-state') || value('district') ? '' : 'Choose the district.'],
+        ['street', () => value('street') ? '' : 'Enter the office street address.'],
+        ['city', () => value('city') ? '' : 'Enter the city.'],
+        ['addr-state', () => value('addr-state') ? '' : 'Choose the state.'],
+        ['zip', () => /^\d{5}(-\d{4})?$/.test(value('zip')) ? '' : 'Enter a 5-digit ZIP code, like 20515.'],
+        ['phone', () => value('phone').replace(/\D/g, '').length >= 10 ? '' : 'Enter a 10-digit phone number, like (202) 225-5061.'],
+        ['email', () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email')) ? '' : 'Enter an email address, like name@mail.house.gov.'],
+        ['password', () => document.getElementById('password').value.length >= 8 ? '' : 'Use at least 8 characters.'],
+        ['confirm', () => document.getElementById('confirm').value && document.getElementById('confirm').value === document.getElementById('password').value ? '' : 'The passwords do not match.'],
+      ];
+      const show = (id, message) => {
+        const input = document.getElementById(id);
+        document.getElementById(`${id}-error`).textContent = message;
+        input.setAttribute('aria-invalid', String(Boolean(message)));
+        const described = [document.getElementById(`${id}-hint`) && `${id}-hint`, message && `${id}-error`].filter(Boolean).join(' ');
+        if (described) input.setAttribute('aria-describedby', described); else input.removeAttribute('aria-describedby');
+      };
+      // A field already marked wrong is re-checked as the person fixes it.
+      form.addEventListener('input', (event) => {
+        const check = checks.find(([id]) => id === event.target.id);
+        if (check && event.target.getAttribute('aria-invalid') === 'true') show(check[0], check[1]());
+      });
+      form.addEventListener('change', (event) => {
+        const check = checks.find(([id]) => id === event.target.id);
+        if (check && event.target.getAttribute('aria-invalid') === 'true') show(check[0], check[1]());
+      });
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const failed = checks.map(([id, check]) => { const message = check(); show(id, message); return message ? id : null; }).filter(Boolean);
+        document.getElementById('signup-msg').textContent = failed.length ? `Fix ${plural(failed.length, 'field')} above to continue.` : '';
+        if (failed.length) { document.getElementById(failed[0]).focus(); return; }
+        // Keep only what the setup page needs; everything else is dropped with the form.
+        signedUp = { first: value('first'), state: value('office-state'), district: value('district') };
+        go('#/setup');
+      });
+    }
+
     async function loginView() {
       const { read_only: readOnly } = await config;
       app.innerHTML = `<div class="auth">
+        <a class="back" href="#/">← Back</a>
         <div class="kicker">Bill Reader</div>
         <h1>Sign in</h1>
         <p class="meta">Plain-English briefs on House bills, personalized to your district and public commitments.</p>
@@ -896,6 +1077,7 @@
           <input id="password" type="password" autocomplete="off" />
           <button type="submit" class="primary">Sign in</button>
         </form>
+        <p class="meta">New to Bill Reader? <a href="#/signup">Sign up</a></p>
       </div>`;
       document.getElementById('login').addEventListener('submit', (event) => {
         event.preventDefault(); // Nothing typed is read or sent.
@@ -1058,6 +1240,8 @@
       list.addEventListener('pointermove', (event) => { const o = event.target.closest('[role="option"]'); if (o) setActive(options.indexOf(o)); });
       list.addEventListener('click', (event) => { const o = event.target.closest('[role="option"]'); if (o) choose(options.indexOf(o)); });
       document.addEventListener('pointerdown', (event) => { if (isOpen() && !event.target.closest('.state-picker')) close(); });
+      // Lets the page choose a state for the person (after sign up), exactly as if they had picked it.
+      return { pick: (abbr) => { const i = options.findIndex((o) => o.dataset.value === abbr); if (i >= 0) choose(i); } };
     }
 
     async function setupView() {
@@ -1097,7 +1281,7 @@
           </div>
           <p id="member-status" class="meta" aria-live="polite"></p>
           <div id="member-grid" class="member-grid"></div>
-          <p class="meta"><a href="#/login">Sign out</a></p>
+          <p class="meta"><a href="#/">Sign out</a></p>
         </div>
         ${usmap ? `<figure class="card us-map-card">
           <svg class="us-map" id="us-map" viewBox="${esc(usmap.viewBox)}" role="img" aria-label="Map of the United States">
@@ -1108,7 +1292,7 @@
         </figure>` : ''}
       </div>`;
       const stateSelect = document.getElementById('state');
-      wireStatePicker(stateSelect, perState);
+      const picker = wireStatePicker(stateSelect, perState);
       const grid = document.getElementById('member-grid');
       const status = document.getElementById('member-status');
       const svg = document.getElementById('us-map');
@@ -1135,16 +1319,19 @@
         const parties = new Set(here.map((m) => m.party));
         grid.innerHTML = here.map((m) => {
           const [cls, word] = PARTY[m.party] || ['ind', 'Independent'];
-          const label = `${districtText(m.district)}: ${m.title} ${m.name}, ${word}${m.note ? ', former member' : ''}`;
+          const yours = signedUp && signedUp.district === m.district;
+          const label = `${districtText(m.district)}: ${m.title} ${m.name}, ${word}${m.note ? ', former member' : ''}${yours ? ', your office' : ''}`;
           const inner = `<span class="member-box-district">${esc(districtText(m.district))}${m.note ? ' <span class="member-box-note">· Former</span>' : ''}</span>
             ${m.bioguide_id ? `<img src="/photos/${encodeURIComponent(m.bioguide_id)}.jpg" alt="" width="60" height="60" loading="lazy">` : '<span class="member-box-photo" aria-hidden="true"></span>'}
             <span class="member-box-name${m.name.length > 19 ? ' long' : ''}">${esc(m.name)}</span>`;
           return linked
-            ? `<a class="member-box ${cls}" href="#/bills/${encodeURIComponent(m.id)}/${encodeURIComponent(m.district)}" data-district="${esc(m.district)}" aria-label="${esc(label)}"${m.note ? ` title="${esc(m.note)}"` : ''}>${inner}</a>`
-            : `<div class="member-box static ${cls}" role="group" aria-label="${esc(label)}">${inner}</div>`;
+            ? `<a class="member-box ${cls}${yours ? ' yours' : ''}" href="#/bills/${encodeURIComponent(m.id)}/${encodeURIComponent(m.district)}" data-district="${esc(m.district)}" aria-label="${esc(label)}"${m.note ? ` title="${esc(m.note)}"` : ''}>${inner}</a>`
+            : `<div class="member-box static ${cls}${yours ? ' yours' : ''}" role="group" aria-label="${esc(label)}">${inner}</div>`;
         }).join('') + (here.length ? `<p class="meta member-key">${[['D', 'Blue: Democrat'], ['R', 'Red: Republican'], ['I', 'Gray: Independent']].filter(([p]) => parties.has(p)).map(([, t]) => t).join(' · ')}</p>` : '');
+        const welcome = signedUp && here.some((m) => m.district === signedUp.district) ? `Welcome, ${signedUp.first}. Your office is outlined. ` : '';
         status.textContent = !abbr ? ''
           : !here.length ? 'No House members listed for this state.'
+          : welcome ? `${welcome}${linked ? 'Choose it to open its briefs.' : 'Briefs cover New Jersey for now, so these boxes don\'t open yet.'}`
           : linked ? `${plural(here.length, 'member')}. Choose one to open their briefs; pointing at one outlines their district on the map.`
           : `${plural(here.length, 'member')} of the 119th Congress. Briefs cover New Jersey for now, so these boxes don't open yet.`;
         if (!svg) return;
@@ -1167,6 +1354,8 @@
         takeOffMap(svg, stateSelect.value);
         go(box.getAttribute('href'));
       });
+      // Just signed up: start on their state, with their office outlined.
+      if (signedUp) { picker.pick(signedUp.state); outlineDistrict(signedUp.district); }
     }
 
     // The member's name flies in from the right one word at a time. Each word finishes before the
@@ -1448,7 +1637,7 @@
       if (!member) { go('#/setup'); return; }
       const base = `#/brief/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}`;
       const home = `#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}`;
-      const kicker = `<div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>`;
+      const kicker = `<div class="kicker">Prototype · ${esc(memberLabel(member))}, ${esc(districtId)} · <a href="#/setup">Switch member</a> · <a href="#/">Sign out</a></div>`;
       const head = (title) => `${kicker}<a class="back" href="${home}">← Home</a><h1>${esc(title)}</h1>`;
 
       if (!page) {
@@ -1611,7 +1800,7 @@
         <header class="page-head">
           <div class="kicker">Prototype · viewing as ${esc(memberLabel(data.member))}, ${esc(data.district.id)} ·
             <a href="#/bills/${encodeURIComponent(memberId)}/${encodeURIComponent(districtId)}/list">Switch bill</a> ·
-            <a href="#/setup">Switch member</a> · <a href="#/login">Sign out</a></div>
+            <a href="#/setup">Switch member</a> · <a href="#/">Sign out</a></div>
           ${current ? `<a class="back" href="${base}">← ${esc(data.bill.title)}</a>` : ''}
           <h1>${current ? esc(current.title) : esc(data.bill.title)}</h1>
           <div class="kicker">Personalized brief for ${esc(data.district.id)} · ${esc(source)}</div>
@@ -1965,7 +2154,9 @@
       const shown = view === 'setup' ? setupView()
         : view === 'bills' ? billsView(a, b, c)
         : view === 'brief' ? briefView(a, b, c, d)
-        : loginView();
+        : view === 'login' ? loginView()
+        : view === 'signup' ? signupView(a)
+        : landingView(); // the front page, for an empty or unknown address
       Promise.resolve(shown).catch((error) => { app.textContent = 'Could not load: ' + error.message; });
       window.scrollTo(0, 0);
     }

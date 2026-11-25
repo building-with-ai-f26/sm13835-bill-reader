@@ -15,7 +15,7 @@ app/
   media.js           TV transcripts → candidate promises and record claims (Sonnet), each quote checked word for word
   bills.js           Finds H.R. 1 and uploaded bills; validates and saves uploads
   public/
-    index.html       The whole app UI (sign-in, setup with state picker, member boxes and U.S. map, member home, bill list, upload, brief,
+    index.html       The whole app UI (landing page, prototype sign-up that saves nothing, sign-in, setup with state picker, member boxes and U.S. map, member home, bill list, upload, brief,
                      Analyze panel, temporary Media Panel page with the TV review list) and PostHog
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
     photos/          Official House portraits (public domain) for every current House member, named by Bioguide ID
@@ -83,7 +83,7 @@ Steps (first time):
    - **Environment variables:** add `READ_ONLY` = `1`. **Do not add `OPENROUTER_API_KEY`.**
    - **Health check path** (under Advanced, if shown): `/api/config`
 5. **Create Web Service.** Wait for the log to say `Bill Reader public demo (read-only) on port …`, then open the URL Render shows.
-6. Check it on a phone: sign in → New Jersey → a member → their district → Continue → Review Uploaded Bills → H.R. 1 → each tab. The Analyze panel and Upload page should say the demo is read-only.
+6. Check it on a phone: landing page → Sign in → New Jersey → a member → their district → Continue → Review Uploaded Bills → H.R. 1 → each tab. The Analyze panel and Upload page should say the demo is read-only.
 
 **Updating the live demo:** a service created from a public repository link does **not** redeploy on its own. After pushing app changes to `main`, open the service in Render and click **Manual Deploy → Deploy latest commit**, then repeat the phone check in step 6. (Changes to `docs/` or `AGENTS.md` alone don't need a redeploy.)
 
