@@ -17,7 +17,10 @@ app/
   public/
     index.html       The whole app UI (landing page, prototype sign-up that saves nothing (its form is switched off for demos with SIGNUP_FORM = false, so
                      choosing Member of Congress or Congressional Staff opens setup directly), sign-in, setup with state picker, member boxes and U.S. map, member home, bill list, upload, brief,
-                     Analyze panel, temporary Media Panel page with the TV review list) and PostHog
+                     Analyze panel, Media Panel page: the member's public commitments, TV appearances and the TV review list) and PostHog
+    logos/           TV network logos for the Media Panel's network boxes (public-domain text logos from Wikimedia
+                     Commons; the two CBS logos are cropped to the eye), served at /logos/<name>.svg; a new
+                     network needs a file here and an entry in NETWORK_LOGOS in index.html
     bill-text.js     Splits PDF/Word text into bill sections; shared by the browser and the tests
     photos/          Official House portraits (public domain) for every current House member, named by Bioguide ID
                      (e.g. G000583.jpg), 160px squares served at /photos/<id>.jpg for the setup page's member boxes

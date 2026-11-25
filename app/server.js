@@ -114,6 +114,18 @@ async function handle(req, res) {
     return;
   }
 
+  // TV network logos for the Media Panel (public-domain text logos from Wikimedia Commons), e.g. /logos/cnbc.svg.
+  // Only lowercase names with dashes match, so no other file can be reached; the extra header stops any
+  // script inside an SVG from running even if the file were opened directly.
+  const logo = url.pathname.match(/^\/logos\/([a-z0-9-]+)\.svg$/);
+  if (req.method === 'GET' && logo) {
+    const file = path.join(__dirname, 'public', 'logos', `${logo[1]}.svg`);
+    if (!fs.existsSync(file)) return send(res, 404, { error: 'No logo for that network' });
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'" });
+    res.end(fs.readFileSync(file));
+    return;
+  }
+
   // What the page should offer: the public demo hides uploading, analyzing and approving.
   if (req.method === 'GET' && url.pathname === '/api/config') {
     return send(res, 200, { read_only: READ_ONLY, message: READ_ONLY ? READ_ONLY_MESSAGE : null });
@@ -144,14 +156,13 @@ async function handle(req, res) {
     return send(res, 200, readJson(path.join(DATA, 'us-map.json')));
   }
 
-  // TEMPORARY "Media Panel" page (/api/datamodel): each promise, where it came from, how H.R. 1 tested it, the
-  // member's votes, and the TV-appearance pipeline. Read-only; sends transcript summaries, never
-  // the transcript text (network transcripts stay on this computer, Git-ignored).
+  // The "Media Panel" page (/api/datamodel): the member's public commitments and record claims, where
+  // each was said, and the TV-appearance pipeline. Nothing bill-specific: how a commitment bears on a bill
+  // appears only in that bill's brief. Read-only; sends transcript summaries, never the transcript text
+  // (network transcripts stay on this computer, Git-ignored).
   if (req.method === 'GET' && url.pathname === '/api/datamodel') {
     const member = members().find((m) => m.id === url.searchParams.get('member'));
     if (!member) return send(res, 404, { error: 'Unknown member' });
-    const hr1 = getBill('hr1');
-    const brief = hr1 ? readJson(hr1.briefFile(member.id)) : null;
     const dir = path.join(DATA, 'media', 'transcripts', member.id);
     // Full transcripts exist only on the computer that made them; elsewhere (the public demo) a
     // committed summary with counts and no transcript text stands in (scripts/summarize-transcripts.js).
@@ -171,8 +182,7 @@ async function handle(req, res) {
           };
         });
     return send(res, 200, {
-      member: { id: member.id, name: member.name, promises: member.promises || [], record_claims: member.record_claims || [], votes_on_bill: member.votes_on_bill || [], sources: member.sources || [] },
-      alerts: brief ? brief.promise_alerts || [] : [],
+      member: { id: member.id, name: member.name, promises: member.promises || [], record_claims: member.record_claims || [], sources: member.sources || [] },
       media: readJson(path.join(DATA, 'media', `${member.id}.json`)),
       transcripts,
       candidates: readJson(path.join(DATA, 'media', `${member.id}-candidates.json`)),

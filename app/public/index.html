@@ -331,8 +331,8 @@
     .us-district.visible { opacity: 1; }
     .us-district.selected { stroke: #000000; stroke-width: 2.2; }
 
-    /* TEMPORARY Media Panel page (route .../model): how each promise is sourced and tested. Delete this block,
-       the "model" page in billsView and /api/datamodel in server.js to remove it. */
+    /* Media Panel page (route .../model): the member's public commitments, where each was said, and TV appearances.
+       Its page is the "model" page in billsView; its data comes from /api/datamodel in server.js. */
     .home-tiles .dm-tile { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 14px; border-style: dashed; }
     .home-tiles .dm-tile .tile-icon { margin-bottom: 0; }
     /* Media Panel box: a darkened TV control room photo fills the whole box. The overlay is clear at the
@@ -360,8 +360,14 @@
     .dm-stage .meta { margin-top: 4px; }
     .dm-arrow { align-self: center; color: #98a2b3; font-size: 18px; flex: none; }
     .dm-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
-    .dm-chain { display: grid; grid-template-columns: minmax(0, 1.4fr) 22px minmax(0, 1fr) 22px minmax(0, 1.1fr); align-items: stretch; margin-bottom: 14px; }
-    .dm-chain .dm-arrow { justify-self: center; }
+    /* Public Commitments: one card per commitment, two across (one on phones); no quote bar. */
+    .commitments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+    @media (max-width: 760px) { .commitments { grid-template-columns: minmax(0, 1fr); } }
+    .commitment { display: flex; flex-direction: column; align-items: flex-start; }
+    .commitment blockquote { border-left: 0; padding-left: 0; font-size: 15px; color: var(--text); }
+    .commitment-source { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); width: 100%; font-size: 13px; color: var(--muted); }
+    .commitment-source strong { color: var(--text); font-weight: 600; }
+    .commitment .meta { margin-bottom: 10px; }
     .dm-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
     .dm-box blockquote { margin: 8px 0; }
     .dm-box details { font-size: 13px; color: #374151; margin-top: 4px; }
@@ -387,13 +393,12 @@
     .tag.neutral { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px #d5deeb; text-transform: none; }
     .dm-entities { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 12px; }
     .dm-entity h3 { font-size: 15px; margin: 0 0 2px; }
+    /* Each network box: the network's logo top-left, its name and counts to the right. */
+    .dm-network { display: flex; align-items: flex-start; gap: 14px; }
+    .dm-logo { flex: none; width: 44px; height: 44px; object-fit: contain; object-position: center; }
     .dm-fields { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
     .dm-fields code { font-size: 12px; background: #f2f4f7; border-radius: 6px; padding: 2px 6px; }
     .dm-fields code.new { background: var(--good-bg); color: var(--good); }
-    @media (max-width: 760px) {
-      .dm-chain { grid-template-columns: minmax(0, 1fr); }
-      .dm-chain .dm-arrow { transform: rotate(90deg); padding: 2px 0; }
-    }
 
     /* The signed-in member's name, in their party's color. */
     .member-name { font-size: clamp(40px, 8vw, 76px); line-height: 1.02; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 8px 0 6px; overflow-wrap: anywhere;
@@ -1490,13 +1495,23 @@
       district: TAB_ICONS.district, // map-pin
     };
 
-    // ---- TEMPORARY Media Panel page (#/bills/<member>/<district>/model): each promise, where it
-    // came from, how the H.R. 1 brief tested it, the member's votes, and the TV-appearance pipeline.
+    // ---- Media Panel page (#/bills/<member>/<district>/model): the member's public commitments
+    // (holistic, no bill-specific checks or votes), where each was said, and the TV-appearance pipeline.
     const shortDate = (d) => {
       const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
       return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : (d || '');
     };
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
+
+    // Network logos in app/public/logos/, keyed by the network name used in data/media/<id>.json. All are
+    // public-domain text logos from Wikimedia Commons (CNBC 2023, Fox News Channel logo, Fox Business,
+    // CBS News logo (2020) and CBS New York logo, both cropped to the CBS eye, WABC-TV (2021), NBC News Now 2023).
+    // A network not listed here shows its box without a logo; the name is always written out, so the
+    // image is decorative (alt="").
+    const NETWORK_LOGOS = {
+      CNBC: 'cnbc', 'Fox News': 'fox-news', 'Fox Business': 'fox-business', 'CBS News': 'cbs-news',
+      'CBS New York': 'cbs-new-york', 'ABC7 New York': 'abc7-new-york', 'NBC News NOW': 'nbc-news-now',
+    };
 
     // ---- TV appearances table: one row per appearance, and filters by month or year, network and topic.
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -1611,37 +1626,20 @@
     }
 
     function dataModelHtml(dm) {
-      const { promises, votes_on_bill: votes } = dm.member;
-      const alerts = new Map(dm.alerts.map((a) => [a.promise_id, a]));
+      const { promises, record_claims: claims = [] } = dm.member;
       const count = (list, key) => list.reduce((m, x) => m.set(key(x), (m.get(key(x)) || 0) + 1), new Map());
       const sourceTypes = count(promises, (p) => p.source_type);
-      const direct = dm.alerts.filter((a) => a.severity === 'direct').length;
       const arrow = '<span class="dm-arrow" aria-hidden="true">→</span>';
       const stage = (label, num, meta, pending) => `<div class="dm-stage${pending ? ' pending' : ''}"><div class="dm-label">${esc(label)}</div><div class="dm-num">${esc(num)}</div><div class="meta">${meta}</div></div>`;
-      const voteLine = votes.map((v) => `${esc(v.vote)} · ${esc(shortDate(v.date))}`).join('<br />');
-
-      const chains = promises.map((p) => {
-        const a = alerts.get(p.id);
-        const test = a
-          ? `<span class="tag ${esc(a.severity)}">${a.severity === 'direct' ? 'Direct conflict' : 'Possible tension'}</span>
-             <div class="meta">${plural((a.section_ids || []).length, 'H.R. 1 section')} cited</div>
-             <details><summary>Why</summary>${esc(a.explanation)}</details>`
-          : '<span class="meta">Not checked against H.R. 1 yet.</span>';
-        return `<div class="dm-chain">
-          <div class="dm-box"><div class="dm-label">Promise</div>
-            <span class="tag neutral">${esc(p.topic)} · ${esc(p.strength)}</span>
-            <blockquote>“${esc(p.quote)}”</blockquote>
-            <div class="meta">Scope: ${esc(p.scope)}${p.other_bill ? ' (another bill)' : ''}</div></div>
-          ${arrow}
-          <div class="dm-box"><div class="dm-label">Where it was said</div>
-            <strong>${esc(p.source_type)}</strong>
-            <div class="meta">${esc(shortDate(p.date))}${esc((p.date || '').replace(/^\d{4}-\d{2}-\d{2}/, ''))}</div>
-            <div class="meta">${p.url ? link(p.url, `${host(p.url)} ↗`) : 'No link'}</div></div>
-          ${arrow}
-          <div class="dm-box"><div class="dm-label">H.R. 1 check</div>${test}
-            <div class="meta" style="margin-top:6px">His votes: ${votes.map((v) => esc(v.vote)).join(', ')}</div></div>
-        </div>`;
-      }).join('');
+      // Public commitments: one card each, with where it was said folded in. This page is about the member's
+      // commitments as a whole; how one fares against a particular bill appears only in that bill's brief.
+      const commitments = promises.map((p) => `<div class="dm-box commitment">
+          <span class="tag neutral">${esc(p.topic)} · ${esc(p.strength)}</span>
+          <blockquote>“${esc(p.quote)}”</blockquote>
+          <div class="meta">Context: ${esc(p.scope)}</div>
+          <div class="commitment-source"><strong>${esc(p.source_type)}</strong> · ${esc(shortDate(p.date))}${esc((p.date || '').replace(/^\d{4}-\d{2}-\d{2}/, ''))}
+            · ${p.url ? link(p.url, `${host(p.url)} ↗`) : 'No link'}</div>
+        </div>`).join('');
 
       const media = dm.media;
       const tv = media ? (() => {
@@ -1650,7 +1648,7 @@
         const cost = dm.transcripts.reduce((n, t) => n + (t.cost_usd || 0), 0);
         const words = dm.transcripts.reduce((n, t) => n + t.member_words, 0);
         const rows = media.appearances.map((a) => tvRow(a, done)).join('');
-        return `<h2>TV appearances (new source, in progress)</h2>
+        return `<h2>TV appearances</h2>
           <p class="meta">${esc(media.scope)}. Gemini watched each YouTube link and wrote a speaker-labeled transcript; nothing was downloaded. Transcripts stay on this computer.</p>
           <div class="dm-flow">
             ${stage('Appearances found', media.appearances.length, `${(media.checked_and_excluded || []).length} more checked and excluded`)}${arrow}
@@ -1668,8 +1666,10 @@
           <div class="dm-entities">${[...count(media.appearances, (a) => a.network)].sort((x, y) => y[1] - x[1]).map(([net, n]) => {
             const ids = media.appearances.filter((a) => a.network === net);
             const t = ids.filter((a) => done.has(a.id));
-            return `<div class="dm-box"><div class="dm-label">${esc(net)}${ids.some((a) => a.local) ? ' · local' : ''}</div><strong>${plural(n, 'appearance')}</strong>
-              <div class="meta">${t.length} transcribed · ${t.reduce((s, a) => s + done.get(a.id).member_words, 0).toLocaleString()} of his words</div></div>`;
+            const logo = NETWORK_LOGOS[net];
+            return `<div class="dm-box dm-network">${logo ? `<img class="dm-logo" src="/logos/${logo}.svg" alt="" width="44" height="44" />` : ''}
+              <div><div class="dm-label">${esc(net)}${ids.some((a) => a.local) ? ' · local' : ''}</div><strong>${plural(n, 'appearance')}</strong>
+              <div class="meta">${t.length} transcribed · ${t.reduce((s, a) => s + done.get(a.id).member_words, 0).toLocaleString()} of his words</div></div></div>`;
           }).join('')}</div>
           ${media.appearances.filter((a) => a.accuracy_check).map((a) => `<div class="card alert possible" style="margin-top:12px"><span class="tag possible">Accuracy check</span>
             <div><strong>${esc(a.show)}, ${esc(shortDate(a.date))}:</strong> ${esc(a.accuracy_check)}</div></div>`).join('')}
@@ -1688,23 +1688,21 @@
       const fields = (keys, added = []) => `<div class="dm-fields">${keys.map((k) => `<code>${esc(k)}</code>`).join('')}${added.map((k) => `<code class="new">+ ${esc(k)}</code>`).join('')}</div>`;
       const entity = (name, rel, keys, added) => `<div class="dm-box dm-entity"><h3>${esc(name)}</h3><div class="meta">${esc(rel)}</div>${fields(keys, added)}</div>`;
 
-      return `<p class="meta">Temporary view. Each promise is shown with where it was said, then how the H.R. 1 analysis tested it and how ${esc(dm.member.name)} voted.</p>
+      return `<p class="meta">${esc(dm.member.name)}'s public commitments, where each was said${media ? ', and TV appearances' : ''}.
+          How a commitment bears on a specific bill appears only in that bill's analysis, under Promise Alerts.</p>
         <div class="dm-flow">
           ${stage('Sources', sourceTypes.size, [...sourceTypes].map(([t, n]) => `${esc(t)} (${n})`).join('<br />'))}${arrow}
-          ${stage('Promises', promises.length, esc([...count(promises, (p) => p.topic).keys()].join(', ')))}${arrow}
-          ${stage('Tested against H.R. 1', dm.alerts.length, `${direct} direct conflict · ${dm.alerts.length - direct} possible tension`)}${arrow}
-          ${stage('His H.R. 1 votes', votes.length, voteLine)}
+          ${stage('Public commitments', promises.length, esc([...count(promises, (p) => p.topic).keys()].join(', ')))}${arrow}
+          ${stage('Record claims', claims.length, claims.length ? 'Approved from TV statements' : media ? 'None approved yet; they come from TV statements below' : 'None yet; they come from reviewed TV appearances, not added for this member yet', !claims.length)}
         </div>
-        <h2>Each promise, end to end</h2>
-        ${chains}
+        <h2>Public Commitments</h2>
+        <div class="commitments">${commitments}</div>
         ${tv}
         <h2>The data model</h2>
         <p class="meta">What each record holds and how they connect. Green fields are planned for promises that come from TV.</p>
         <div class="dm-entities">
-          ${entity('Member', 'data/members/<id>.json · has many promises and votes', ['id', 'name', 'party', 'district', 'promises[]', 'votes_on_bill[]'])}
-          ${entity('Promise', 'inside the member file · tested by brief alerts', promises[0] ? Object.keys(promises[0]) : [], ['appearance_id', 'timestamp', 'youtube'])}
-          ${entity('Vote', 'inside the member file · from House roll calls', votes[0] ? Object.keys(votes[0]) : [])}
-          ${entity('Brief alert', 'data/briefs/hr1-<id>.json · one per promise', dm.alerts[0] ? Object.keys(dm.alerts[0]) : ['promise_id', 'severity', 'explanation', 'section_ids'])}
+          ${entity('Member', 'data/members/<id>.json · has many commitments and record claims', ['id', 'name', 'party', 'district', 'promises[]', 'record_claims[]'])}
+          ${entity('Commitment', 'inside the member file (promises[])', promises[0] ? Object.keys(promises[0]) : [], ['appearance_id', 'timestamp', 'youtube'])}
           ${media ? entity('TV appearance', `data/media/<id>.json · ${media.appearances.length} for this member`, ['id', 'date', 'network', 'show', 'type', 'with', 'local', 'topics', 'url', 'youtube', 'accuracy_check']) : ''}
           ${media ? entity('Transcript', 'data/media/transcripts/ (Git-ignored) · one per appearance', ['duration', 'turns[t, speaker, text]', 'on_screen', 'source']) : ''}
         </div>`;
