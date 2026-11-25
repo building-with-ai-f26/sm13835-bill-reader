@@ -202,8 +202,7 @@
     const has = (k) => found.includes(k);
     const ok = (has('clause') && found.length >= 2)
       || (has('number') && has('congress') && has('sections') && (has('title') || has('public_law')));
-    const missing = MARKERS.filter((m) => !has(m.key)).map((m) => m.label);
-    const message = ok ? '' : `This doesn't look like a bill, so it can't be uploaded for analysis. Official bill text has the enacting clause plus a bill number, Congress line or title line. Not found in this file: ${missing.join('; ')}. Download the bill's text from congress.gov (the Text tab, then PDF) and upload that file.`;
+    const message = ok ? '' : 'This doesn\'t look like a bill, so it can\'t be uploaded for analysis. Official bill text has the enacting clause plus a bill number, Congress line or title line.';
     return { ok, found, message };
   }
 

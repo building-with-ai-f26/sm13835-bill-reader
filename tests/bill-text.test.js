@@ -99,7 +99,7 @@ test('real bill text passes the bill check and records what was found', () => {
 });
 
 test('documents that are not bills are refused, even when they talk about bills', () => {
-  const refused = (lines) => assert.throws(() => BillText.fromPages([lines]), /doesn't look like a bill.*congress\.gov/s);
+  const refused = (lines) => assert.throws(() => BillText.fromPages([lines]), /doesn't look like a bill/);
   refused(['MEMORANDUM', 'To: Staff', 'Re: H.R. 1 talking points for the 119th Congress', 'The bill passed the House.']); // number + Congress, no clause
   refused(['Senate passes S. 1260', 'WASHINGTON — The Senate voted 68-32 in the 117th Congress on the bill.']); // a news story
   refused(['MEMORANDUM', 'Re: H.R. 1 talking points for the 119th Congress', 'Section 1. Background.', 'The bill passed.', 'Section 2. Next steps.', 'Prepare remarks.']); // + numbered sections
@@ -107,10 +107,9 @@ test('documents that are not bills are refused, even when they talk about bills'
   refused(['Jane Doe', 'Résumé', 'Experience: Legislative aide.']);
 });
 
-test('the bill check says exactly what is missing', () => {
+test('the bill check records what it found and gives a short reason when it refuses', () => {
   const { ok, found, message } = BillText.billCheck('Section 1. Definitions.', true);
   assert.strictEqual(ok, false);
   assert.deepStrictEqual(found, ['sections']);
-  assert.match(message, /enacting clause/);
-  assert.match(message, /bill number/);
+  assert.strictEqual(message, 'This doesn\'t look like a bill, so it can\'t be uploaded for analysis. Official bill text has the enacting clause plus a bill number, Congress line or title line.');
 });
